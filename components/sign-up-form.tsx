@@ -25,6 +25,7 @@ export function SignUpForm({
   const [repeatPassword, setRepeatPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<"buyer" | "seller">("buyer");
   const router = useRouter();
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -58,10 +59,10 @@ export function SignUpForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card>
+      <Card className="bg-white/90 border-none">
         <CardHeader>
-          <CardTitle className="text-2xl">Sign up</CardTitle>
-          <CardDescription>Create a new account</CardDescription>
+          <CardTitle className="text-2xl">Welcome to LightHouse</CardTitle>
+          <CardDescription>Create an account to get started</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSignUp}>
@@ -101,12 +102,29 @@ export function SignUpForm({
                   onChange={(e) => setRepeatPassword(e.target.value)}
                 />
               </div>
+              <div>
+                <p className="py-2">What are you using LightHouse for?</p>
+                <div className="flex flex-row gap-4">
+                  <Button type="button"
+                    className={`w-1/2 text-md text-foreground bg-midBlue hover:bg-midBlueHover shadow-xl ${selectedRole === "buyer" ? "bg-midBlueHover ring-2 ring-highlight" : ""}`}
+                    onClick={() => setSelectedRole("buyer")}
+                  >
+                    Buying
+                  </Button>
+                  <Button type="button"
+                    className={`w-1/2 text-md text-foreground bg-midBlue shadow-xl hover:bg-midBlueHover ${selectedRole === "seller" ? "bg-midBlueHover ring-2 ring-highlight" : ""}`}
+                    onClick={() => setSelectedRole("seller")}
+                  >
+                    Selling
+                  </Button>
+                </div>
+              </div>
               {error && <p className="text-sm text-red-500">{error}</p>}
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button type="submit" className="w-full text-md text-foreground bg-buttonColor hover:bg-buttonHover shadow-xl" disabled={isLoading}>
                 {isLoading ? "Creating an account..." : "Sign up"}
               </Button>
             </div>
-            <div className="mt-4 text-center text-sm">
+            <div className="mt-4 text-center text-sm text-highlight">
               Already have an account?{" "}
               <Link href="/auth/login" className="underline underline-offset-4">
                 Login

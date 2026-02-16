@@ -11,15 +11,21 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
+        background: "#F3FCFF",
+        foreground: "#36393B",
+        highlight: "#217591",
+        buttonColor: "#cb9093",
+        buttonHover: "#bd7175",
+        yellow: "#FCF891",
+        midBlue: "#AADBEC",
+        midBlueHover: "#7fc9e2",
         card: {
           DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
+          foreground: "#36393B",
         },
         popover: {
           DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
+          foreground: "#36393B",
         },
         primary: {
           DEFAULT: "hsl(var(--primary))",
