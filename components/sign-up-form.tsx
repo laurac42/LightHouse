@@ -41,7 +41,7 @@ export function SignUpForm({
     }
 
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -49,12 +49,29 @@ export function SignUpForm({
         },
       });
       if (error) throw error;
+
+      // /* Update the users table with their role */
+      // const { error: updateError } = await supabase
+      //   .from("users")
+      //   .insert([{ email, role: selectedRole }]);
+      // if (updateError) throw updateError;
+
+      // /** Conditional insert into buyers or sellers table */
+      // if (selectedRole === 'buyer') {
+      //   await supabase.from('buyers').insert({ id: data?.user?.id });
+      // }
+      // if (selectedRole === 'seller') {
+      //   await supabase.from('sellers').insert({ id: data?.user?.id });
+      // }
+
       router.push("/auth/sign-up-success");
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
     } finally {
       setIsLoading(false);
     }
+
+
   };
 
   return (
@@ -76,6 +93,7 @@ export function SignUpForm({
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  className="border border-border"
                 />
               </div>
               <div className="grid gap-2">
@@ -88,6 +106,7 @@ export function SignUpForm({
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  className="border border-border"
                 />
               </div>
               <div className="grid gap-2">
@@ -100,6 +119,7 @@ export function SignUpForm({
                   required
                   value={repeatPassword}
                   onChange={(e) => setRepeatPassword(e.target.value)}
+                  className="border border-border"
                 />
               </div>
               <div>

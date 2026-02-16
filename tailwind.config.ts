@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -37,7 +38,7 @@ export default {
         },
         muted: {
           DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
+          foreground: "#54595c",
         },
         accent: {
           DEFAULT: "hsl(var(--accent))",
@@ -47,7 +48,7 @@ export default {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
         },
-        border: "hsl(var(--border))",
+        border: "#36393B",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
         chart: {
