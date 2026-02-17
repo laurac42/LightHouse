@@ -46,23 +46,12 @@ export function SignUpForm({
         password,
         options: {
           emailRedirectTo: `${window.location.origin}/protected`,
+          data: {
+            role: selectedRole,
+          }
         },
       });
       if (error) throw error;
-
-      // /* Update the users table with their role */
-      // const { error: updateError } = await supabase
-      //   .from("users")
-      //   .insert([{ email, role: selectedRole }]);
-      // if (updateError) throw updateError;
-
-      // /** Conditional insert into buyers or sellers table */
-      // if (selectedRole === 'buyer') {
-      //   await supabase.from('buyers').insert({ id: data?.user?.id });
-      // }
-      // if (selectedRole === 'seller') {
-      //   await supabase.from('sellers').insert({ id: data?.user?.id });
-      // }
 
       router.push("/auth/sign-up-success");
     } catch (error: unknown) {

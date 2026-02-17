@@ -13,6 +13,19 @@ async function UserDetails() {
     redirect("/auth/login");
   }
 
+  const userId = data.claims.sub;
+  const role = data.claims.user_metadata?.role;
+
+  /** Conditional insert into buyers or sellers table */
+  if (role === 'buyer') {
+    console.log("Inserting into buyers table with user ID:", userId);
+    const { error: buyerError } = await supabase.from('buyers').insert({ id: userId });
+    if (buyerError) throw buyerError;
+  }
+  else if (role === 'seller') {
+    const { error: sellerError } = await supabase.from('sellers').insert({ id: userId });
+    if (sellerError) throw sellerError;
+  }
   return JSON.stringify(data.claims, null, 2);
 }
 
