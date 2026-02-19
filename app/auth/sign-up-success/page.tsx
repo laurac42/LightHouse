@@ -6,6 +6,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Navbar from "@/components/navbar";
+import Link from "next/link";
 
 export default function Page() {
   return (
@@ -24,7 +25,20 @@ export default function Page() {
               <CardContent>
                 <p className="text-sm text-muted-foreground">
                   You&apos;ve successfully signed up. Please check your email to
-                  confirm your account before signing in.
+                  confirm your account before signing in. If you do not receive an email within a few minutes, please check your spam folder.
+                </p>
+                <p className="text-sm text-muted-foreground pt-4">
+                  Not receive an email? You may already have an account.
+                </p>
+                <p className="text-sm text-highlight">
+                  You can &nbsp;
+                  <Link href="/auth/login" className="underline underline-offset-4">
+                    sign in 
+                  </Link>
+                   &nbsp; to your account, or &nbsp;
+                  <Link href="/auth/forgot-password" className="underline underline-offset-4">
+                    reset your password.
+                  </Link>
                 </p>
               </CardContent>
             </Card>
