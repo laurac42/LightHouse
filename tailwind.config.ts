@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -11,15 +12,23 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
+        background: "#F3FCFF",
+        foreground: "#36393B",
+        foregroundHover: "#040505", 
+        highlight: "#217591",
+        buttonColor: "#cb9093",
+        buttonHover: "#bd7175",
+        yellow: "#FCF891",
+        midBlue: "#AADBEC",
+        midBlueHover: "#7fc9e2",
+        navBar: '#C5E3EC',
         card: {
           DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
+          foreground: "#36393B",
         },
         popover: {
           DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
+          foreground: "#36393B",
         },
         primary: {
           DEFAULT: "hsl(var(--primary))",
@@ -31,7 +40,7 @@ export default {
         },
         muted: {
           DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
+          foreground: "#54595c",
         },
         accent: {
           DEFAULT: "hsl(var(--accent))",
@@ -41,7 +50,7 @@ export default {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
         },
-        border: "hsl(var(--border))",
+        border: "#36393B",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
         chart: {
