@@ -14,12 +14,14 @@ export default {
       colors: {
         background: "#F3FCFF",
         foreground: "#36393B",
+        foregroundHover: "#040505", 
         highlight: "#217591",
         buttonColor: "#cb9093",
         buttonHover: "#bd7175",
         yellow: "#FCF891",
         midBlue: "#AADBEC",
         midBlueHover: "#7fc9e2",
+        navBar: '#C5E3EC',
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "#36393B",

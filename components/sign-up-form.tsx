@@ -25,7 +25,6 @@ export function SignUpForm({
   const [repeatPassword, setRepeatPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<"buyer" | "seller">("buyer");
   const router = useRouter();
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -41,14 +40,11 @@ export function SignUpForm({
     }
 
     try {
-      const { data, error } = await supabase.auth.signUp({
+      const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           emailRedirectTo: `${window.location.origin}/protected`,
-          data: {
-            role: selectedRole,
-          }
         },
       });
       if (error) throw error;
@@ -59,8 +55,6 @@ export function SignUpForm({
     } finally {
       setIsLoading(false);
     }
-
-
   };
 
   return (
@@ -110,23 +104,6 @@ export function SignUpForm({
                   onChange={(e) => setRepeatPassword(e.target.value)}
                   className="border border-border"
                 />
-              </div>
-              <div>
-                <p className="py-2">What are you using LightHouse for?</p>
-                <div className="flex flex-row gap-4">
-                  <Button type="button"
-                    className={`w-1/2 text-md text-foreground bg-midBlue hover:bg-midBlueHover shadow-xl ${selectedRole === "buyer" ? "bg-midBlueHover ring-2 ring-highlight" : ""}`}
-                    onClick={() => setSelectedRole("buyer")}
-                  >
-                    Buying
-                  </Button>
-                  <Button type="button"
-                    className={`w-1/2 text-md text-foreground bg-midBlue shadow-xl hover:bg-midBlueHover ${selectedRole === "seller" ? "bg-midBlueHover ring-2 ring-highlight" : ""}`}
-                    onClick={() => setSelectedRole("seller")}
-                  >
-                    Selling
-                  </Button>
-                </div>
               </div>
               {error && <p className="text-sm text-red-500">{error}</p>}
               <Button type="submit" className="w-full text-md text-foreground bg-buttonColor hover:bg-buttonHover shadow-xl" disabled={isLoading}>

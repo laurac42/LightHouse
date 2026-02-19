@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Cabin } from "next/font/google";
+import { Cabin, Fuggles } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
 
@@ -19,6 +19,13 @@ const cabin = Cabin({
   subsets: ["latin"],
 });
 
+const fuggles = Fuggles({
+  variable: "--font-fuggles",
+  display: "swap",
+  subsets: ["latin"],
+  weight: "400"
+});
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -26,7 +33,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${cabin.className} antialiased`}>
+      <body className={`${cabin.variable} ${fuggles.variable} antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
