@@ -21,7 +21,8 @@ import {
   FieldLegend,
   FieldSet,
 } from "@/components/ui/field"
-import { ThemeSwitcher } from "@/components/theme-switcher";
+import { createClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
 
 export default function Page() {
   const [firstName, setFirstName] = useState("");
@@ -31,12 +32,31 @@ export default function Page() {
   const [browsing, setBrowsing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   const handleDetailsSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would typically send the details to your backend to update the user's profile
-    console.log("First Name:", firstName);
-    console.log("Last Name:", lastName);
+
+    setError(null);
+    const supabase = await createClient();
+    const { data: user, error: userError } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      setError("Error fetching user details. Please try again.");
+      return;
+    }
+
+    const { error } = await supabase.from("users").update({
+      first_name: firstName,
+      last_name: lastName,
+      user_goals: [buying ? "buying" : null, selling ? "selling" : null, browsing ? "browsing" : null].filter(Boolean),
+      onboarded: true,
+    }).eq("id", user.user.id);
+
+    if (error) {
+      setError("Error updating details. Please try again.");
+      return;
+    }
   };
 
   return (
@@ -85,19 +105,19 @@ export default function Page() {
                       </FieldLegend>
                       <FieldGroup className="gap-3">
                         <Field orientation="horizontal">
-                          <Checkbox className="border-foreground text-foreground data-[state=checked]:text-white data-[state=checked]:border-foreground data-[state=checked]:bg-highlight" id="buying-checkbox" name="buying-checkbox" />
+                          <Checkbox className="border-foreground text-foreground data-[state=checked]:text-white data-[state=checked]:border-foreground data-[state=checked]:bg-highlight" id="buying-checkbox" name="buying-checkbox" checked={buying} onCheckedChange={(checked) => setBuying(checked as boolean)}/>
                           <FieldLabel htmlFor="buying-checkbox" className="font-normal">
                             Buying
                           </FieldLabel>
                         </Field>
                         <Field orientation="horizontal">
-                          <Checkbox className="border-foreground text-foreground data-[state=checked]:text-white data-[state=checked]:border-foreground data-[state=checked]:bg-highlight" id="selling-checkbox" name="selling-checkbox" />
+                          <Checkbox className="border-foreground text-foreground data-[state=checked]:text-white data-[state=checked]:border-foreground data-[state=checked]:bg-highlight" id="selling-checkbox" name="selling-checkbox" checked={selling} onCheckedChange={(checked) => setSelling(checked as boolean)} />
                           <FieldLabel htmlFor="selling-checkbox" className="font-normal">
                             Selling
                           </FieldLabel>
                         </Field>
                         <Field orientation="horizontal">
-                          <Checkbox className="border-foreground text-foreground data-[state=checked]:text-white data-[state=checked]:border-foreground data-[state=checked]:bg-highlight" id="browsing-checkbox" name="browsing-checkbox" checked={browsing} onCheckedChange={(checked) => setBrowsing(checked as boolean)}/>
+                          <Checkbox className="border-foreground text-foreground data-[state=checked]:text-white data-[state=checked]:border-foreground data-[state=checked]:bg-highlight" id="browsing-checkbox" name="browsing-checkbox" checked={browsing} onCheckedChange={(checked) => setBrowsing(checked as boolean)} />
                           <FieldLabel htmlFor="browsing-checkbox" className="font-normal">
                             Just Browsing
                           </FieldLabel>
