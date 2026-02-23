@@ -5,24 +5,34 @@ import { createClient } from "@/lib/supabase/client"
  * @returns string indicating the user's onboarding status or "error" if there was an issue fetching the user.
  */
 export async function CheckOnboarding() {
-  const supabase = await createClient();
-  const { data: user, error } = await supabase.auth.getUser();
+  try {
+    const supabase = await createClient();
+    const { data: user, error } = await supabase.auth.getUser();
 
-  if (error || !user) {
-    console.error("Error fetching user:", error);
+    if (error || !user) {
+      console.error("Error fetching user:", error);
+      return "error";
+    }
+
+    const { data: onboardingData, error: onboardingError } = await supabase
+      .from("users")
+      .select("onboarded")
+      .eq("id", user.user.id)
+      .maybeSingle();
+
+    if (onboardingError) {
+      console.error("Error fetching onboarding status:", onboardingError);
+      return "error";
+    }
+
+    if (!onboardingData) {
+      return "not_onboarded";
+    }
+
+    return onboardingData?.onboarded ? "onboarded" : "not_onboarded";
+
+  } catch (error) {
+    console.error("Unexpected error:", error);
     return "error";
   }
-
-  const { data: onboarding, error: onboardingError } = await supabase
-    .from("users")
-    .select("onboarded")
-    .eq("id", user.user.id)
-    .single();
-
-  if (onboardingError) {
-    console.error("Error fetching onboarding status:", onboardingError);
-    return "error";
-  }
-
-  return onboarding?.onboarded ? "onboarded" : "not_onboarded";
 }

@@ -24,8 +24,9 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { CheckOnboarding } from "@/lib/auth/onboarding";
+import { validateUser } from "@/lib/auth/user";
 
-export default function Page() {
+export default function PersonalDetails() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [buying, setBuying] = useState(false);
@@ -49,7 +50,7 @@ export default function Page() {
 
     verifyOnboarding();
   }, [router]);
-  
+
   /**
    * Handle the user clicking the from submit button. This will update the user's details in the database and mark them as onboarded.
    * @param e event object from the form submission
@@ -57,28 +58,55 @@ export default function Page() {
    */
   const handleDetailsSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     setError(null);
-    const supabase = await createClient();
-    const { data: user, error: userError } = await supabase.auth.getUser();
+    setIsLoading(true);
 
-    if (userError || !user) {
-      setError("Error fetching user details. Please try again.");
-      return;
-    }
+    try {
+      let user = await validateUser();
+      if (!user) {
+        throw new Error("Error fetching user details. Please try again.");
+      }
 
-    const { error } = await supabase.from("users").update({
-      first_name: firstName,
-      last_name: lastName,
-      user_goals: [buying ? "buying" : null, selling ? "selling" : null, browsing ? "browsing" : null].filter(Boolean),
-      onboarded: true,
-    }).eq("id", user.user.id);
+      const supabase = await createClient();
+      const { error } = await supabase.from("users").update({
+        first_name: firstName,
+        last_name: lastName,
+        user_goals: [buying ? "buying" : null, selling ? "selling" : null, browsing ? "browsing" : null].filter(Boolean),
+        onboarded: true,
+      }).eq("id", user.user.id).select().single();
 
-    if (error) {
-      setError("Error updating details. Please try again.");
-      return;
+      if (error) {
+        throw error;
+      }
+
+      // add a buyer profile if the user is a buyer
+      if (buying) {
+        await addBuyerProfile(user.user.id);
+      }
+
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "An error occurred");
+      console.error("Error updating details:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  /**
+   * Adds a buyer profile for a user.
+   * @param userId the user ID to add the buyer profile for
+   * @returns void
+   */
+  async function addBuyerProfile(userId: string) {
+    const supabase = await createClient();
+    const { error: buyerProfileError } = await supabase.from("buyer_profiles").insert({
+      id: userId,
+    }).select().single();
+
+    if (buyerProfileError) {
+      throw buyerProfileError;
+    }
+  }
 
   return (
     <div className="bg-background w-full min-h-svh">
