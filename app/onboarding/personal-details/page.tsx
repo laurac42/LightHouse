@@ -11,7 +11,7 @@ import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Field,
@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/field"
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import { CheckOnboarding } from "@/lib/auth/onboarding";
 
 export default function Page() {
   const [firstName, setFirstName] = useState("");
@@ -34,6 +35,26 @@ export default function Page() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
+
+  useEffect(() => {
+    async function verifyOnboarding() {
+      const status = await CheckOnboarding();
+
+      if (status === "error") {
+        router.push("/");
+      } else if (status === "onboarded") {
+        router.push("/protected");
+      }
+    }
+
+    verifyOnboarding();
+  }, [router]);
+  
+  /**
+   * Handle the user clicking the from submit button. This will update the user's details in the database and mark them as onboarded.
+   * @param e event object from the form submission
+   * @returns void 
+   */
   const handleDetailsSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -105,7 +126,7 @@ export default function Page() {
                       </FieldLegend>
                       <FieldGroup className="gap-3">
                         <Field orientation="horizontal">
-                          <Checkbox className="border-foreground text-foreground data-[state=checked]:text-white data-[state=checked]:border-foreground data-[state=checked]:bg-highlight" id="buying-checkbox" name="buying-checkbox" checked={buying} onCheckedChange={(checked) => setBuying(checked as boolean)}/>
+                          <Checkbox className="border-foreground text-foreground data-[state=checked]:text-white data-[state=checked]:border-foreground data-[state=checked]:bg-highlight" id="buying-checkbox" name="buying-checkbox" checked={buying} onCheckedChange={(checked) => setBuying(checked as boolean)} />
                           <FieldLabel htmlFor="buying-checkbox" className="font-normal">
                             Buying
                           </FieldLabel>

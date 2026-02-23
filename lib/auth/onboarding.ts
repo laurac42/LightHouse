@@ -1,5 +1,4 @@
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/client"
 
 /**
  * Checks if the user has completed onboarding and redirects accordingly.
