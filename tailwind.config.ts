@@ -12,7 +12,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: "#F3FCFF",
+        background: "var(--background)",
         foreground: "#36393B",
         foregroundHover: "#040505", 
         highlight: "#217591",
