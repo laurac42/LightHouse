@@ -25,9 +25,15 @@ So that:
 2. 
 3.
 
+## Tasks
+<!-- Any subtasks which will have to be completed for the user story to be complete -->
+- [ ]
+- [ ]
+- [ ]
+- [ ]
+
 ## Definition of Done
-- [ ] Code complete and reviewed
-- [ ] Unit tests written and passed
+- [ ] Code complete
+- [ ] All tests passed
 - [ ] Code commented
-- [ ] Documentation updated
 - [ ] Acceptance criteria met
