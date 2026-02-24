@@ -7,8 +7,6 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import Link from "next/link";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge"
@@ -16,7 +14,6 @@ import { useState, useEffect } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
     Field,
-    FieldDescription,
     FieldGroup,
     FieldLabel,
     FieldLegend,
@@ -25,6 +22,7 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { CheckOnboarding } from "@/lib/auth/onboarding";
+import { validateUser } from "@/lib/auth/user";
 import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText, InputGroupButton } from "@/components/ui/input-group";
 
 export default function BuyerProfile() {
@@ -51,8 +49,8 @@ export default function BuyerProfile() {
 
             if (status === "error") {
                 router.push("/");
-            } else if (status === "not_onboarded") {
-                router.push("/onboarding/personal-details");
+            } else if (status === "onboarded") {
+                router.push("/protected");
             }
         }
 
@@ -69,6 +67,43 @@ export default function BuyerProfile() {
 
         setError(null);
         setIsLoading(true);
+
+        try {
+            let user = await validateUser();
+            if (!user) {
+                throw new Error("Error fetching user details. Please try again.");
+            }
+            const supabase = await createClient();
+
+            // Update buyer profile with details from form
+            const { error: updateError } = await supabase.rpc
+            ("update_buyer_profile", {
+                p_id: user.user.id,  
+                p_budget: budget,
+                p_family_size: familySize,
+                p_preferred_num_bedrooms: bedrooms,
+                p_preferred_property_types: [
+                    detachedChecked ? "detached" : null,
+                    semiDetachedChecked ? "semi-detached" : null,
+                    terracedChecked ? "terraced" : null,
+                    flatChecked ? "flat" : null,
+                    bungalowChecked ? "bungalow" : null,
+                    landChecked ? "land" : null,
+                    commercialChecked ? "commercial" : null,
+                ].filter(Boolean),
+                p_preferred_locationss: locations,
+            });
+
+            if (updateError) {
+                throw new Error(updateError.message);
+            }
+            router.push("/protected");
+        } catch (error) {
+            setError(error instanceof Error ? error.message : "An unexpected error occurred. Please try again.");
+            console.error("Error in handleDetailsSubmit:", error);
+        } finally {            
+            setIsLoading(false);
+        }
     };
 
     return (

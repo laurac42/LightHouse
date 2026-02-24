@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { CheckOnboarding } from "@/lib/auth/onboarding";
 
 export function LoginForm({
   className,
@@ -38,8 +39,13 @@ export function LoginForm({
         password,
       });
       if (error) throw error;
-      // Update this route to redirect to an authenticated route. The user already has an active session.
-      router.push("/protected");
+      
+      const onboardingStatus = await CheckOnboarding();
+      if (onboardingStatus === "not_onboarded") {
+        router.push("/onboarding/personal-details");
+      } else {
+        router.push("/protected");
+      }
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
     } finally {

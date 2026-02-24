@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { CheckOnboarding } from "@/lib/auth/onboarding";
 
 export function SignUpForm({
   className,
@@ -25,6 +26,7 @@ export function SignUpForm({
   const [repeatPassword, setRepeatPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [redirectUrl, setRedirectUrl] = useState(`/protected`);
   const router = useRouter();
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -44,7 +46,7 @@ export function SignUpForm({
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/protected`,
+          emailRedirectTo: `${window.location.origin}/onboarding/personal-details`,
         },
       });
       if (error) throw error;

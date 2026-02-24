@@ -7,7 +7,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -15,7 +14,6 @@ import { useState, useEffect } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Field,
-  FieldDescription,
   FieldGroup,
   FieldLabel,
   FieldLegend,
@@ -72,18 +70,22 @@ export default function PersonalDetails() {
         first_name: firstName,
         last_name: lastName,
         user_goals: [buying ? "buying" : null, selling ? "selling" : null, browsing ? "browsing" : null].filter(Boolean),
-        onboarded: true,
+        onboarded: buying ? false : true,
       }).eq("id", user.user.id).select().single();
 
       if (error) {
-        throw error;
+        throw new Error(error.message);
       }
 
       // add a buyer profile if the user is a buyer
       if (buying) {
+        console.log("Adding buyer profile...");
         await addBuyerProfile(user.user.id);
+        console.log("Buyer profile added successfully");
+        router.push("/onboarding/buyer-profile");
+      } else {
+          router.push("/protected");
       }
-
     } catch (error) {
       setError(error instanceof Error ? error.message : "An error occurred");
       console.error("Error updating details:", error);
@@ -104,7 +106,7 @@ export default function PersonalDetails() {
     }).select().single();
 
     if (buyerProfileError) {
-      throw buyerProfileError;
+      throw new Error(buyerProfileError.message);
     }
   }
 

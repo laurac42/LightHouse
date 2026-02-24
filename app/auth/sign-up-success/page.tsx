@@ -33,7 +33,7 @@ export default function Page() {
                 <p className="text-sm text-highlight">
                   You can &nbsp;
                   <Link href="/auth/login" className="underline underline-offset-4">
-                    sign in 
+                    log in 
                   </Link>
                    &nbsp; to your account, or &nbsp;
                   <Link href="/auth/forgot-password" className="underline underline-offset-4">
