@@ -52,7 +52,7 @@ export default function Navbar() {
                         <a href="#" className="text-foreground text-lg">Sell</a>
                         <a href="#" className="text-foreground text-lg">Estate Agents</a>
                         {isLoggedIn && userIsAdmin && (
-                            <a href="/admin" className="text-foreground text-lg">Admin Portal</a>
+                            <a href="/admin/portal" className="text-foreground text-lg">Admin Portal</a>
                         )}
                     </div>
                 )}
@@ -69,7 +69,7 @@ export default function Navbar() {
                 {/* Desktop action buttons */}
                 <div className="hidden md:flex items-center gap-2">
                     {(isLoggedIn && userIsAdmin) && (
-                        <Link href="/admin">
+                        <Link href="/admin/portal">
                             <Button type="button" className="w-full text-md text-foreground bg-buttonColor hover:bg-buttonHover shadow-md">Admin Portal</Button>
                         </Link>
                     )}
