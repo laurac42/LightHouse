@@ -24,7 +24,7 @@ export default function Navbar() {
 
     return (
         <nav className="w-full bg-navBar">
-            <div className="shadow-xl shadow-highlight mx-auto px-4 py-3 flex items-center justify-between">
+            <div className="shadow-md shadow-highlight mx-auto px-4 py-3 flex items-center justify-between">
                 <div className="md:hidden text-2xl text-foreground cursor-pointer">
                     <FontAwesomeIcon icon={faBars} onClick={() => setIsMenuOpen(!isMenuOpen)} />
                 </div>
@@ -33,7 +33,7 @@ export default function Navbar() {
                     <div className="fixed inset-0 bg-black/50 md:hidden z-40" onClick={() => setIsMenuOpen(false)} />
                 )}
                 {/* Mobile Menu Drawer */}
-                {isMenuOpen && (
+                {isMenuOpen && (        
                     <div className="fixed top-0 left-0 h-screen w-1/2 bg-navBar md:hidden flex flex-col space-y-4 p-6 z-50 shadow-lg overflow-y-auto">
                         <div className="flex flex-row items-center mb-6 gap-4">
                             <div className="flex flex-row items-center">
