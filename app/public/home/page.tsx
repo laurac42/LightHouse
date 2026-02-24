@@ -23,18 +23,18 @@ export default function Page() {
                     <div className="flex flex-col gap-6">
                         <Card className="bg-white/90 border-none">
                             <CardHeader>
-                                <CardTitle className="text-2xl flex gap-4">
-                                    <Button variant="link" size="lg" className="p-0 text-lg text-foreground active:underline focus:underline underline-offset-8">
+                                <CardTitle className="text-2xl flex gap-4 pt-2">
+                                    <Button variant="link" size="lg" className="p-0 text-xl text-foreground active:underline focus:underline underline-offset-8">
                                         Buy
                                     </Button>
-                                    <Button variant="link" size="lg" className="p-0 text-lg text-foreground active:underline focus:underline underline-offset-8">
+                                    <Button variant="link" size="lg" className="p-0 text-xl text-foreground active:underline focus:underline underline-offset-8">
                                         House Prices
                                     </Button>
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div className="flex flex-col gap-2">
-                                    <Label htmlFor="location">Search for properties in your desired location</Label>
+                                <div className="flex flex-col gap-2 pb-4">
+                                    <Label htmlFor="location" className="text-md">Search for properties in your desired location</Label>
                                     <InputGroup className="border border-foreground flex h-full">
                                         
                                             <InputGroupInput
