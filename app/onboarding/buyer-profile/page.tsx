@@ -50,7 +50,7 @@ export default function BuyerProfile() {
             if (status === "error") {
                 router.push("/");
             } else if (status === "onboarded") {
-                router.push("/protected");
+                router.push("/public/home");
             }
         }
 
@@ -97,7 +97,7 @@ export default function BuyerProfile() {
             if (updateError) {
                 throw new Error(updateError.message);
             }
-            router.push("/protected");
+            router.push("/public/home");
         } catch (error) {
             setError(error instanceof Error ? error.message : "An unexpected error occurred. Please try again.");
             console.error("Error in handleDetailsSubmit:", error);

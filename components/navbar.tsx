@@ -24,7 +24,7 @@ export default function Navbar() {
 
     return (
         <nav className="w-full bg-navBar">
-            <div className="shadow-md shadow-highlight mx-auto px-4 py-3 flex items-center justify-between">
+            <div className="shadow-sm shadow-highlight mx-auto px-4 py-3 flex items-center justify-between">
                 <div className="md:hidden text-2xl text-foreground cursor-pointer">
                     <FontAwesomeIcon icon={faBars} onClick={() => setIsMenuOpen(!isMenuOpen)} />
                 </div>

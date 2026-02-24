@@ -26,7 +26,7 @@ export function SignUpForm({
   const [repeatPassword, setRepeatPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [redirectUrl, setRedirectUrl] = useState(`/protected`);
+  const [redirectUrl, setRedirectUrl] = useState(`/publc/home`);
   const router = useRouter();
 
   const handleSignUp = async (e: React.FormEvent) => {
