@@ -34,6 +34,7 @@ export default function ManageEstateAgentsPage() {
   const [selectedAgencyId, setSelectedAgencyId] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [user, setUser] = useState<any>(null);
   const router = useRouter();
 
 
@@ -44,6 +45,7 @@ export default function ManageEstateAgentsPage() {
         router.push("/public/home");
         return;
       }
+      setUser(user);
       const admin = await isAdmin();
       if (!admin) {
         router.push("/public/home");
@@ -52,6 +54,7 @@ export default function ManageEstateAgentsPage() {
 
     checkAdmin();
   }, [router]);
+
   /**
    * Function to handle adding a new estate agent.
    */
@@ -76,6 +79,7 @@ export default function ManageEstateAgentsPage() {
         await upgradeExistingUserToAgent(data.id);
       } else {
         console.log("No user with this email found, creating new estate agent...");
+        await inviteNewAgent(email);
       }
     } catch (error) {
       console.error("Error checking for existing user:", error);
@@ -86,13 +90,6 @@ export default function ManageEstateAgentsPage() {
   async function upgradeExistingUserToAgent(id: string) {
     try {
       const supabase = await createClient();
-
-      const { data: user, error: authError } = await supabase.auth.getUser();
-      if (authError) {
-        throw authError;
-      } else if (!user) {
-        throw new Error("No user found");
-      }
 
       const { data, error } = await supabase.rpc("upgrade_user_to_agent", {
         p_user_id: id,
@@ -107,6 +104,31 @@ export default function ManageEstateAgentsPage() {
     } catch (error) {
       console.error("Error upgrading existing user to estate agent:", error);
       setErrorMessage("Failed to upgrade user to estate agent.");
+    }
+  }
+
+  async function inviteNewAgent(email: string) {
+    try {
+      const response = await fetch("/api/invite", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          selectedAgencyId,
+          grantedBy: user.user.id,
+        }),
+      });
+
+      const data = await response.json();
+      if (data.error) {
+        console.error("Error inviting new estate agent:", data.error);
+        setErrorMessage(data.error);
+      } else {
+        setSuccessMessage("Invitation sent to new estate agent.");
+      }
+    } catch (error) {
+      console.error("Error inviting new estate agent:", error);
+      setErrorMessage("Failed to invite new estate agent.");
     }
   }
 
@@ -141,7 +163,13 @@ export default function ManageEstateAgentsPage() {
             <CardHeader>
               <CardTitle className="text-2xl">Manage Estate Agents</CardTitle>
               <CardDescription>
-                Here you can create and manage estate agent profiles. Just enter the email address, select the company and click "Add Estate Agent" to add a new estate agent to the system.
+                <p>
+                  Here you can create and manage estate agent profiles. Just enter the email address, select the company and click "Add Estate Agent" to add a new estate agent to the system.
+                </p>
+                <p>
+                  <br />
+                  If the email address entered is <b>not associated with an existing user account</b>, an invitation will be sent to that email address to join the platform and create an account. If the email address is <b>already associated with an existing user account</b>, that account will be upgraded to have estate agent permissions and linked to the selected company.
+                </p>
               </CardDescription>
             </CardHeader>
             <CardContent>
