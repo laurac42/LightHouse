@@ -22,8 +22,40 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import AdminPortalMenu from "@/components/admin-portal-menu";
 import { Field, FieldLabel, FieldDescription } from "@/components/ui/field";
+import { createClient } from "@/lib/supabase/client";
+import { Suspense } from "react";
 
 export default function ManageEstateAgentsPage() {
+  /**
+   * Function to handle adding a new estate agent.
+   */
+  async function addEstateAgent() {
+    // firstly, check if the user already has an account 
+
+  }
+
+  /**
+   * Function to fetch the estate agencies from the database and populate the select options in the form. This will allow the admin to select which agency the new estate agent works for when adding them.
+   */
+  async function fetchEstateAgencies() {
+    try {
+      const supabase = await createClient();
+      const { data, error } = await supabase
+        .from("estate_agencies")
+        .select("id, name");
+      if (error) {
+        console.error("Error fetching estate agencies:", error);
+        throw error;
+      }
+      console.log("Fetched estate agencies:", data);
+      return data;
+    } catch (error) {
+      console.error("Error fetching estate agencies:", error);
+      return [];
+    }
+  }
+
+
   return (
     <div className="bg-background w-full min-h-svh">
       <Navbar />
@@ -55,23 +87,25 @@ export default function ManageEstateAgentsPage() {
                   <div className="flex flex-col">
                     <Field>
                       <FieldLabel>Select Estate Agent Company</FieldLabel>
-                    
-                    <Select>
-                      <SelectTrigger className="border border-foreground">
-                        <SelectValue placeholder="Select Company" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          <SelectItem value="1">Company 1</SelectItem>
-                          <SelectItem value="2">Company 2</SelectItem>
-                          <SelectItem value="3">Company 3</SelectItem>
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
+
+                      <Suspense fallback={<div>Loading companies...</div>}>
+                        <Select>
+                          <SelectTrigger className="border border-foreground">
+                            <SelectValue placeholder="Select Company" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectGroup>
+                              {fetchEstateAgencies().then(agencies => agencies.map(agency => (
+                                <SelectItem key={agency.id} value={agency.id.toString()}>{agency.name}</SelectItem>
+                              )))}
+                            </SelectGroup>
+                          </SelectContent>
+                        </Select>
+                      </Suspense>
                       <FieldDescription className="pt-0 mt-0">Select the company the estate agent works for.</FieldDescription>
                     </Field>
                     {/* <div className="w-3/4 flex justify-end mt-4"> */}
-                    <Button className="bg-buttonColor hover:bg-buttonHover text-foreground font-bold text-md h-10 w-1/2 mt-4 ml-auto">
+                    <Button onClick={addEstateAgent} className="bg-buttonColor hover:bg-buttonHover text-foreground font-bold text-md h-10 w-1/2 mt-4 ml-auto">
                       Add Estate Agent
                     </Button>
                     {/* </div> */}
