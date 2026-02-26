@@ -13,7 +13,6 @@ export async function isAdmin() {
         if (error) {
             throw error;
         }
-        console.log("User role data:", isAdmin);   
         return isAdmin;
     } catch (error) {
         console.error("Error checking admin status:", error);
