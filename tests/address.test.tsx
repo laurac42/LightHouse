@@ -1,4 +1,10 @@
-import { getAgentAddress } from "../scripts/scrape_agents";
+import { getAgentAddress } from "../scripts/address_format";
+
+jest.mock('@supabase/supabase-js', () => ({
+  createClient: jest.fn(() => ({
+    from: jest.fn(),
+  })),
+}));
 
 describe("getAgentAddress", () => {
     it("should extract address details with one address line", () => {

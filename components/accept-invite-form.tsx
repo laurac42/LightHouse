@@ -13,7 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 
 export function AcceptInviteForm({
@@ -28,7 +28,6 @@ export function AcceptInviteForm({
     const router = useRouter();
 
     useEffect(() => {
-        let subscription: { unsubscribe: () => void } | null = null;
 
         // init function to handle the token exchange and set the email 
         const init = async () => {
@@ -49,6 +48,10 @@ export function AcceptInviteForm({
                 if (data.session?.user) {
                     setEmail(data.session.user.email || '');
                 }
+            } else {
+                // redireect to home if tokens not found
+                setError("Invalid invite link. Please check your email for the correct link or contact support.");
+                redirect("/public/home");
             }
         };
 

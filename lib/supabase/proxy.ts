@@ -42,7 +42,7 @@ export async function updateSession(request: NextRequest) {
   const user = data?.claims;
   const pathname = request.nextUrl.pathname;
 
-  // redirect to login if there is no user and they are trying to access a protected route (not /, /login or /auth/*)
+  // redirect to login if there is no user and they are trying to access a protected route (not /, /login or /auth/* or /public/*)
   if (
     pathname !== "/" &&
     !user &&
@@ -54,31 +54,6 @@ export async function updateSession(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = "/auth/login";
     return NextResponse.redirect(url);
-  }
-
-  if (user) {
-    const { data: authData } = await supabase.auth.getUser();
-    const authUser = authData.user;
-    const invited = authUser?.user_metadata?.invited === true;
-
-    if (invited) {
-      const { data: profileData, error: profileError } = await supabase
-        .from("users")
-        .select("onboarded")
-        .eq("id", authUser.id)
-        .maybeSingle();
-
-      const onboarded = !profileError && profileData?.onboarded === true;
-      const isInviteFlow =
-        pathname.startsWith("/auth/accept-invite") || pathname.startsWith("/auth/confirm");
-      const isApiRoute = pathname.startsWith("/api");
-
-      if (!onboarded && !isInviteFlow && !isApiRoute) {
-        const url = request.nextUrl.clone();
-        url.pathname = "/auth/accept-invite";
-        return NextResponse.redirect(url);
-      }
-    }
   }
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is.

@@ -91,6 +91,11 @@ export default function ManageEstateAgentsPage() {
     }
   }
 
+  /**
+   * Upgrade an existing user to have estate agent permissions and link them to the selected company.
+   * This is done by calling a Postgres function which will handle all the necessary database updates in a transaction
+   * @param id id of the user to upgrade their account
+   */
   async function upgradeExistingUserToAgent(id: string) {
     try {
       const supabase = await createClient();
@@ -111,6 +116,11 @@ export default function ManageEstateAgentsPage() {
     }
   }
 
+  /**
+   * Sends an email invite to the provided email address to join the platform and create an account
+   * The new account will be an estate agent account linked to the selected company
+   * @param email email of the user to invite
+   */
   async function inviteNewAgent(email: string) {
     try {
       const response = await fetch("/api/invite", {
@@ -137,7 +147,8 @@ export default function ManageEstateAgentsPage() {
   }
 
   /**
-   * Function to fetch the estate agencies from the database and populate the select options in the form. This will allow the admin to select which agency the new estate agent works for when adding them.
+   * Fetch the estate agencies from the database and populate the select options in the form. 
+   * This will allow the admin to select which agency the new estate agent works for when adding them.
    */
   async function fetchEstateAgencies() {
     try {
