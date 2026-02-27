@@ -1,3 +1,5 @@
+// !! run using 'npm test'
+
 import { getAgentAddress } from "../scripts/address_format";
 
 jest.mock('@supabase/supabase-js', () => ({

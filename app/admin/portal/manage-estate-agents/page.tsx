@@ -80,6 +80,11 @@ export default function ManageEstateAgentsPage() {
       }
 
       if (data) {
+        const isAlreadyAgent = await isUserAlreadyAgent(data.id);
+        if (isAlreadyAgent) {
+          setErrorMessage("This user is already an estate agent.");
+          return;
+        }
         await upgradeExistingUserToAgent(data.id);
       } else {
         console.log("No user with this email found, creating new estate agent...");
@@ -107,8 +112,9 @@ export default function ManageEstateAgentsPage() {
       });
       if (error) {
         throw error;
+      } else {
+        setSuccessMessage("User successfully upgraded to estate agent.");
       }
-      setSuccessMessage("User successfully upgraded to estate agent.");
 
     } catch (error) {
       console.error("Error upgrading existing user to estate agent:", error);
@@ -116,6 +122,28 @@ export default function ManageEstateAgentsPage() {
     }
   }
 
+  /**
+   * Check if a user with a given id is already an estate agent
+   * @param id id of the user to check if they are already an estate agent
+   * @returns boolean indicating whether the user is already an estate agent or not
+   */
+  async function isUserAlreadyAgent(id: string) {
+    try {
+      const supabase = await createClient();
+      const { data, error } = await supabase
+        .from("user_roles")
+        .select("user_id")
+        .eq("user_id", id)
+        .eq("role", "agent");
+      if (error) {
+        throw error;
+      }
+      return data.length > 0;
+    } catch (error) {
+      console.error("Error checking if user is already an estate agent:", error);
+      return false;
+    }
+  }
   /**
    * Sends an email invite to the provided email address to join the platform and create an account
    * The new account will be an estate agent account linked to the selected company
