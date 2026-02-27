@@ -10,13 +10,15 @@ const supabaseAdmin = createClient(
 
 export async function POST(req: Request) {
     const { email, selectedAgencyId, grantedBy } = await req.json();
+    const origin = new URL(req.url).origin;
     // check if user is an admin
     if (!grantedBy || !(await isAdminById(grantedBy))) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     const { error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
-        redirectTo: `${window.location.origin}/auth/accept-invite`,
+        redirectTo: `${origin}/auth/accept-invite`,
         data: {
+            invited: true,
             role: "agent",
             agency_id: selectedAgencyId,
             granted_by: grantedBy,

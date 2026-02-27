@@ -16,7 +16,6 @@ export async function validateUser() {
         }
         return user;
     } catch (error) {
-        console.error("Unexpected error validating user:", error);
         return null;
     }
 }

@@ -91,7 +91,7 @@ export default function BuyerProfile() {
                     landChecked ? "land" : null,
                     commercialChecked ? "commercial" : null,
                 ].filter(Boolean),
-                p_preferred_locationss: locations,
+                p_preferred_locations: locations,
             });
 
             if (updateError) {

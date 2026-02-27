@@ -35,6 +35,8 @@ export default function ManageEstateAgentsPage() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
+  const [agencies, setAgencies] = useState<{ id: number; name: string }[]>([]);
+  const [loadingAgencies, setLoadingAgencies] = useState(true);
   const router = useRouter();
 
 
@@ -51,6 +53,8 @@ export default function ManageEstateAgentsPage() {
         router.push("/public/home");
       }
     }
+
+    fetchEstateAgencies().then(setAgencies).finally(() => setLoadingAgencies(false));
 
     checkAdmin();
   }, [router]);
@@ -192,20 +196,22 @@ export default function ManageEstateAgentsPage() {
                       <Field>
                         <FieldLabel>Select Estate Agent Company</FieldLabel>
 
-                        <Suspense fallback={<div>Loading companies...</div>}>
+                        {loadingAgencies ? (
+                          <p>Loading companies...</p>
+                        ) : (
                           <Select onValueChange={(value) => setSelectedAgencyId(value)} required>
                             <SelectTrigger className="border border-foreground">
                               <SelectValue placeholder="Select Company" />
                             </SelectTrigger>
                             <SelectContent>
                               <SelectGroup>
-                                {fetchEstateAgencies().then(agencies => agencies.map(agency => (
+                                {agencies.map(agency => (
                                   <SelectItem key={agency.id} value={agency.id.toString()}>{agency.name}</SelectItem>
-                                )))}
+                                ))}
                               </SelectGroup>
                             </SelectContent>
                           </Select>
-                        </Suspense>
+                        )}
                         <FieldDescription className="pt-0 mt-0">Select the company the estate agent works for.</FieldDescription>
                       </Field>
 

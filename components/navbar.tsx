@@ -16,13 +16,20 @@ export default function Navbar() {
     useEffect(() => {
 
         async function checkAuthStatus() {
-            let user = await validateUser();
-            setIsLoggedIn(!!user);
+            try {
+                let user = await validateUser();
+                setIsLoggedIn(!!user);
 
-            if (user) {
-                const adminStatus = await isAdmin();
-                setUserIsAdmin(adminStatus);
+                if (user) {
+                    const adminStatus = await isAdmin();
+                    setUserIsAdmin(adminStatus);
+                }
+            } catch (error) {
+                console.error("Error checking auth status:", error);
+                setIsLoggedIn(false);
+                setUserIsAdmin(false);
             }
+
         }
         checkAuthStatus();
     }, []);
@@ -38,7 +45,7 @@ export default function Navbar() {
                     <div className="fixed inset-0 bg-black/50 md:hidden z-40" onClick={() => setIsMenuOpen(false)} />
                 )}
                 {/* Mobile Menu Drawer */}
-                {isMenuOpen && (        
+                {isMenuOpen && (
                     <div className="fixed top-0 left-0 h-screen w-1/2 bg-navBar md:hidden flex flex-col space-y-4 p-6 z-50 shadow-lg overflow-y-auto">
                         <div className="flex flex-row items-center mb-6 gap-4">
                             <div className="flex flex-row items-center">
@@ -96,7 +103,7 @@ export default function Navbar() {
                         </Link>
                     )}
                 </div>
-                
+
             </div>
         </nav>
     );
