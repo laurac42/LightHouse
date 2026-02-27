@@ -5,13 +5,14 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import Link from 'next/link';
 import { validateUser } from '@/lib/auth/user';
-import { isAdmin } from '@/lib/auth/role';
+import { isAdmin, isEstateAgent } from '@/lib/auth/role';
 
 
 export default function Navbar() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [userIsAdmin, setUserIsAdmin] = useState(false);
+    const [userIsEstateAgent, setUserIsEstateAgent] = useState(false);
 
     useEffect(() => {
 
@@ -23,11 +24,15 @@ export default function Navbar() {
                 if (user) {
                     const adminStatus = await isAdmin();
                     setUserIsAdmin(adminStatus);
-                }
+
+                    const estateAgentStatus = await isEstateAgent();
+                    setUserIsEstateAgent(estateAgentStatus);
+                } 
             } catch (error) {
                 console.error("Error checking auth status:", error);
                 setIsLoggedIn(false);
                 setUserIsAdmin(false);
+                setUserIsEstateAgent(false);
             }
 
         }
@@ -61,6 +66,9 @@ export default function Navbar() {
                         {isLoggedIn && userIsAdmin && (
                             <a href="/admin/portal" className="text-foreground text-lg">Admin Portal</a>
                         )}
+                        {isLoggedIn && userIsEstateAgent && (
+                            <a href="/estate-agent/portal" className="text-foreground text-lg">Estate Agent Portal</a>
+                        )}
                     </div>
                 )}
                 <div className="pl-4 flex flex-row items-center">
@@ -78,6 +86,11 @@ export default function Navbar() {
                     {(isLoggedIn && userIsAdmin) && (
                         <Link href="/admin/portal">
                             <Button type="button" className="w-full text-md text-foreground bg-buttonColor hover:bg-buttonHover shadow-md">Admin Portal</Button>
+                        </Link>
+                    )}
+                    {(isLoggedIn && userIsEstateAgent) && (
+                        <Link href="/estate-agent/portal">
+                            <Button type="button" className="w-full text-md text-foreground bg-buttonColor hover:bg-buttonHover shadow-md">Estate Agent Portal</Button>
                         </Link>
                     )}
 

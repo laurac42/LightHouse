@@ -38,3 +38,22 @@ export async function isAdminById(userId: string) {
         return false;
     }
 }
+
+/**
+ * Checks if a user has an estate agent role by querying the "user_roles" table in Supabase.
+ * @returns boolean indicating whether the user is an estate agent or not
+ */
+export async function isEstateAgent() {
+    try {
+        const supabase = await createClient();
+        const { data: isEstateAgent, error } = await supabase.rpc('is_current_user_agent')
+
+        if (error) {
+            throw error;
+        }
+        return isEstateAgent;
+    } catch (error) {
+        console.error("Error checking estate agent status:", error);
+        return false;
+    }
+}
