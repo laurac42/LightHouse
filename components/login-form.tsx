@@ -44,7 +44,7 @@ export function LoginForm({
       if (onboardingStatus === "not_onboarded") {
         router.push("/onboarding/personal-details");
       } else {
-        router.push("/protected");
+        router.push("/public/home");
       }
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");

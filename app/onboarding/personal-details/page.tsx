@@ -42,7 +42,7 @@ export default function PersonalDetails() {
       if (status === "error") {
         router.push("/");
       } else if (status === "onboarded") {
-        router.push("/protected");
+        router.push("/public/home");
       }
     }
 
@@ -84,7 +84,7 @@ export default function PersonalDetails() {
         console.log("Buyer profile added successfully");
         router.push("/onboarding/buyer-profile");
       } else {
-          router.push("/protected");
+          router.push("/public/home");
       }
     } catch (error) {
       setError(error instanceof Error ? error.message : "An error occurred");
