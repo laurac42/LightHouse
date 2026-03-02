@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import Link from 'next/link';
 import { validateUser } from '@/lib/auth/user';
-import { isAdmin, isEstateAgent } from '@/lib/auth/role';
+import { isAdmin, isEstateAgent, isSeller } from '@/lib/auth/role';
 
 
 export default function Navbar() {
@@ -13,6 +13,7 @@ export default function Navbar() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [userIsAdmin, setUserIsAdmin] = useState(false);
     const [userIsEstateAgent, setUserIsEstateAgent] = useState(false);
+    const [userIsSeller, setUserIsSeller] = useState(false);
 
     useEffect(() => {
 
@@ -27,12 +28,17 @@ export default function Navbar() {
 
                     const estateAgentStatus = await isEstateAgent();
                     setUserIsEstateAgent(estateAgentStatus);
+
+                    const sellerStatus = await isSeller(user.user.id);
+                    console.log("Seller status:", sellerStatus);
+                    setUserIsSeller(sellerStatus);
                 } 
             } catch (error) {
                 console.error("Error checking auth status:", error);
                 setIsLoggedIn(false);
                 setUserIsAdmin(false);
                 setUserIsEstateAgent(false);
+                setUserIsSeller(false);
             }
 
         }
@@ -69,6 +75,9 @@ export default function Navbar() {
                         {isLoggedIn && userIsEstateAgent && (
                             <a href="/estate-agent/portal" className="text-foreground text-lg">Estate Agent Portal</a>
                         )}
+                        {isLoggedIn && userIsSeller && (
+                            <a href="/seller/portal" className="text-foreground text-lg">Seller Portal</a>
+                        )}
                     </div>
                 )}
                 <div className="pl-4 flex flex-row items-center">
@@ -91,6 +100,11 @@ export default function Navbar() {
                     {(isLoggedIn && userIsEstateAgent) && (
                         <Link href="/estate-agent/portal">
                             <Button type="button" className="w-full text-md text-foreground bg-buttonColor hover:bg-buttonHover shadow-md">Estate Agent Portal</Button>
+                        </Link>
+                    )}
+                    {(isLoggedIn && userIsSeller) && (
+                        <Link href="/seller/portal">
+                            <Button type="button" className="w-full text-md text-foreground bg-buttonColor hover:bg-buttonHover shadow-md">Seller Portal</Button>
                         </Link>
                     )}
 

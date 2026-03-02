@@ -18,16 +18,14 @@ import {
 } from "@/components/ui/select"
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { MailIcon } from "lucide-react";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import AdminPortalMenu from "@/components/admin-portal-menu";
 import { Field, FieldLabel, FieldDescription } from "@/components/ui/field";
 import { createClient } from "@/lib/supabase/client";
-import { Suspense } from "react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { validateUser } from "@/lib/auth/user";
 import { isAdmin } from "@/lib/auth/role";
+import PortalMenu from "@/components/portal-menu";
 
 export default function ManageEstateAgentsPage() {
   const [email, setEmail] = useState("");
@@ -151,7 +149,7 @@ export default function ManageEstateAgentsPage() {
    */
   async function inviteNewAgent(email: string) {
     try {
-      const response = await fetch("/api/invite", {
+      const response = await fetch("/api/invite-estate-agent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -201,7 +199,7 @@ export default function ManageEstateAgentsPage() {
       <Navbar />
       <div className="w-full p-6 md:p-10">
         <div className="mx-auto w-full max-w-5xl space-y-6">
-          <AdminPortalMenu />
+          <PortalMenu role="admin" />
           <Card className="border-0 shadow-md">
             <CardHeader>
               <CardTitle className="text-2xl">Manage Estate Agents</CardTitle>
