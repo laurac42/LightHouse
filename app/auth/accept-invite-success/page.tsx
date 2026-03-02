@@ -28,7 +28,7 @@ export default function AcceptInviteSuccess() {
                                     </p>
 
                                     <Button className="w-full text-md text-foreground bg-buttonColor hover:bg-buttonHover shadow-xl">
-                                        <Link href="/onboarding/buyer-profile" className="w-full h-full">
+                                        <Link href="/onboarding/personal-details" className="w-full h-full">
                                             Complete Profile
                                         </Link>
                                     </Button>

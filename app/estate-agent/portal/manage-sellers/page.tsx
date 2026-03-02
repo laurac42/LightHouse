@@ -72,11 +72,10 @@ export default function ManageSellersPage() {
             if (error) {
                 throw error;
             }
-
             if (data) {
                 const isAlreadySeller = await isUserAlreadySeller(data.id);
                 if (isAlreadySeller) {
-                    setErrorMessage("This user is already an .");
+                    setErrorMessage("This user is already a seller.");
                     return;
                 }
                 await upgradeExistingUserToSeller(data.id);
@@ -190,7 +189,7 @@ export default function ManageSellersPage() {
             <Navbar />
             <div className="w-full p-6 md:p-10">
                 <div className="mx-auto w-full max-w-5xl space-y-6">
-                    <PortalMenu role="admin" />
+                    <PortalMenu role="estate-agent" />
                     <Card className="border-0 shadow-md">
                         <CardHeader>
                             <CardTitle className="text-2xl">Manage Sellers</CardTitle>
@@ -205,23 +204,23 @@ export default function ManageSellersPage() {
                                 <div className="flex flex-col gap-2">
                                     <h1 className="text-xl">Your Sellers</h1>
                                     <p className="text-muted-foreground text-sm">This table displays details of sellers you have previously added</p>
-                                    <table className="table-auto border border-foreground">
+                                    <table className="table-auto border border-collapse border-foreground overflow-hidden outline outline-1 rounded-md w-full">
                                         <thead>
                                             <tr key={"header"}>
-                                                <th className="border border-foreground">Seller Name</th>
-                                                <th className="border border-foreground">Email Address</th>
+                                                <th className="border border-foreground bg-navBar">Seller Name</th>
+                                                <th className="border border-foreground bg-navBar">Email Address</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            { loadingSellers ? (
+                                            {loadingSellers ? (
                                                 <tr>
                                                     <td colSpan={2} className="text-center py-4">Loading sellers...</td>
                                                 </tr>
                                             ) : sellers && sellers.length > 0 ? (
                                                 sellers.map((seller) => (
                                                     <tr key={seller.id}>
-                                                        <td className="border border-foreground">{seller.first_name} {" "} {seller.last_name}</td>
-                                                        <td className="border border-foreground">{seller.email}</td>
+                                                        <td className="border border-foreground text-center">{seller.first_name} {" "} {seller.last_name}</td>
+                                                        <td className="border border-foreground text-center">{seller.email}</td>
                                                     </tr>
                                                 ))
                                             ) : (
@@ -242,7 +241,7 @@ export default function ManageSellersPage() {
                                         <div className="md:grid md:grid-cols-2 md:gap-x-4">
                                             <div className="flex flex-col gap-2">
                                                 <Field className="pb-8">
-                                                    <FieldLabel htmlFor="seller-email">Seller Email</FieldLabel>
+                                                    <FieldLabel className="pt-4" htmlFor="seller-email">Seller Email</FieldLabel>
                                                     <InputGroup className="border border-foreground flex">
                                                         <InputGroupInput type="email" placeholder="seller@domain.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
                                                         <InputGroupAddon>
@@ -252,15 +251,16 @@ export default function ManageSellersPage() {
                                                     <FieldDescription>Email address of the person you want to add as a seller.</FieldDescription>
                                                 </Field>
                                             </div>
-                                            <div className="flex flex-col">
-                                                {successMessage && <p className="text-green-600 mt-4">{successMessage}</p>}
-                                                {errorMessage && <p className="text-red-600 mt-4">{errorMessage}</p>}
-                                                {/* <div className="w-3/4 flex justify-end mt-4"> */}
-                                                <Button type="submit" className="bg-buttonColor hover:bg-buttonHover text-foreground font-bold text-md h-10 w-1/2 mt-4 ml-auto">
+                                            <div className="w-full md:mt-4 md:pt-4">
+                                                <Button type="submit" className="bg-buttonColor hover:bg-buttonHover text-foreground font-bold text-md h-10 w-full md:mt-4 ml-auto">
                                                     Add Seller
                                                 </Button>
-                                                {/* </div> */}
                                             </div>
+                                        </div>
+                                        <div className="flex flex-col justify-center items-center mt-2">
+                                            {successMessage && <p className="text-green-600">{successMessage}</p>}
+                                            {errorMessage && <p className="text-red-600">{errorMessage}</p>}
+
                                         </div>
                                     </div>
                                 </form>

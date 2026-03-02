@@ -77,3 +77,28 @@ export async function isEstateAgentById(userId: string) {
         return false;
     }
 }
+
+/**
+ * Checks if a user has a seller role by querying the "user_roles" table in Supabase.
+ * @param userId id to check for seller
+ * @returns boolean indicating whether the user is a seller or not
+ */
+export async function isSeller(userId: string) {
+    try {
+        const supabase = await createClient();
+        const { data: isSeller, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .eq('role', 'seller')
+        .single();
+
+        if (error) {
+            throw error;
+        }
+        return isSeller ? true : false;
+    } catch (error) {
+        console.error("Error checking seller status:", error);
+        return false;
+    }
+}
