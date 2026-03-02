@@ -57,3 +57,23 @@ export async function isEstateAgent() {
         return false;
     }
 }
+
+/**
+ * Checks if a user with a specific ID has an estate agent role
+ * @param userId id to check for agent
+ * @returns boolean indicating whether the user is an agent or not
+ */
+export async function isEstateAgentById(userId: string) {
+    try {
+        const supabase = await createClient();
+        const { data: isEstateAgent, error } = await supabase.rpc('is_user_estate_agent', { p_id: userId })
+
+        if (error) {
+            throw error;
+        }
+        return isEstateAgent;
+    } catch (error) {
+        console.error("Error checking estate agent status:", error);
+        return false;
+    }
+}
