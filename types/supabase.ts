@@ -149,15 +149,17 @@ export type Database = {
           added_at: string
           address_line_1: string
           address_line_2: string | null
-          agency_id: string
+          agency_location_id: string
           city: string
           council_tax_band: string | null
           description: string
           epc_rating: string | null
+          floorplan_url: string | null
+          has_garage: boolean | null
           home_report_url: string | null
           id: number
+          image_url: string | null
           maps_url: string | null
-          media_url: string | null
           num_bathrooms: number | null
           num_bedrooms: number | null
           post_code: string
@@ -167,22 +169,24 @@ export type Database = {
           schedule_url: string | null
           seller_id: string | null
           square_feet: number | null
-          tenure_type: string | null
           title: string
+          video_url: string | null
         }
         Insert: {
           added_at?: string
           address_line_1: string
           address_line_2?: string | null
-          agency_id: string
+          agency_location_id: string
           city: string
           council_tax_band?: string | null
           description: string
           epc_rating?: string | null
+          floorplan_url?: string | null
+          has_garage?: boolean | null
           home_report_url?: string | null
           id?: number
+          image_url?: string | null
           maps_url?: string | null
-          media_url?: string | null
           num_bathrooms?: number | null
           num_bedrooms?: number | null
           post_code: string
@@ -192,22 +196,24 @@ export type Database = {
           schedule_url?: string | null
           seller_id?: string | null
           square_feet?: number | null
-          tenure_type?: string | null
           title: string
+          video_url?: string | null
         }
         Update: {
           added_at?: string
           address_line_1?: string
           address_line_2?: string | null
-          agency_id?: string
+          agency_location_id?: string
           city?: string
           council_tax_band?: string | null
           description?: string
           epc_rating?: string | null
+          floorplan_url?: string | null
+          has_garage?: boolean | null
           home_report_url?: string | null
           id?: number
+          image_url?: string | null
           maps_url?: string | null
-          media_url?: string | null
           num_bathrooms?: number | null
           num_bedrooms?: number | null
           post_code?: string
@@ -217,16 +223,16 @@ export type Database = {
           schedule_url?: string | null
           seller_id?: string | null
           square_feet?: number | null
-          tenure_type?: string | null
           title?: string
+          video_url?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "properties_agency_id_fkey"
-            columns: ["agency_id"]
+            foreignKeyName: "properties_agency_location_id_fkey"
+            columns: ["agency_location_id"]
             isOneToOne: false
-            referencedRelation: "estate_agencies"
-            referencedColumns: ["id"]
+            referencedRelation: "estate_agency_location"
+            referencedColumns: ["location_id"]
           },
           {
             foreignKeyName: "properties_seller_id_fkey"

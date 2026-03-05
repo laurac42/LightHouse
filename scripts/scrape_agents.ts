@@ -4,7 +4,7 @@ import * as axios from "axios";
 import {config} from "dotenv";
 config({path: "../.env.local"}); // load environment variables from .env file
 import { createClient } from "@supabase/supabase-js";
-import { getAgentAddress } from "./address_format";
+import { getAgentAddress } from "./address_format.ts";
 
 // create client with service role key to allow uploading to storage from a non-server environment
 const supabase = createClient(
