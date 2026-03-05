@@ -21,6 +21,7 @@ interface Property {
     epc_rating: string;
     price_type: string;
     has_garage: boolean;
+    is_new_build: boolean;
 }
 
 const supabase = createClient<Database>(
@@ -40,19 +41,22 @@ const ai = new GoogleGenAI({
  */
 async function generatePropertyListing(): Promise<Property | null> {
     try {
+        // generate some random values first to ensure variety in the generated properties
         const numBedrooms = Math.floor(Math.random() * 6) + 1; // random number between 1 and 6
-        const propertyTypes = ["flat", "bungalow", "villa", "mansion", "detached", "semi-detached", "terraced"];
+        const propertyTypes = ["flat", "bungalow", "villa", "detached", "semi-detached", "terraced"];
         const randomPropertyType = propertyTypes[Math.floor(Math.random() * propertyTypes.length)];
+        const isNewBuild = Math.random() < 0.3; // 30% chance of being a new build
 
         const response = await ai.models.generateContent({
             model: "gemini-2.5-flash-lite",
             contents: `Generate me a property listing in JSON format. 
-            The property must have ${numBedrooms} bedrooms and be a ${randomPropertyType}.
+            The property must have ${numBedrooms} bedrooms and be a ${randomPropertyType} and ${isNewBuild ? "a new build" : "an existing property"}.
             Then select the following fields (these must be realistic for the given property type and number of bedrooms):            
             - num_bathrooms: a number between 1 and 4
             - council_tax_band: a valid band (A-H) based on the price and features of the property
-            - epc_rating: a valid rating (A-G) based on the features of the property
+            - epc_rating: a valid rating (A-G) based on the features of the property. Remember that new builds are more likely to have higher EPC ratings.
             - square_feet: a realistic square footage for the number of bedrooms and bathrooms
+            - is_new_build: a boolean indicating whether the property is a new build
     Then based on rhis, generate a detailed description of the property, including details about the interior and exterior, and any unique features of the property. The description should be consistent with the randomly generated features.
     Please also start the description with a set of bullet points, highlighting key features of the property such as number of bedrooms, bathrooms, and any unique features
     The property is located in Tayside or Fife, Scotland.
@@ -61,7 +65,7 @@ async function generatePropertyListing(): Promise<Property | null> {
     The price should be a realistic price for a property in Tayside or Fife with the given features. 
     The title should include the address, number of bedrooms, and property type. 
     En-suites and WCs are also counted as bathrooms, and should be included in the num_bathrooms field.
-    The JSON must include the following fields: title, price, description, date_added, address_line_1, address_line_2 (optional), city, post_code, num_bedrooms, num_bathrooms, property_type, square_feet, council_tax_band, epc_rating, price_type (e.g. offers over, fixed price), has_garage (boolean).`,
+    The JSON must include the following fields: title, price, description, date_added, address_line_1, address_line_2 (optional), city, post_code, num_bedrooms, num_bathrooms, property_type, square_feet, council_tax_band, epc_rating, price_type (e.g. offers over, fixed price), has_garage (boolean), is_new_build (boolean).`,
         });
         if (response.text) {
             // remove backticks and backticks json
@@ -172,6 +176,7 @@ async function uploadPropertyToSupabase(property: Property, agencyLocations: { l
             price_type: property.price_type,
             has_garage: property.has_garage,
             agency_location_id: randomAgencyLocationId,
+            is_new_build: property.is_new_build,
         }).select("id").single();
 
         if (error) {
@@ -264,15 +269,16 @@ async function loadAllAgencyLocations(): Promise<{ location_id: string }[]> {
 async function generateFullPropertyListing() {
     try {
         const property = await generatePropertyListing();
-        const agencyLocations = await loadAllAgencyLocations(); 
+        console.log("Generated property: ", property);
+        // const agencyLocations = await loadAllAgencyLocations(); 
 
-        if (property && agencyLocations.length > 0) {
-            const propertyId = await uploadPropertyToSupabase(property, agencyLocations);
+        // if (property && agencyLocations.length > 0) {
+        //     const propertyId = await uploadPropertyToSupabase(property, agencyLocations);
 
-            await generatePropertyImage(property.description, propertyId!);
+        //     await generatePropertyImage(property.description, propertyId!);
 
-            await generateFloorPlan(property.description, propertyId!);
-        }
+        //     await generateFloorPlan(property.description, propertyId!);
+        // }
     } catch (error) {
         console.error("Error generating property listings: ", error);
     }

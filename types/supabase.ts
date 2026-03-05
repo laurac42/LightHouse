@@ -156,10 +156,9 @@ export type Database = {
           epc_rating: string | null
           floorplan_url: string | null
           has_garage: boolean | null
-          home_report_url: string | null
           id: number
           image_url: string | null
-          maps_url: string | null
+          is_new_build: boolean
           num_bathrooms: number | null
           num_bedrooms: number | null
           post_code: string
@@ -170,7 +169,6 @@ export type Database = {
           seller_id: string | null
           square_feet: number | null
           title: string
-          video_url: string | null
         }
         Insert: {
           added_at?: string
@@ -183,10 +181,9 @@ export type Database = {
           epc_rating?: string | null
           floorplan_url?: string | null
           has_garage?: boolean | null
-          home_report_url?: string | null
           id?: number
           image_url?: string | null
-          maps_url?: string | null
+          is_new_build?: boolean
           num_bathrooms?: number | null
           num_bedrooms?: number | null
           post_code: string
@@ -197,7 +194,6 @@ export type Database = {
           seller_id?: string | null
           square_feet?: number | null
           title: string
-          video_url?: string | null
         }
         Update: {
           added_at?: string
@@ -210,10 +206,9 @@ export type Database = {
           epc_rating?: string | null
           floorplan_url?: string | null
           has_garage?: boolean | null
-          home_report_url?: string | null
           id?: number
           image_url?: string | null
-          maps_url?: string | null
+          is_new_build?: boolean
           num_bathrooms?: number | null
           num_bedrooms?: number | null
           post_code?: string
@@ -224,7 +219,6 @@ export type Database = {
           seller_id?: string | null
           square_feet?: number | null
           title?: string
-          video_url?: string | null
         }
         Relationships: [
           {
