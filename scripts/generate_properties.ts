@@ -34,6 +34,18 @@ const ai = new GoogleGenAI({
     apiKey: process.env.GEMINI_API_KEY!,
 });
 
+const propertyRooms = () => {
+    const rooms = [
+        `exterior`,
+        `bathroom`,
+        `kitchen`,
+        `living room`,
+        `bedroom`,
+        `garden`,];
+    return rooms;
+};
+
+
 /**
  * Generates a property listing using the Google Gemini API.
  * Gemini returns a property in JSON format, which is then parsed and returned as a Property object.
@@ -83,23 +95,6 @@ async function generatePropertyListing(): Promise<Property | null> {
 }
 
 /**
- * Generates a list of prompts for generating property images based on a description.
- * @param description the description of the property
- * @returns an array of prompts
- */
-function propertyPrompts(description: string): string[] {
-    return [
-        `Generate me a realistic image of the exterior of a house based on the following description: ${description}`,
-        `Generate me a realistic image of the bathroom of a house based on the following description: ${description}`,
-        `Generate me a realistic image of the kitchen of a house based on the following description: ${description}`,
-        `Generate me a realistic image of the living room of a house based on the following description: ${description}`,
-        `Generate me a realistic image of the bedroom of a house based on the following description: ${description}`,
-        `Generate me a realistic image of the garden of a house based on the following description: ${description}`,
-        `Generate me a realistic image of a second bedroom of a house based on the following description: ${description}`,
-    ];
-}
-
-/**
  * Generates property images based on a description and property ID.
  * The function generates multiple images for different rooms and features of the property based on the description, and uploads them to Supabase storage.
  * @param description the description of the property
@@ -107,11 +102,11 @@ function propertyPrompts(description: string): string[] {
  */
 async function generatePropertyImage(description: string, propertyId: number) {
     try {
-        const prompts = propertyPrompts(description);
-        for (const [index, prompt] of prompts.entries()) {
+        const rooms = propertyRooms();
+        for (const [index, room] of rooms.entries()) {
             const response = await ai.models.generateContent({
                 model: "gemini-2.5-flash-image",
-                contents: prompt,
+                contents: `Generate me a realistic image of the ${room} of a house based on the following description: ${description}`,
             });
 
             const imageData = response.candidates?.[0]?.content?.parts?.find(part => part.inlineData)?.inlineData?.data;
@@ -119,7 +114,7 @@ async function generatePropertyImage(description: string, propertyId: number) {
                 throw new Error("Image data is undefined");
             }
             const buffer = Buffer.from(imageData, "base64");
-            await uploadImagesToSuapbase(propertyId, buffer, index);
+            await uploadImagesToSuapbase(propertyId, buffer, room);
         }
     }
     catch (error) {
@@ -134,11 +129,11 @@ async function generatePropertyImage(description: string, propertyId: number) {
  * @param buffer Buffer containing the image data
  * @param index Index of the image, used to name the file in storage
  */
-async function uploadImagesToSuapbase(propertyId: number, buffer: Buffer, index: number) {
+async function uploadImagesToSuapbase(propertyId: number, buffer: Buffer, room: string) {
     // upload to supabase storage
     const { error } = await supabase.storage
         .from("lighthouse-bucket")
-        .upload(`properties/${propertyId}/${index}.png`, buffer, {
+        .upload(`properties/${propertyId}/${room}.png`, buffer, {
             contentType: "image/png",
         });
     if (error) {
@@ -270,15 +265,17 @@ async function generateFullPropertyListing() {
     try {
         const property = await generatePropertyListing();
         console.log("Generated property: ", property);
-        // const agencyLocations = await loadAllAgencyLocations(); 
+        const agencyLocations = await loadAllAgencyLocations();
 
-        // if (property && agencyLocations.length > 0) {
-        //     const propertyId = await uploadPropertyToSupabase(property, agencyLocations);
-
-        //     await generatePropertyImage(property.description, propertyId!);
-
-        //     await generateFloorPlan(property.description, propertyId!);
-        // }
+        if (property && agencyLocations.length > 0) {
+            const propertyId = await uploadPropertyToSupabase(property, agencyLocations);
+            if (propertyId) {
+                await generatePropertyImage(property.description, propertyId!);
+                await generateFloorPlan(property.description, propertyId!);
+            } else {
+                throw new Error("Failed to upload property to Supabase, propertyId is null");
+            }
+        }
     } catch (error) {
         console.error("Error generating property listings: ", error);
     }

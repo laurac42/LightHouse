@@ -98,7 +98,6 @@ export async function isSeller(userId: string) {
         }
         return isSeller ? true : false;
     } catch (error) {
-        console.error("Error checking seller status:", error);
         return false;
     }
 }

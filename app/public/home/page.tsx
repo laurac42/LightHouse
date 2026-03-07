@@ -46,9 +46,9 @@ export default function Page() {
                                             <InputGroupAddon>
                                                 <Search />
                                             </InputGroupAddon>
-                                            <InputGroupButton size="sm" className="hidden md:flex bg-buttonColor hover:bg-buttonHover text-md text-foreground font-bold md:w-32 h-full">Search</InputGroupButton>
+                                            <InputGroupButton onClick={() => {window.location.href = '/public/properties'}} size="sm" className="hidden md:flex bg-buttonColor hover:bg-buttonHover text-md text-foreground font-bold md:w-32 h-full">Search</InputGroupButton>
                                     </InputGroup>
-                                    <Button size="sm" className="flex md:hidden bg-buttonColor hover:bg-buttonHover text-foreground text-md font-bold w-full h-10">Search</Button>
+                                    <Button onClick={() => {window.location.href = '/public/properties'}} size="sm" className="flex md:hidden bg-buttonColor hover:bg-buttonHover text-foreground text-md font-bold w-full h-10">Search</Button>
                                 </div>
                             </CardContent>
                         </Card>
