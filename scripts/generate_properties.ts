@@ -42,7 +42,8 @@ const propertyRooms = () => {
         `kitchen`,
         `living room`,
         `bedroom`,
-        `garden`,];
+        `garden`,
+    ];
     return rooms;
 };
 
@@ -62,12 +63,11 @@ function randomProperty() {
 async function generatePropertyListing(): Promise<Property[] | null> {
     try {
         // generate some random properties to ensure variety in the generated properties
-        const randomProperties = Array.from({ length: 1 }, () => randomProperty());
-        console.log("Random properties to guide generation: ", randomProperties);
+        const randomProperties = Array.from({ length: 10 }, () => randomProperty());
 
         const response = await ai.models.generateContent({
             model: "gemini-2.5-flash-lite",
-            contents: `Generate me 1 property listings as JSON format, using the following random properties as a guide: ${JSON.stringify(randomProperties)}.
+            contents: `Generate me 10 property listings as JSON format, using the following random properties as a guide: ${JSON.stringify(randomProperties)}.
             Each property must be highly unique and different from the others, with a variety of features, locations, and price points.
             No property may have the same address.
             The description should be in HTML format, with the 'Key features' as a <h1> heading followed by bullet points at the start of the description formatted as an unordered list, then a <h1> title 'Description', and then the rest of the description in paragraphs. The rest of the description shoudl be multiple paragraphs formatted with <p> tags, not a single block of text.
@@ -82,17 +82,17 @@ async function generatePropertyListing(): Promise<Property[] | null> {
             Then based on this, generate a detailed description of the property, including details about the interior and exterior, and any unique features of the property. The description should be consistent with the randomly generated features.
             Please also start the description with a set of bullet points, highlighting key features of the property such as number of bedrooms, bathrooms, and any unique features
             The property is located in Tayside or Fife, Scotland.
-            The postcode must be a valid postcode in Tayside or Fife, and the address must be consistent with the postcode. 
+            The postcode must be a valid postcode in Tayside or Fife, and the address must be consistent with the postcode.
+            Avoid overusing the word Willow in the address. 
             The date_added should be a random date within the last 6 months (this means only dates from October 2025 onwards). 
-            The price should be a realistic price for a property in Tayside or Fife with the given features. 
+            The price should be a realistic price for a property in Tayside or Fife with the given features and should be a number, with no currency or commas. 
             The title should include the address, number of bedrooms, and property type, but not the postcode, new-build status, or additional descriptive details. 
             En-suites and WCs are also counted as bathrooms, and should be included in the num_bathrooms field.
-            The JSON must include the following fields: title, price, description, date_added, address_line_1, address_line_2 (optional), city, post_code, num_bedrooms, num_bathrooms, property_type, square_feet, council_tax_band, epc_rating, price_type (e.g. offers over, fixed price), has_garage (boolean), is_new_build (boolean).`,
+            The JSON must include the following fields: title, price, description, date_added, address_line_1, address_line_2 (this can be optional), city, post_code, num_bedrooms, num_bathrooms, property_type, square_feet, council_tax_band, epc_rating, price_type (e.g. offers over, fixed price), has_garage (boolean), is_new_build (boolean).`,
         });
         if (response.text) {
             // remove backticks and backticks json
             const text = response.text.replace(/```(json)?/g, "");
-            console.log("Generated property listing text: ", text);
 
             // parse JSON
             const properties = JSON.parse(text) as Property[];
@@ -113,7 +113,7 @@ async function generatePropertyListing(): Promise<Property[] | null> {
  * @param description the description of the property
  * @param propertyId the ID of the property
  */
-async function generatePropertyImage(description: string, propertyId: number) {
+async function generatePropertyImages(description: string, propertyId: number) {
     try {
         const rooms = propertyRooms();
         for (const [index, room] of rooms.entries()) {
@@ -212,7 +212,7 @@ function returnRandomAgenctLocationId(agencyLocations: { location_id: string }[]
 }
 
 /**
- * Ge nerates a floor plan image for a property based on its description and uploads it to Supabase storage.
+ * Generates a floor plan image for a property based on its description and uploads it to Supabase storage.
  * @param description Description of the property, used to generate the floor plan image.
  * @param propertyId ID of the property, used to name the file in Supabase storage and associate the floor plan with the correct property listing.  
  */
@@ -282,9 +282,11 @@ async function generateFullPropertyListing() {
         for (const property of properties || []) {
             if (property && agencyLocations.length > 0) {
                 const propertyId = await uploadPropertyToSupabase(property, agencyLocations);
+
+                console.log("Generating listing for property: ", propertyId);
                 if (propertyId) {
-                    await generatePropertyImage(property.description, propertyId!);
-                    await generateFloorPlan(property.description, propertyId!);
+                    await generatePropertyImages(property.description, propertyId);
+                    await generateFloorPlan(property.description, propertyId);
                 } else {
                     throw new Error("Failed to upload property to Supabase, propertyId is null");
                 }
