@@ -1,3 +1,4 @@
+// !!! run script using 'node -r ts-node/register -r tsconfig-paths/register generate_properties.ts'
 import { GoogleGenAI } from "@google/genai";
 import { config } from "dotenv";
 config({ path: "../.env.local" }); // load environment variables from .env file
@@ -45,45 +46,57 @@ const propertyRooms = () => {
     return rooms;
 };
 
+function randomProperty() {
+    return {
+        bedrooms: Math.floor(Math.random() * 6) + 1, // random number between 1 and 6
+        propertyType: ["flat", "bungalow", "villa", "detached", "semi-detached", "terraced"][Math.floor(Math.random() * 6)],
+        isNewBuild: Math.random() < 0.3, // 30% chance of being a new build
+    }
+}
 
 /**
  * Generates a property listing using the Google Gemini API.
  * Gemini returns a property in JSON format, which is then parsed and returned as a Property object.
  * @returns a Promise that resolves to a Property object, or null if there was an error generating the property listing 
  */
-async function generatePropertyListing(): Promise<Property | null> {
+async function generatePropertyListing(): Promise<Property[] | null> {
     try {
-        // generate some random values first to ensure variety in the generated properties
-        const numBedrooms = Math.floor(Math.random() * 6) + 1; // random number between 1 and 6
-        const propertyTypes = ["flat", "bungalow", "villa", "detached", "semi-detached", "terraced"];
-        const randomPropertyType = propertyTypes[Math.floor(Math.random() * propertyTypes.length)];
-        const isNewBuild = Math.random() < 0.3; // 30% chance of being a new build
+        // generate some random properties to ensure variety in the generated properties
+        const randomProperties = Array.from({ length: 1 }, () => randomProperty());
+        console.log("Random properties to guide generation: ", randomProperties);
 
         const response = await ai.models.generateContent({
             model: "gemini-2.5-flash-lite",
-            contents: `Generate me a property listing in JSON format. 
-            The property must have ${numBedrooms} bedrooms and be a ${randomPropertyType} and ${isNewBuild ? "a new build" : "an existing property"}.
+            contents: `Generate me 1 property listings as JSON format, using the following random properties as a guide: ${JSON.stringify(randomProperties)}.
+            Each property must be highly unique and different from the others, with a variety of features, locations, and price points.
+            No property may have the same address.
+            The description should be in HTML format, with the 'Key features' as a <h1> heading followed by bullet points at the start of the description formatted as an unordered list, then a <h1> title 'Description', and then the rest of the description in paragraphs. The rest of the description shoudl be multiple paragraphs formatted with <p> tags, not a single block of text.
+            Each description must feel like it was written by a different person, with a different writing style and focus on different aspects of the property.
+            Each property must have the provided number of bedrooms and be the provided property type and depending on the value of "isNewBuild, be a new build"}.
             Then select the following fields (these must be realistic for the given property type and number of bedrooms):            
             - num_bathrooms: a number between 1 and 4
             - council_tax_band: a valid band (A-H) based on the price and features of the property
             - epc_rating: a valid rating (A-G) based on the features of the property. Remember that new builds are more likely to have higher EPC ratings.
             - square_feet: a realistic square footage for the number of bedrooms and bathrooms
             - is_new_build: a boolean indicating whether the property is a new build
-    Then based on rhis, generate a detailed description of the property, including details about the interior and exterior, and any unique features of the property. The description should be consistent with the randomly generated features.
-    Please also start the description with a set of bullet points, highlighting key features of the property such as number of bedrooms, bathrooms, and any unique features
-    The property is located in Tayside or Fife, Scotland.
-    The postcode must be a valid postcode in Tayside or Fife, and the address must be consistent with the postcode. 
-    The date_added should be a random date within the last 6 months (this means only dates from October 2025 onwards). 
-    The price should be a realistic price for a property in Tayside or Fife with the given features. 
-    The title should include the address, number of bedrooms, and property type. 
-    En-suites and WCs are also counted as bathrooms, and should be included in the num_bathrooms field.
-    The JSON must include the following fields: title, price, description, date_added, address_line_1, address_line_2 (optional), city, post_code, num_bedrooms, num_bathrooms, property_type, square_feet, council_tax_band, epc_rating, price_type (e.g. offers over, fixed price), has_garage (boolean), is_new_build (boolean).`,
+            Then based on this, generate a detailed description of the property, including details about the interior and exterior, and any unique features of the property. The description should be consistent with the randomly generated features.
+            Please also start the description with a set of bullet points, highlighting key features of the property such as number of bedrooms, bathrooms, and any unique features
+            The property is located in Tayside or Fife, Scotland.
+            The postcode must be a valid postcode in Tayside or Fife, and the address must be consistent with the postcode. 
+            The date_added should be a random date within the last 6 months (this means only dates from October 2025 onwards). 
+            The price should be a realistic price for a property in Tayside or Fife with the given features. 
+            The title should include the address, number of bedrooms, and property type, but not the postcode, new-build status, or additional descriptive details. 
+            En-suites and WCs are also counted as bathrooms, and should be included in the num_bathrooms field.
+            The JSON must include the following fields: title, price, description, date_added, address_line_1, address_line_2 (optional), city, post_code, num_bedrooms, num_bathrooms, property_type, square_feet, council_tax_band, epc_rating, price_type (e.g. offers over, fixed price), has_garage (boolean), is_new_build (boolean).`,
         });
         if (response.text) {
             // remove backticks and backticks json
             const text = response.text.replace(/```(json)?/g, "");
-            const property: Property = JSON.parse(text);
-            return property;
+            console.log("Generated property listing text: ", text);
+
+            // parse JSON
+            const properties = JSON.parse(text) as Property[];
+            return properties;
         } else {
             throw new Error("No response from AI");
         }
@@ -263,17 +276,18 @@ async function loadAllAgencyLocations(): Promise<{ location_id: string }[]> {
 
 async function generateFullPropertyListing() {
     try {
-        const property = await generatePropertyListing();
-        console.log("Generated property: ", property);
-        const agencyLocations = await loadAllAgencyLocations();
+        const properties = await generatePropertyListing();
 
-        if (property && agencyLocations.length > 0) {
-            const propertyId = await uploadPropertyToSupabase(property, agencyLocations);
-            if (propertyId) {
-                await generatePropertyImage(property.description, propertyId!);
-                await generateFloorPlan(property.description, propertyId!);
-            } else {
-                throw new Error("Failed to upload property to Supabase, propertyId is null");
+        const agencyLocations = await loadAllAgencyLocations();
+        for (const property of properties || []) {
+            if (property && agencyLocations.length > 0) {
+                const propertyId = await uploadPropertyToSupabase(property, agencyLocations);
+                if (propertyId) {
+                    await generatePropertyImage(property.description, propertyId!);
+                    await generateFloorPlan(property.description, propertyId!);
+                } else {
+                    throw new Error("Failed to upload property to Supabase, propertyId is null");
+                }
             }
         }
     } catch (error) {
@@ -282,7 +296,7 @@ async function generateFullPropertyListing() {
 }
 
 async function main() {
-    const numPropertiesToGenerate = 5;
+    const numPropertiesToGenerate = 1;
     for (let i = 0; i < numPropertiesToGenerate; i++) {
         await generateFullPropertyListing();
     }

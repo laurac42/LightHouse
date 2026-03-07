@@ -13,6 +13,8 @@ import { Search } from "lucide-react";
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
+import DOMPurify from "dompurify";
+import styles from "./page.module.css";
 
 export default function Page() {
 
@@ -28,6 +30,11 @@ export default function Page() {
         }
     }
 
+    function sanitizeDescription(description: string | null) {
+        if (!description) return "";
+        return DOMPurify.sanitize(description, { ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'ul', 'li', 'p', 'br', 'h1'] });
+    }
+
     useEffect(() => {
         fetchProperties();
     }, []);
@@ -38,18 +45,25 @@ export default function Page() {
             <FilterBar />
             <div className="flex w-full items-center justify-center p-6 md:p-10">
                 <div className="w-full max-w-md">
-                        {properties.map((property) => (
-                            <Card key={property.id} className="bg-white/90 border-none mb-6">
-                                <CardHeader>
-                                    <CardTitle className="text-2xl flex gap-4 pt-2">
-                                        {property.title}
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <p>{property.description}</p>
-                                    </CardContent>
-                            </Card>
-                        ))}
+                    {properties.map((property) => (
+                        <Card key={property.id} className="bg-white/90 border-none mb-6">
+                            <CardHeader>
+                                <CardTitle className="text-2xl flex gap-4 pt-2">
+                                    {property.title}
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className={styles.description}>
+                                    <ul>
+                                        <li>Key Feature 1</li>
+                                        <li>Key Feature 2</li>
+                                        <li>Key Feature 3</li>
+                                    </ul>
+                                </div>
+                                <div className={styles.description} dangerouslySetInnerHTML={{ __html: sanitizeDescription(property.description) }} />
+                            </CardContent>
+                        </Card>
+                    ))}
                 </div>
             </div>
         </div>
