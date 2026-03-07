@@ -29,11 +29,11 @@ import PortalMenu from "@/components/portal-menu";
 
 export default function ManageEstateAgentsPage() {
   const [email, setEmail] = useState("");
-  const [selectedAgencyId, setSelectedAgencyId] = useState<string | null>(null);
+  const [selectedAgencyId, setSelectedAgencyId] = useState<string>("");
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
-  const [agencies, setAgencies] = useState<{ id: number; name: string }[]>([]);
+  const [agencies, setAgencies] = useState<{ id: string; name: string | null}[]>([]);
   const [loadingAgencies, setLoadingAgencies] = useState(true);
   const router = useRouter();
 
@@ -85,7 +85,6 @@ export default function ManageEstateAgentsPage() {
         }
         await upgradeExistingUserToAgent(data.id);
       } else {
-        console.log("No user with this email found, creating new estate agent...");
         await inviteNewAgent(email);
       }
     } catch (error) {

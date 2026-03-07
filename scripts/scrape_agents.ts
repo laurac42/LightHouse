@@ -48,15 +48,12 @@ async function scrapeEstateAgents() {
         }
 
         for (const element of $solicitorImageURLS) {
-            console.log("Image url: " , element);
             downloadAgentLogo("https://tspc.co.uk" + element);
         }
         
         for (const element of $solicitorNames) {
             const regex = /[^a-z0-9-]+/gi; // groups all characters that are not letters, numbers or hyphens
             const trimmedName = $(element).text().trim().toLowerCase().replace(regex, "-").replace(/^\-+|\-+$/g, ""); // replace groups with hyphen and convert to lowercase, then remove leading/trailing hyphens
-
-            console.log(`Scraping agent: ${trimmedName}`);
             await scrapeSpecificAgent(trimmedName, agencyMap.get($(element).text().trim())!);
 
         }
