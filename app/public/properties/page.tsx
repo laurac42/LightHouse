@@ -20,7 +20,7 @@ export default function PropertiesPage() {
     const [totalPages, setTotalPages] = useState(1);
     const [totalProperties, setTotalProperties] = useState(0);
     const [loading, setLoading] = useState(true);
-    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+    const [isMobile, setIsMobile] = useState(false);
 
     useEffect(() => {
         fetchProperties();
@@ -33,7 +33,7 @@ export default function PropertiesPage() {
     useEffect(() => {
         window.addEventListener("resize", updateMedia);
         return () => window.removeEventListener("resize", updateMedia);
-    });
+    }, []);
 
     /**
      * Fetch properties and property images for a given search results page
@@ -121,21 +121,42 @@ export default function PropertiesPage() {
                     <ChevronLeft size={16} />
                     Previous
                 </Button> : (
-                    <div className="mx-auto" />)} {/* placeholder to prevent layout shift when the Previous button is hidden */}
+                    <div className="mx-auto w-[100px]" />)} {/* placeholder to prevent layout shift when the Previous button is hidden */}
 
                 <div className="flex flex-col justify-center items-center gap-2">
                     <div className="flex flex-row gap-1">
-                        {/** On sm, show only a     subset of page numbers */}
-
-                        {Array.from({ length: isMobile ? 3 : totalPages > 8 ? 8 : totalPages }, (_, i) => isMobile ? currentPage - 1 + i : i + 1).map((page) => (
+                        {/** On sm, or if there are too many pages, show only a subset of page numbers */}
+                        {isMobile && totalPages > 3 && currentPage > 2 && (
+                            <span className="text-lg text-muted-foreground">...</span>
+                        )}
+                        {!isMobile && totalPages > 8 && currentPage > 4 && (
+                            <span className="text-lg text-muted-foreground">...</span>
+                        )}
+                        {Array.from({ length: isMobile ? 3 : totalPages > 8 ? 8 : totalPages }, (_, i) => {
+                            if (isMobile) {
+                                return currentPage > 1 ? (currentPage === totalPages ? currentPage - 2 + i : currentPage - 1 + i) : i + 1;
+                            } else {
+                                if (totalPages > 8) {
+                                    if (currentPage <= 4) {
+                                        return i + 1;
+                                    } else if (currentPage >= totalPages - 3) {
+                                        return totalPages - 7 + i;
+                                    } else {
+                                        return currentPage - 3 + i;
+                                    }
+                                }
+                                return i + 1; // if total pages is 8 or less, show all page numbers
+                            }
+                        }).map((page) => (
                             <Button key={page} variant="outline" className={page === currentPage ? "bg-highlight text-white border-none hover:bg-highlight hover:text-white" : "hover:bg-midBlue"} size="sm" onClick={() => fetchProperties(page)}>
                                 {page}
                             </Button>
                         ))}
-                        {isMobile && totalPages > 3 && (
+                        
+                        {isMobile && totalPages > 3 && currentPage < totalPages - 1 && (
                             <span className="text-lg text-muted-foreground">...</span>
                         )}
-                        {!isMobile && totalPages > 8 && (
+                        {!isMobile && totalPages > 8 && currentPage < totalPages - 4 && (
                             <span className="text-lg text-muted-foreground">...</span>
                         )}
                     </div>
@@ -147,7 +168,7 @@ export default function PropertiesPage() {
                         Next
                         <ChevronRight size={16} />
                     </Button>) :
-                    <div className="mx-auto" />
+                    <div className="mx-auto w-[100px]" />
                 }
             </div>
         </div>

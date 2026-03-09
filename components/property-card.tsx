@@ -18,6 +18,7 @@ import {
 import { Car, Camera, Home, Bed, Bath, Grid2X2, Lightbulb, Landmark, Mail, Phone } from "lucide-react";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import Link from 'next/link';
 
 type Property = Database["public"]["Tables"]["properties"]["Row"];
 
@@ -172,64 +173,67 @@ export default function PropertyCard({ property, images }: { property: Property;
                         </div>
                     </div>
                     <div className="flex-1 px-4">
-                        <CardHeader className="p-1 pt-2">
-                            <CardTitle className="text-xl">{property.title}</CardTitle>
-                        </CardHeader>
-                        <div>
-                            <div className="grid grid-cols-2 lg:grid-cols-3 md:px-8 px-1 py-1 lg:py-2 text-md gap-2 lg:gap-4">
-                                <div className="inline-flex items-center gap-1 font-bold">
-                                    <Home size={16} />
-                                    {property.property_type ? property.property_type.charAt(0).toUpperCase() + property.property_type.slice(1) : ""}
-                                </div>
-                                <div className="inline-flex items-center gap-1 font-bold">
-                                    <Bed size={16} />
-                                    {property.num_bedrooms} {property.num_bedrooms === 1 ? "bedroom" : "bedrooms"}
+                        {/* <Link href={`properties/${property.id}`}> */}
+                            <CardHeader className="p-1 pt-2">
+                                <CardTitle className="text-xl">{property.title}</CardTitle>
+                            </CardHeader>
 
-                                </div>
-                                <div className="inline-flex items-center gap-1 font-bold">
-                                    <Bath size={16} />
-                                    {property.num_bathrooms} {property.num_bathrooms === 1 ? "bathroom" : "bathrooms"}
-                                </div>
-                                <div className="inline-flex items-center gap-1 font-bold">
-                                    <Grid2X2 size={16} />
-                                    {property.square_feet} sqft
-                                </div>
-                                <div className="inline-flex items-center gap-1 font-bold">
-                                    <Lightbulb size={16} />
-                                    EPC: {property.epc_rating ? property.epc_rating.toUpperCase() : "N/A"}
-                                </div>
-                                <div className="inline-flex items-center gap-1 font-bold">
-                                    <Landmark size={16} />
-                                    Council Tax: {property.council_tax_band ? property.council_tax_band.toUpperCase() : "N/A"}
+                            <div>
+                                <div className="grid grid-cols-2 lg:grid-cols-3 md:px-8 px-1 py-1 lg:py-2 text-md gap-2 lg:gap-4">
+                                    <div className="inline-flex items-center gap-1 font-bold">
+                                        <Home size={16} />
+                                        {property.property_type ? property.property_type.charAt(0).toUpperCase() + property.property_type.slice(1) : ""}
+                                    </div>
+                                    <div className="inline-flex items-center gap-1 font-bold">
+                                        <Bed size={16} />
+                                        {property.num_bedrooms} {property.num_bedrooms === 1 ? "bedroom" : "bedrooms"}
+
+                                    </div>
+                                    <div className="inline-flex items-center gap-1 font-bold">
+                                        <Bath size={16} />
+                                        {property.num_bathrooms} {property.num_bathrooms === 1 ? "bathroom" : "bathrooms"}
+                                    </div>
+                                    <div className="inline-flex items-center gap-1 font-bold">
+                                        <Grid2X2 size={16} />
+                                        {property.square_feet} sqft
+                                    </div>
+                                    <div className="inline-flex items-center gap-1 font-bold">
+                                        <Lightbulb size={16} />
+                                        EPC: {property.epc_rating ? property.epc_rating.toUpperCase() : "N/A"}
+                                    </div>
+                                    <div className="inline-flex items-center gap-1 font-bold">
+                                        <Landmark size={16} />
+                                        Council Tax: {property.council_tax_band ? property.council_tax_band.toUpperCase() : "N/A"}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div className='text-sm text-muted-foreground max-h-[100px] mx-1 my-4 overflow-hidden text-ellipsis line-clamp-4 lg:line-clamp-5' dangerouslySetInnerHTML={{ __html: removeBulletsAndHeadings(sanitizeDescription(property.description)) }} />
-                        {agencyDetails && (
-                            <div className="flex flex-row items-center gap-4 pb-2 md:py-0">
-                                {agencyDetails.logo_url && (
-                                    <img
-                                        src={agencyDetails.logo_url}
-                                        alt="Agency logo"
-                                        className="w-20 object-contain"
-                                    />
-                                )}
-                                <div className="flex flex-row ml-auto pr-4 gap-4">
-                                    {agencyDetails.phone_number && (
-                                        <div className="flex justify-end">
-                                            <a className='mr-0 flex items-center gap-1 font-bold underline hover:text-blue-500' href={`tel:${agencyDetails.phone_number}`}>
-                                                Call <Phone />
+                            <div className='text-sm text-muted-foreground max-h-[100px] mx-1 my-4 overflow-hidden text-ellipsis line-clamp-4 lg:line-clamp-5' dangerouslySetInnerHTML={{ __html: removeBulletsAndHeadings(sanitizeDescription(property.description)) }} />
+                            {agencyDetails && (
+                                <div className="flex flex-row items-center gap-4 pb-2 md:py-0">
+                                    {agencyDetails.logo_url && (
+                                        <img
+                                            src={agencyDetails.logo_url}
+                                            alt="Agency logo"
+                                            className="w-20 object-contain"
+                                        />
+                                    )}
+                                    <div className="flex flex-row ml-auto pr-4 gap-4">
+                                        {agencyDetails.phone_number && (
+                                            <div className="flex justify-end">
+                                                <a className='mr-0 flex items-center gap-1 font-bold underline hover:text-blue-500' href={`tel:${agencyDetails.phone_number}`}>
+                                                    Call <Phone />
+                                                </a>
+                                            </div>
+                                        )}
+                                        {agencyDetails.email && (
+                                            <a className='flex items-center gap-1 font-bold underline hover:text-blue-500' href={`mailto:${agencyDetails.email}`}>
+                                                Email <Mail />
                                             </a>
-                                        </div>
-                                    )}
-                                    {agencyDetails.email && (
-                                        <a className='flex items-center gap-1 font-bold underline hover:text-blue-500' href={`mailto:${agencyDetails.email}`}>
-                                            Email <Mail />
-                                        </a>
-                                    )}
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
-                        )}
+                            )}
+                        {/* </Link> */}
                     </div>
                 </div>
             </CardContent>
