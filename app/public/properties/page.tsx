@@ -4,9 +4,7 @@ import FilterBar from "@/components/filter-bar";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
-import styles from "./page.module.css";
 import { Database } from "@/types/supabase";
-import { count } from "console";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import PropertyCard from "@/components/property-card";
 
@@ -22,10 +20,20 @@ export default function PropertiesPage() {
     const [totalPages, setTotalPages] = useState(1);
     const [totalProperties, setTotalProperties] = useState(0);
     const [loading, setLoading] = useState(true);
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
     useEffect(() => {
         fetchProperties();
     }, []);
+
+    const updateMedia = () => {
+        setIsMobile(window.innerWidth < 768);
+    };
+
+    useEffect(() => {
+        window.addEventListener("resize", updateMedia);
+        return () => window.removeEventListener("resize", updateMedia);
+    });
 
     /**
      * Fetch properties and property images for a given search results page
@@ -33,6 +41,9 @@ export default function PropertiesPage() {
      */
     async function fetchProperties(page: number = 1) {
         try {
+            // scroll to top
+            window.scrollTo({ top: 0 });
+
             const supabase = await createClient();
             const { data, error, count } = await supabase
                 .from("properties")
@@ -100,13 +111,13 @@ export default function PropertiesPage() {
             <div className="flex w-full items-center justify-center pt-4 px-6 md:px-10 md:pt-10">
                 <div className="w-full max-w-4xl">
                     {properties.map((property) => (
-                            <PropertyCard key={property.id} property={property} images={property.images} />
-                        ))}
+                        <PropertyCard key={property.id} property={property} images={property.images} />
+                    ))}
                 </div>
 
             </div>
             <div className="flex flex-row gap-2 justify-center py-8 mb-6">
-                {currentPage > 1 ? <Button className="mx-auto bg-buttonColor hover:bg-buttonHover" variant="outline" size="sm" onClick={() => fetchProperties(currentPage - 1)}>
+                {currentPage > 1 ? <Button className="mx-auto bg-background hover:bg-midBlue text-highlight border-none" size="sm" onClick={() => fetchProperties(currentPage - 1)}>
                     <ChevronLeft size={16} />
                     Previous
                 </Button> : (
@@ -114,11 +125,19 @@ export default function PropertiesPage() {
 
                 <div className="flex flex-col justify-center items-center gap-2">
                     <div className="flex flex-row gap-1">
-                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                        {/** On sm, show only a     subset of page numbers */}
+
+                        {Array.from({ length: isMobile ? 3 : totalPages > 8 ? 8 : totalPages }, (_, i) => isMobile ? currentPage - 1 + i : i + 1).map((page) => (
                             <Button key={page} variant="outline" className={page === currentPage ? "bg-highlight text-white border-none hover:bg-highlight hover:text-white" : "hover:bg-midBlue"} size="sm" onClick={() => fetchProperties(page)}>
                                 {page}
                             </Button>
                         ))}
+                        {isMobile && totalPages > 3 && (
+                            <span className="text-lg text-muted-foreground">...</span>
+                        )}
+                        {!isMobile && totalPages > 8 && (
+                            <span className="text-lg text-muted-foreground">...</span>
+                        )}
                     </div>
                     <p>Page {currentPage} of {totalPages}</p>
                 </div>
