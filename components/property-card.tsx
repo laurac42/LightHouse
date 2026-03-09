@@ -7,18 +7,11 @@ import {
 } from "@/components/ui/card";
 import DOMPurify from "dompurify";
 import { Database } from "@/types/supabase";
-import {
-    Carousel,
-    CarouselContent,
-    CarouselItem,
-    CarouselNext,
-    CarouselPrevious,
-    type CarouselApi,
-} from "@/components/ui/carousel"
-import { Car, Camera, Home, Bed, Bath, Grid2X2, Lightbulb, Landmark, Mail, Phone } from "lucide-react";
+import { Home, Bed, Bath, Grid2X2, Lightbulb, Landmark, Mail, Phone } from "lucide-react";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import Link from 'next/link';
+import ImageCarousel from "./image-carousel";
 
 type Property = Database["public"]["Tables"]["properties"]["Row"];
 
@@ -30,21 +23,7 @@ type AgencyDetails = {
 
 
 export default function PropertyCard({ property, images }: { property: Property; images: string[] }) {
-    const [api, setApi] = useState<CarouselApi>()
-    const [current, setCurrent] = useState(0)
-    const [count, setCount] = useState(0)
     const [agencyDetails, setAgencyDetails] = useState<AgencyDetails | null>(null);
-
-    useEffect(() => {
-        if (!api) {
-            return
-        }
-        setCount(api.scrollSnapList().length)
-        setCurrent(api.selectedScrollSnap() + 1)
-        api.on("select", () => {
-            setCurrent(api.selectedScrollSnap() + 1)
-        })
-    }, [api])
 
     useEffect(() => {
         if (property.agency_location_id) {
@@ -74,23 +53,6 @@ export default function PropertyCard({ property, images }: { property: Property;
         if (!description) return "";
         // remove p tags but not content inside them, remove h1 tags and content inside them, remove ul and li tags but not content inside them
         return description.replace(/<p> *?|<\/p> *?|<h1>[\s\S]*<\/h1>|<ul>[\s\S]*?<\/ul>|<li>[\s\S]*?<\/li>/g, '');
-    }
-
-    /**
-     * Get the first image URL from the list of images, prioritizing exterior images
-     * @param images List of image URLs to select from
-     * @returns URL of the first image to display, or null if no images are available
-     */
-    function getFirstImageUrl(images: string[]) {
-        if (images.length === 0) {
-            return null;
-        }
-        for (const imageUrl of images) {
-            if (imageUrl.includes('exterior')) {
-                return imageUrl;
-            }
-        }
-        return images[0]; // return the first image if no exterior image is found
     }
 
     /**
@@ -126,45 +88,7 @@ export default function PropertyCard({ property, images }: { property: Property;
             <CardContent className="p-0">
                 <div className="flex flex-col md:flex-row gap-2">
                     <div className="flex flex-col gap-0 md:w-80 shrink-0">
-                        <Carousel
-                            setApi={setApi}
-                            className="w-full"
-                            opts={{ loop: true, }}>
-                            <CarouselContent>
-                                <CarouselItem key={1}>
-                                    {getFirstImageUrl(images) ? (
-                                        <img
-                                            src={process.env.NEXT_PUBLIC_BUCKET_URL + 'properties/' + property.id + '/' + getFirstImageUrl(images)}
-                                            alt={`Main image of ${property.title}`}
-                                            className="w-full h-64 object-cover rounded-t-md"
-                                        />
-                                    ) : (
-                                        <div className="w-full h-64 flex items-center justify-center bg-gray-200 rounded-t-md">
-                                            <Car className="text-gray-500" size={48} />
-                                            <p className="text-gray-500 mt-2">No images available</p>
-                                        </div>
-                                    )}
-                                </CarouselItem>
-                                {images.map((imageUrl, index) => {
-                                    // Skip the first image since it's already displayed as the main image
-                                    if (imageUrl !== getFirstImageUrl(images) && (!imageUrl.includes('floorplan'))) {
-                                        return (
-                                            <CarouselItem key={index}>
-                                                <img
-                                                    src={process.env.NEXT_PUBLIC_BUCKET_URL + 'properties/' + property.id + '/' + imageUrl}
-                                                    alt={`Image ${index + 1} of ${property.title}`}
-                                                    className="w-full h-64 object-cover rounded-t-md"
-                                                />
-                                            </CarouselItem>
-                                        );
-                                    }
-                                    return null;
-                                })}
-                            </CarouselContent>
-                            <CarouselPrevious className="absolute left-2" />
-                            <CarouselNext className="absolute right-2" />
-                            <p className="absolute right-2 top-2 text-sm inline-flex gap-1 items-center bg-navBar rounded-md p-1"><Camera size={16} /> {current} of {count}</p>
-                        </Carousel>
+                        <ImageCarousel images={images} property={property} />
                         <div>
                             <CardHeader className="p-0 gap-0 m-0 bg-highlight rounded-b-md text-white flex flex-row items-center justify-center">
                                 <CardTitle className="text-2xl text-center">{'£' + property.price.toLocaleString()}</CardTitle>
