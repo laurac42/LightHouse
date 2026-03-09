@@ -38,7 +38,7 @@ export default function PropertiesPage() {
                 .from("properties")
                 .select("*", { count: "exact" })
                 .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
-                
+
             setTotalProperties(count || 0);
 
             setTotalPages(Math.ceil((count || 0) / PAGE_SIZE));
@@ -64,6 +64,11 @@ export default function PropertiesPage() {
         }
     }
 
+    /**
+     * Get property image URLs from Supabase storage for a given property ID
+     * @param id ID of the property to get images for
+     * @returns a list of image URLs for the property, or an empty list if no images are found or an error occurs
+     */
     async function getImagesFromStorage(id: number) {
         try {
             const supabase = await createClient();
@@ -74,6 +79,7 @@ export default function PropertiesPage() {
             return data?.map((item) => item.name) || [];
         } catch (error) {
             console.error("Error fetching property images: ", error);
+            return [];
         }
     }
 

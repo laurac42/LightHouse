@@ -55,6 +55,11 @@ export default function PropertyCard({ property, images }: { property: Property;
     }, []);
 
 
+    /**
+     * Sanitize property description to prevent XSS attacks, allowing only basic formatting tags
+     * @param description Property description to sanitize
+     * @returns Sanitized description safe for rendering as HTML
+     */
     function sanitizeDescription(description: string | null) {
         if (!description) return "";
         return DOMPurify.sanitize(description, { ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'ul', 'li', 'p', 'br', 'h1'] });
@@ -62,8 +67,8 @@ export default function PropertyCard({ property, images }: { property: Property;
 
     /**
      * Remove bullet points and headings and p tags from property description for displaying on cards
-     * @param description 
-     * @returns 
+     * @param description description to remove bullet points and headings from
+     * @returns Description with bullet points and headings removed
      */
     function removeBulletsAndHeadings(description: string | null) {
         if (!description) return "";
@@ -71,6 +76,11 @@ export default function PropertyCard({ property, images }: { property: Property;
         return description.replace(/<p> *?|<\/p> *?|<h1>[\s\S]*<\/h1>|<ul>[\s\S]*?<\/ul>|<li>[\s\S]*?<\/li>/g, '');
     }
 
+    /**
+     * Get the first image URL from the list of images, prioritizing exterior images
+     * @param images List of image URLs to select from
+     * @returns URL of the first image to display, or null if no images are available
+     */
     function getFirstImageUrl(images: string[]) {
         if (images.length === 0) {
             return null;
@@ -83,6 +93,11 @@ export default function PropertyCard({ property, images }: { property: Property;
         return images[0]; // return the first image if no exterior image is found
     }
 
+    /**
+     * Gets agency details (email, phone number, logo) for a given agency location ID
+     * @param agencyId Id of the agency location to get details of
+     * @returns Agency details or null if not found
+     */
     async function getAgencyDetails(agencyId: string) {
         try {
             const supabase = await createClient();
