@@ -102,9 +102,9 @@ export default function PropertyCard({ property, images }: { property: Property;
         try {
             const supabase = await createClient();
             const { data, error } = await supabase.rpc('getagencylocationdetails', { p_id: agencyId });
-            console.log(data)
+            
             if (error || !data) { throw error || new Error("No data returned from RPC"); }
-            console.log("Fetched agency details: ", data);
+            
             return Array.isArray(data) ? data[0] : data;
         } catch (error) {
             console.error("Error fetching agency details: ", error);
@@ -173,12 +173,13 @@ export default function PropertyCard({ property, images }: { property: Property;
                         </div>
                     </div>
                     <div className="flex-1 px-4">
-                        {/* <Link href={`properties/${property.id}`}> */}
+                        <Link href={`properties/${property.id}`}>
                             <CardHeader className="p-1 pt-2">
                                 <CardTitle className="text-xl">{property.title}</CardTitle>
                             </CardHeader>
-
-                            <div>
+                        </Link>
+                        <div>
+                            <Link href={`properties/${property.id}`}>
                                 <div className="grid grid-cols-2 lg:grid-cols-3 md:px-8 px-1 py-1 lg:py-2 text-md gap-2 lg:gap-4">
                                     <div className="inline-flex items-center gap-1 font-bold">
                                         <Home size={16} />
@@ -206,34 +207,35 @@ export default function PropertyCard({ property, images }: { property: Property;
                                         Council Tax: {property.council_tax_band ? property.council_tax_band.toUpperCase() : "N/A"}
                                     </div>
                                 </div>
-                            </div>
-                            <div className='text-sm text-muted-foreground max-h-[100px] mx-1 my-4 overflow-hidden text-ellipsis line-clamp-4 lg:line-clamp-5' dangerouslySetInnerHTML={{ __html: removeBulletsAndHeadings(sanitizeDescription(property.description)) }} />
-                            {agencyDetails && (
-                                <div className="flex flex-row items-center gap-4 pb-2 md:py-0">
-                                    {agencyDetails.logo_url && (
-                                        <img
-                                            src={agencyDetails.logo_url}
-                                            alt="Agency logo"
-                                            className="w-20 object-contain"
-                                        />
-                                    )}
-                                    <div className="flex flex-row ml-auto pr-4 gap-4">
-                                        {agencyDetails.phone_number && (
-                                            <div className="flex justify-end">
-                                                <a className='mr-0 flex items-center gap-1 font-bold underline hover:text-blue-500' href={`tel:${agencyDetails.phone_number}`}>
-                                                    Call <Phone />
-                                                </a>
-                                            </div>
-                                        )}
-                                        {agencyDetails.email && (
-                                            <a className='flex items-center gap-1 font-bold underline hover:text-blue-500' href={`mailto:${agencyDetails.email}`}>
-                                                Email <Mail />
+                            </Link>
+                        </div>
+                        <div className='text-sm text-muted-foreground max-h-[100px] mx-1 my-4 overflow-hidden text-ellipsis line-clamp-4 lg:line-clamp-5' dangerouslySetInnerHTML={{ __html: removeBulletsAndHeadings(sanitizeDescription(property.description)) }} />
+                        {agencyDetails && (
+                            <div className="flex flex-row items-center gap-4 pb-2 md:py-0">
+                                {agencyDetails.logo_url && (
+                                    <img
+                                        src={agencyDetails.logo_url}
+                                        alt="Agency logo"
+                                        className="w-20 object-contain"
+                                    />
+                                )}
+                                <div className="flex flex-row ml-auto pr-4 gap-4">
+                                    {agencyDetails.phone_number && (
+                                        <div className="flex justify-end">
+                                            <a className='mr-0 flex items-center gap-1 font-bold underline hover:text-blue-500' href={`tel:${agencyDetails.phone_number}`}>
+                                                Call <Phone />
                                             </a>
-                                        )}
-                                    </div>
+                                        </div>
+                                    )}
+                                    {agencyDetails.email && (
+                                        <a className='flex items-center gap-1 font-bold underline hover:text-blue-500' href={`mailto:${agencyDetails.email}`}>
+                                            Email <Mail />
+                                        </a>
+                                    )}
                                 </div>
-                            )}
-                        {/* </Link> */}
+                            </div>
+                        )}
+
                     </div>
                 </div>
             </CardContent>
