@@ -90,8 +90,7 @@ export async function isSeller(userId: string) {
         .from('user_roles')
         .select('role')
         .eq('user_id', userId)
-        .eq('role', 'seller')
-        .single();
+        .eq('role', 'seller');
 
         if (error) {
             throw error;

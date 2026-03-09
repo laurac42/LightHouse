@@ -149,7 +149,7 @@ export type Database = {
           added_at: string
           address_line_1: string
           address_line_2: string | null
-          agency_location_id: string
+          agency_location_id: string | null
           city: string
           council_tax_band: string | null
           description: string
@@ -165,7 +165,6 @@ export type Database = {
           price: number
           price_type: string | null
           property_type: string | null
-          schedule_url: string | null
           seller_id: string | null
           square_feet: number | null
           title: string
@@ -174,7 +173,7 @@ export type Database = {
           added_at?: string
           address_line_1: string
           address_line_2?: string | null
-          agency_location_id: string
+          agency_location_id?: string | null
           city: string
           council_tax_band?: string | null
           description: string
@@ -190,7 +189,6 @@ export type Database = {
           price: number
           price_type?: string | null
           property_type?: string | null
-          schedule_url?: string | null
           seller_id?: string | null
           square_feet?: number | null
           title: string
@@ -199,7 +197,7 @@ export type Database = {
           added_at?: string
           address_line_1?: string
           address_line_2?: string | null
-          agency_location_id?: string
+          agency_location_id?: string | null
           city?: string
           council_tax_band?: string | null
           description?: string
@@ -215,7 +213,6 @@ export type Database = {
           price?: number
           price_type?: string | null
           property_type?: string | null
-          schedule_url?: string | null
           seller_id?: string | null
           square_feet?: number | null
           title?: string
@@ -308,6 +305,14 @@ export type Database = {
           first_name: string
           id: string
           last_name: string
+        }[]
+      }
+      getagencylocationdetails: {
+        Args: { p_id: string }
+        Returns: {
+          email: string
+          logo_url: string
+          phone_number: string
         }[]
       }
       is_current_user_admin: { Args: never; Returns: boolean }
