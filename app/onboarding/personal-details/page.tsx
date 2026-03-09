@@ -69,7 +69,7 @@ export default function PersonalDetails() {
       const { error } = await supabase.from("users").update({
         first_name: firstName,
         last_name: lastName,
-        user_goals: [buying ? "buying" : null, selling ? "selling" : null, browsing ? "browsing" : null].filter(Boolean),
+        user_goals: [buying ? "buying" : null, selling ? "selling" : null, browsing ? "browsing" : null].filter((goal) => goal !== null) as string[],
         onboarded: buying ? false : true,
       }).eq("id", user.user.id).select().single();
 
@@ -79,9 +79,7 @@ export default function PersonalDetails() {
 
       // add a buyer profile if the user is a buyer
       if (buying) {
-        console.log("Adding buyer profile...");
         await addBuyerProfile(user.user.id);
-        console.log("Buyer profile added successfully");
         router.push("/onboarding/buyer-profile");
       } else {
           router.push("/public/home");

@@ -30,7 +30,6 @@ export default function Navbar() {
                     setUserIsEstateAgent(estateAgentStatus);
 
                     const sellerStatus = await isSeller(user.user.id);
-                    console.log("Seller status:", sellerStatus);
                     setUserIsSeller(sellerStatus);
                 } 
             } catch (error) {

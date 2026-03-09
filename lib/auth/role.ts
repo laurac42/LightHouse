@@ -90,15 +90,13 @@ export async function isSeller(userId: string) {
         .from('user_roles')
         .select('role')
         .eq('user_id', userId)
-        .eq('role', 'seller')
-        .single();
+        .eq('role', 'seller');
 
         if (error) {
             throw error;
         }
         return isSeller ? true : false;
     } catch (error) {
-        console.error("Error checking seller status:", error);
         return false;
     }
 }

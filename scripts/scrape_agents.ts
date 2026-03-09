@@ -4,7 +4,7 @@ import * as axios from "axios";
 import {config} from "dotenv";
 config({path: "../.env.local"}); // load environment variables from .env file
 import { createClient } from "@supabase/supabase-js";
-import { getAgentAddress } from "./address_format";
+import { getAgentAddress } from "./address_format.ts";
 
 // create client with service role key to allow uploading to storage from a non-server environment
 const supabase = createClient(
@@ -48,15 +48,12 @@ async function scrapeEstateAgents() {
         }
 
         for (const element of $solicitorImageURLS) {
-            console.log("Image url: " , element);
             downloadAgentLogo("https://tspc.co.uk" + element);
         }
         
         for (const element of $solicitorNames) {
             const regex = /[^a-z0-9-]+/gi; // groups all characters that are not letters, numbers or hyphens
             const trimmedName = $(element).text().trim().toLowerCase().replace(regex, "-").replace(/^\-+|\-+$/g, ""); // replace groups with hyphen and convert to lowercase, then remove leading/trailing hyphens
-
-            console.log(`Scraping agent: ${trimmedName}`);
             await scrapeSpecificAgent(trimmedName, agencyMap.get($(element).text().trim())!);
 
         }

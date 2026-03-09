@@ -31,7 +31,7 @@ export default function ManageSellersPage() {
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [user, setUser] = useState<any>(null);
-    const [sellers, setSellers] = useState<SellerItem[]>([]);
+    const [sellers, setSellers] = useState<SellerItem[] | null>(null);
     const [loadingSellers, setLoadingSellers] = useState(true);
     const router = useRouter();
 
@@ -80,7 +80,6 @@ export default function ManageSellersPage() {
                 }
                 await upgradeExistingUserToSeller(data.id);
             } else {
-                console.log("No user with this email found, creating new seller...");
                 await inviteNewSeller(email);
             }
         } catch (error) {
@@ -176,7 +175,6 @@ export default function ManageSellersPage() {
                 throw error;
             }
 
-            console.log("Fetched sellers:", data);
             return data;
         } catch (error) {
             console.error("Error fetching sellers:", error);

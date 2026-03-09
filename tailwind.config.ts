@@ -18,6 +18,7 @@ export default {
         highlight: "#217591",
         buttonColor: "#cb9093",
         buttonHover: "#bd7175",
+        lightHover: '#ead3d4',
         yellow: "#FCF891",
         midBlue: "#AADBEC",
         midBlueHover: "#7fc9e2",
