@@ -39,6 +39,8 @@ export async function getAgencyDetails(agencyId: string) {
 
         if (error || !data) { throw error || new Error("No data returned from RPC"); }
 
+        console.log("Fetched agency details: ", data);
+        console.log("data 0 is: ", Array.isArray(data) ? data[0] : data);
         return Array.isArray(data) ? data[0] : data;
     } catch (error) {
         console.error("Error fetching agency details: ", error);

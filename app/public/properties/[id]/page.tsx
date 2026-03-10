@@ -7,8 +7,9 @@ import { getImagesFromStorage } from "@/lib/data/images";
 import ImageCarousel from "@/components/image-carousel";
 import Navbar from "@/components/navbar";
 import Link from "next/link";
-import { MoveLeft } from "lucide-react";
+import { MoveLeft, Phone, Mail } from "lucide-react";
 import { AgencyLocationDetails } from "@/types/agency";
+import AgencyCard from "@/components/agency-card";
 
 type Property = Database["public"]["Tables"]["properties"]["Row"];
 
@@ -43,26 +44,18 @@ function PropertyDetails({ params }: { params: Promise<{ id: number }> }) {
 
     return (
         <div>
-            <div className="grid grid-cols-3 gap-4 px-6 py-4">
+            <div className="col-span-1 border-none fixed right-4 w-1/3 pl-8 py-4">
+                {agencyDetails && (
+                    <AgencyCard agencyDetails={agencyDetails} />
+                )}
+            </div>
+            <div className="grid grid-cols-3 gap-8 px-12 py-4 border-none">
                 <div className="col-span-2">
                     {property && images.length > 0 ? (
                         <div>
                             <ImageCarousel images={images} property={property} page="property-details" />
                         </div>
                     ) : null}
-                </div>
-                <div className="col-span-1">
-                    {agencyDetails && (
-                        <div className="p-4 border rounded">
-                            <h2 className="text-lg font-bold mb-2">{agencyDetails.name}</h2>
-                            <p className="mb-1"><strong>Email:</strong> {agencyDetails.email}</p>
-                            <p className="mb-1"><strong>Phone:</strong> {agencyDetails.phone_number}</p>
-                            <p className="mb-1"><strong>Address:</strong> {agencyDetails.address_line_1}, {agencyDetails.address_line_2}, {agencyDetails.city}, {agencyDetails.post_code}</p>
-                            {agencyDetails.logo_url && (
-                                <img src={agencyDetails.logo_url} alt={`${agencyDetails.name} Logo`} className="mt-2 max-h-20" />
-                            )}
-                        </div>
-                    )}
                 </div>
             </div>
             <h1>Property Details</h1>
@@ -84,7 +77,7 @@ export default function Page({ params }: { params: Promise<{ id: number }> }) {
         <Suspense fallback={<div>Loading...</div>}>
             <div className="bg-background min-h-screen w-full">
                 <Navbar />
-                <Link className="flex inline-flex text-highlight m-2" href="/properties"><MoveLeft /> &nbsp; Back to Properties</Link>
+                <Link className="flex inline-flex text-highlight m-6 mb-0 mt-6" href="/properties"><MoveLeft /> &nbsp; Back to Properties</Link>
                 <PropertyDetails params={params} />
             </div>
         </Suspense>

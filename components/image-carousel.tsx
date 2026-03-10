@@ -91,9 +91,11 @@ export default function ImageCarousel({ images, property, page }: { images: stri
                                         src={process.env.NEXT_PUBLIC_BUCKET_URL + 'properties/' + property.id + '/' + imageUrl}
                                         alt={`Image ${index + 1} of ${property.title}`}
                                         className={page === "property-details" ? "w-full h-[80vh] object-cover rounded-t-md" : "w-full h-64 object-cover rounded-t-md"}
+
                                         onClick={() => {
                                             const clickedIndex = displayImages.findIndex((displayImage) => displayImage === imageUrl);
                                             setSelectedImageIndex(clickedIndex >= 0 ? clickedIndex : 0);
+
                                         }}
                                     />
                                 </CarouselItem>
@@ -105,7 +107,7 @@ export default function ImageCarousel({ images, property, page }: { images: stri
                 <CarouselPrevious className="absolute left-2" />
                 <CarouselNext className="absolute right-2" />
                 <p className="absolute right-2 top-2 text-sm inline-flex gap-1 items-center bg-navBar rounded-md p-1"><Camera size={16} /> {current} of {count}</p>
-                <p className="absolute left-2 bottom-2 text-sm inline-flex gap-1 items-center bg-navBar rounded-md p-1">Click on an image to view it in full size</p>
+                <p className="absolute right-2 bottom-2 text-sm inline-flex gap-1 items-center bg-navBar rounded-md p-1">Click on an image to view it in full size</p>
             </Carousel>
 
             {/** Modal for displaying selected image */}
@@ -116,27 +118,27 @@ export default function ImageCarousel({ images, property, page }: { images: stri
                 >
                     <XCircleIcon size={32} className="absolute top-6 right-6 text-white cursor-pointer" onClick={() => setSelectedImageIndex(null)} />
                     <div className="w-full max-w-[90vw]">
-                    <Carousel
-                        key={selectedImageIndex}
-                        className="w-full"
-                        opts={{ loop: true, startIndex: selectedImageIndex }}>
-                        <CarouselContent>
-                            {displayImages.map((imageUrl, index) => (
-                                <CarouselItem key={index}>
-                                    <img
-                                        src={process.env.NEXT_PUBLIC_BUCKET_URL + 'properties/' + property.id + '/' + imageUrl}
-                                        alt={`Image ${index + 1} of ${property.title}`}
-                                        className="w-full max-h-[90vh] object-contain"
-                                        onClick={e => {e.stopPropagation}}
-                                    />
-                                </CarouselItem>
-                            ))}
-                        </CarouselContent>
-                        <div onClick={(e) => e.stopPropagation()}>
-                        <CarouselPrevious  />
-                        <CarouselNext  />
-                        </div>
-                    </Carousel>
+                        <Carousel
+                            key={selectedImageIndex}
+                            className="w-full"
+                            opts={{ loop: true, startIndex: selectedImageIndex }}>
+                            <CarouselContent>
+                                {displayImages.map((imageUrl, index) => (
+                                    <CarouselItem key={index}>
+                                        <img
+                                            src={process.env.NEXT_PUBLIC_BUCKET_URL + 'properties/' + property.id + '/' + imageUrl}
+                                            alt={`Image ${index + 1} of ${property.title}`}
+                                            className="w-full max-h-[90vh] object-contain"
+                                            onClick={e => { e.stopPropagation }}
+                                        />
+                                    </CarouselItem>
+                                ))}
+                            </CarouselContent>
+                            <div onClick={(e) => e.stopPropagation()}>
+                                <CarouselPrevious />
+                                <CarouselNext />
+                            </div>
+                        </Carousel>
                     </div>
                 </div>,
                 document.body
