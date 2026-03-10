@@ -45,7 +45,7 @@ export default function Navbar() {
     }, []);
 
     return (
-        <nav className="w-full bg-navBar">
+        <nav id="navbar" className="w-full bg-navBar">
             <div className="shadow-sm shadow-highlight mx-auto px-4 py-3 flex items-center justify-between">
                 <div className="md:hidden text-2xl text-foreground cursor-pointer">
                     <Menu onClick={() => setIsMenuOpen(!isMenuOpen)} />

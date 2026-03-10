@@ -1,6 +1,6 @@
 'use client';
 import { Suspense, useEffect, useState, CSSProperties } from "react";
-import { use } from "react";
+import { use, useRef } from "react";
 import { fetchPropertyDetails, getAgencyDetails } from "@/lib/data/property";
 import { Database } from "@/types/supabase";
 import { getImagesFromStorage } from "@/lib/data/images";
@@ -17,8 +17,7 @@ type Property = Database["public"]["Tables"]["properties"]["Row"];
 
 function applyClassesToDescription(description: string, styles: { [key: string]: string }) {
     // apply the features class to the 'Key Features' heading
-    description =  description.replace(/<h1>(Key [fF]eatures)<\/h1>/, `<h1 class="${styles.features}">Key Features</h1>`);
-    console.log("Description after applying classes: ", description);
+    description = description.replace(/<h1>(Key [fF]eatures)<\/h1>/, `<h1 class="${styles.features}">Key Features</h1>`);
     return description;
 }
 
@@ -27,6 +26,26 @@ function PropertyDetails({ params }: { params: Promise<{ id: number }> }) {
     const [property, setProperty] = useState<Property | null>(null);
     const [images, setImages] = useState<string[]>([]);
     const [agencyDetails, setAgencyDetails] = useState<AgencyLocationDetails | null>(null);
+    const [barHeight, setBarHeight] = useState(0);
+    const navRef = useRef(null);
+    const barRef = useRef(null);
+    const [isFixed, setIsFixed] = useState(false);
+
+    useEffect(() => {
+        const nav = document.getElementById("navbar"); 
+        const bar = barRef.current;
+
+        const onScroll = () => {
+            if (bar && nav) {
+                const navBottom = nav.getBoundingClientRect().bottom;
+                setIsFixed(navBottom <= 0);
+            };
+        };
+        console.log("Navbar height: ", nav ? nav.offsetHeight : "Navbar not found");
+        console.log("Fixed state: ", isFixed);
+        window.addEventListener("scroll", onScroll, { passive: true });
+        return () => window.removeEventListener("scroll", onScroll);
+    }, []);
 
     useEffect(() => {
         const fetchProperty = async () => {
@@ -45,7 +64,6 @@ function PropertyDetails({ params }: { params: Promise<{ id: number }> }) {
         if (property?.agency_location_id) {
             getAgencyDetails(property.agency_location_id).then((details) => {
                 setAgencyDetails(details);
-                console.log("Fetched agency details: ", details);
             }
             );
         }
@@ -53,11 +71,12 @@ function PropertyDetails({ params }: { params: Promise<{ id: number }> }) {
 
     return (
         <div>
-            <div className="col-span-1 border-none fixed right-4 w-1/3 pl-8 py-2">
+            <div ref={barRef} className={`col-span-1 border-none top-0 right-4 w-1/3 pl-8 py-2 ${isFixed ? 'fixed pt-8' : 'absolute pt-28'}`} style={{ zIndex: 1000, height: barHeight } as CSSProperties}>
                 {agencyDetails && (
                     <AgencyCard agencyDetails={agencyDetails} />
                 )}
             </div>
+            {isFixed && <div style={{ height: barHeight }} />}
             <div className="grid grid-cols-3 gap-8 px-12 py-2 border-none">
                 <div className="col-span-2">
                     {property && images.length > 0 ? (
@@ -111,6 +130,7 @@ function PropertyDetails({ params }: { params: Promise<{ id: number }> }) {
 export default function Page({ params }: { params: Promise<{ id: number }> }) {
     return (
         <Suspense fallback={<div>Loading...</div>}>
+
             <div className="bg-background min-h-screen w-full">
                 <Navbar />
                 <Link className="flex inline-flex text-highlight m-6 mb-0 mt-4" href="/properties"><MoveLeft /> &nbsp; Back to Properties</Link>

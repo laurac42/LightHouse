@@ -149,9 +149,7 @@ export default function ImageCarousel({ images, property, page }: { images: stri
                         ) : (
                             <div className="absolute bottom-2 right-2 flex gap-2">
                                 <Button onClick={() => {
-                                    console.log("selectedImageUrl is: ", selectedImageUrl);
                                     const clickedIndex = displayImages.findIndex((displayImage) => displayImage === selectedImageUrl);
-                                    console.log("clickedIndex is: ", clickedIndex);
                                     setSelectedImageIndex(clickedIndex >= 0 ? clickedIndex : 0);
 
                                 }} className="bg-white/90 h-12 inline-flex gap-1 text-md" variant="outline">All images <Camera size={16} /></Button>
