@@ -15,10 +15,10 @@ import { Button } from "@/components/ui/button";
 type Property = Database["public"]["Tables"]["properties"]["Row"];
 
 /**
-      * Get the first image URL from the list of images, prioritizing exterior images
-      * @param images List of image URLs to select from
-      * @returns URL of the first image to display, or null if no images are available
-      */
+ * Get the first image URL from the list of images, prioritizing exterior images
+ * @param images List of image URLs to select from
+ * @returns URL of the first image to display, or null if no images are available
+ */
 function getFirstImageUrl(images: string[]) {
     if (images.length === 0) {
         return null;
@@ -31,6 +31,11 @@ function getFirstImageUrl(images: string[]) {
     return images[0]; // return the first image if no exterior image is found
 }
 
+/**
+ * Check if a floor plan image exists in the list of images by looking for 'floorplan' in the image URLs
+ * @param images lst of image URLs to check for a floor plan image
+ * @returns boolean indicating whether a floor plan image exists in the list of images
+ */
 function floorPlanImageExists(images: string[]) {
     return images.some(imageUrl => imageUrl.toLowerCase().includes('floorplan'));
 }
@@ -72,9 +77,10 @@ export default function ImageCarousel({ images, property, page }: { images: stri
         })
     }, [api])
 
+    // Add event listener for the escape key to close the modal when an image is selected
     useEffect(() => {
         if (selectedImageIndex !== null) {
-            // add evernt listener for escape key to close modal
+            // add event listener for escape key to close modal
             const handleKeyDown = (event: KeyboardEvent) => {
                 if (event.key === "Escape") {
                     setSelectedImageIndex(null);

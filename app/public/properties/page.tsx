@@ -23,10 +23,6 @@ export default function PropertiesPage() {
     const [loading, setLoading] = useState(true);
     const [isMobile, setIsMobile] = useState(false);
 
-    useLayoutEffect(() => {
-        setIsMobile(window.innerWidth < 768);
-    }, []);
-
     const updateMedia = useCallback(() => {
         setIsMobile(window.innerWidth < 768);
     }, []);

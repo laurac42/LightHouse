@@ -15,12 +15,19 @@ import styles from '../page.module.css';
 
 type Property = Database["public"]["Tables"]["properties"]["Row"];
 
+/**
+ * Descritpion has no classes, so features class is applied to the 'Key Features' heading in the description to allow styling of the features section
+ * @param description The description to apply classes to
+ * @param styles The CSS module styles object containing the features class
+ * @returns The description with the features class applied to the 'Key Features' heading
+ */
 function applyClassesToDescription(description: string, styles: { [key: string]: string }) {
     // apply the features class to the 'Key Features' heading
     description = description.replace(/<h1>(Key [fF]eatures)<\/h1>/, `<h1 class="${styles.features}">Key Features</h1>`);
     return description;
 }
 
+// Component to fetch and display property details, images and agency details for a given property ID
 function PropertyDetails({ params }: { params: Promise<{ id: number }> }) {
     const { id } = use(params);
     const [property, setProperty] = useState<Property | null>(null);
@@ -31,6 +38,7 @@ function PropertyDetails({ params }: { params: Promise<{ id: number }> }) {
     const barRef = useRef(null);
     const [isFixed, setIsFixed] = useState(false);
 
+    // Set the height of the bar for spacing when it becomes fixed and add scroll listener to toggle fixed position
     useEffect(() => {
         const nav = document.getElementById("navbar"); 
         const bar = barRef.current;
@@ -41,8 +49,6 @@ function PropertyDetails({ params }: { params: Promise<{ id: number }> }) {
                 setIsFixed(navBottom <= 0);
             };
         };
-        console.log("Navbar height: ", nav ? nav.offsetHeight : "Navbar not found");
-        console.log("Fixed state: ", isFixed);
         window.addEventListener("scroll", onScroll, { passive: true });
         return () => window.removeEventListener("scroll", onScroll);
     }, []);
@@ -71,6 +77,7 @@ function PropertyDetails({ params }: { params: Promise<{ id: number }> }) {
 
     return (
         <div>
+            {/** Agency card scrolls until the navbar disappears, then is fixed */}
             <div ref={barRef} className={`col-span-1 border-none top-0 right-4 w-1/3 pl-8 py-2 ${isFixed ? 'fixed pt-8' : 'absolute pt-28'}`} style={{ zIndex: 1000, height: barHeight } as CSSProperties}>
                 {agencyDetails && (
                     <AgencyCard agencyDetails={agencyDetails} />
@@ -118,7 +125,7 @@ function PropertyDetails({ params }: { params: Promise<{ id: number }> }) {
                             </div>
                         </div>
                         <hr />
-                        <div className={styles.description} dangerouslySetInnerHTML={{ __html: sanitizeDescription(applyClassesToDescription(property.description, styles)) }} />
+                        <div className={styles.description + ' mb-8'} dangerouslySetInnerHTML={{ __html: sanitizeDescription(applyClassesToDescription(property.description, styles)) }} />
                     </div>
                 )}
             </div>
@@ -127,6 +134,7 @@ function PropertyDetails({ params }: { params: Promise<{ id: number }> }) {
 
 }
 
+// Separate component to allow use of suspense for loading state while fetching property details and agency details
 export default function Page({ params }: { params: Promise<{ id: number }> }) {
     return (
         <Suspense fallback={<div>Loading...</div>}>
