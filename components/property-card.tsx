@@ -4,8 +4,7 @@ import {
     CardContent,
     CardHeader,
     CardTitle,
-} from "@/components/ui/card";
-import DOMPurify from "dompurify";
+} from "@/components/ui/card";;
 import { Database } from "@/types/supabase";
 import { Home, Bed, Bath, Grid2X2, Lightbulb, Landmark, Mail, Phone } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -13,18 +12,9 @@ import { getAgencyDetails } from "@/lib/data/property";
 import Link from 'next/link';
 import ImageCarousel from "./image-carousel";
 import type{ AgencyLocationDetails }from "@/types/agency";
+import { sanitizeDescription } from "@/lib/data/property";
 
 type Property = Database["public"]["Tables"]["properties"]["Row"];
-
-/**
-  * Sanitize property description to prevent XSS attacks, allowing only basic formatting tags
-  * @param description Property description to sanitize
-  * @returns Sanitized description safe for rendering as HTML
-  */
-function sanitizeDescription(description: string | null) {
-    if (!description) return "";
-    return DOMPurify.sanitize(description, { ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'ul', 'li', 'p', 'br', 'h1'] });
-}
 
 /**
  * Remove bullet points and headings and p tags from property description for displaying on cards

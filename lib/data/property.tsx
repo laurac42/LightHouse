@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/client";
 import { Database } from "@/types/supabase";
+import DOMPurify from "dompurify"
 
 type Property = Database["public"]["Tables"]["properties"]["Row"];
 
@@ -46,5 +47,16 @@ export async function getAgencyDetails(agencyId: string) {
         console.error("Error fetching agency details: ", error);
         return null;
     }
+}
+
+
+/**
+  * Sanitize property description to prevent XSS attacks, allowing only basic formatting tags
+  * @param description Property description to sanitize
+  * @returns Sanitized description safe for rendering as HTML
+  */
+export function sanitizeDescription(description: string | null) {
+    if (!description) return "";
+    return DOMPurify.sanitize(description, { ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'ul', 'li', 'p', 'br', 'h1'] });
 }
 
