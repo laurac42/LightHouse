@@ -40,6 +40,7 @@ export default function ImageCarousel({ images, property, page }: { images: stri
     const [current, setCurrent] = useState(0)
     const [count, setCount] = useState(0)
     const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
+    const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
     const [showFloorplan, setShowFloorplan] = useState(false);
     const [floorPlanExists, setFloorPlanExists] = useState(false);
 
@@ -54,6 +55,12 @@ export default function ImageCarousel({ images, property, page }: { images: stri
     ];
 
     useEffect(() => {
+        if (firstImageUrl) {
+            setSelectedImageUrl(firstImageUrl);
+        }
+    }, [firstImageUrl]);
+
+    useEffect(() => {
         if (!api) {
             return
         }
@@ -61,6 +68,7 @@ export default function ImageCarousel({ images, property, page }: { images: stri
         setCurrent(api.selectedScrollSnap() + 1)
         api.on("select", () => {
             setCurrent(api.selectedScrollSnap() + 1)
+            setSelectedImageUrl(displayImages[api.selectedScrollSnap()] || null);
         })
     }, [api])
 
@@ -115,7 +123,6 @@ export default function ImageCarousel({ images, property, page }: { images: stri
                                                 src={process.env.NEXT_PUBLIC_BUCKET_URL + 'properties/' + property.id + '/' + imageUrl}
                                                 alt={`Image ${index + 1} of ${property.title}`}
                                                 className={page === "property-details" ? "w-full h-[80vh] 2xl:h-[60vh] object-cover rounded-t-md" : "w-full h-64 object-cover rounded-t-md"}
-
                                                 onClick={() => {
                                                     if (page === "property-details") {
                                                         const clickedIndex = displayImages.findIndex((displayImage) => displayImage === imageUrl);
@@ -141,7 +148,13 @@ export default function ImageCarousel({ images, property, page }: { images: stri
                             <Button onClick={() => setShowFloorplan(false)} className="bg-white/90 h-12 absolute bottom-2 right-2 text-md p-4 inline-flex gap-1" variant="outline">Images<Camera size={16} /></Button>
                         ) : (
                             <div className="absolute bottom-2 right-2 flex gap-2">
-                                <Button className="bg-white/90 h-12 inline-flex gap-1 text-md" variant="outline">All images <Camera size={16} /></Button>
+                                <Button onClick={() => {
+                                    console.log("selectedImageUrl is: ", selectedImageUrl);
+                                    const clickedIndex = displayImages.findIndex((displayImage) => displayImage === selectedImageUrl);
+                                    console.log("clickedIndex is: ", clickedIndex);
+                                    setSelectedImageIndex(clickedIndex >= 0 ? clickedIndex : 0);
+
+                                }} className="bg-white/90 h-12 inline-flex gap-1 text-md" variant="outline">All images <Camera size={16} /></Button>
                                 <Button onClick={() => setShowFloorplan(true)} className="bg-white/90 h-12 text-md p-4 inline-flex gap-1" variant="outline">Floorplan <Grid2X2 size={16} /></Button>
                             </div>
                         )}
