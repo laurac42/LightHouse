@@ -40,7 +40,7 @@ function floorPlanImageExists(images: string[]) {
     return images.some(imageUrl => imageUrl.toLowerCase().includes('floorplan'));
 }
 
-export default function ImageCarousel({ images, property, page }: { images: string[]; property: Property; page: string }) {
+export default function ImageCarousel({ images, property, page, isModalOpen }: { images: string[]; property: Property; page: string; isModalOpen?: ((isModalOpen: boolean) => void) | null }) {
     const [api, setApi] = useState<CarouselApi>()
     const [current, setCurrent] = useState(0)
     const [count, setCount] = useState(0)
@@ -48,6 +48,21 @@ export default function ImageCarousel({ images, property, page }: { images: stri
     const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
     const [showFloorplan, setShowFloorplan] = useState(false);
     const [floorPlanExists, setFloorPlanExists] = useState(false);
+    const [modalOpen, setModalOpen] = useState(false);
+
+    // handle the image modal being opened
+    // this allows the parent component to know whether the modal is open or not so it can hide the agency card when the modal is open
+    const handleOpen = () => {
+        setModalOpen(true);
+        isModalOpen?.(true);
+    }
+
+    // handle the image modal being closed
+    // this allows the parent component to know whether the modal is open or not so it can hide the agency card when the modal is open
+    const handleClose = () => {
+        setModalOpen(false);
+        isModalOpen?.(false);
+    }
 
     useEffect(() => {
         setFloorPlanExists(floorPlanImageExists(images));
@@ -84,6 +99,7 @@ export default function ImageCarousel({ images, property, page }: { images: stri
             const handleKeyDown = (event: KeyboardEvent) => {
                 if (event.key === "Escape") {
                     setSelectedImageIndex(null);
+                    handleClose();
                 }
             };
             document.addEventListener("keydown", handleKeyDown);
@@ -103,7 +119,10 @@ export default function ImageCarousel({ images, property, page }: { images: stri
                                 src={process.env.NEXT_PUBLIC_BUCKET_URL + 'properties/' + property.id + '/' + images.find(imageUrl => imageUrl.toLowerCase().includes('floorplan'))}
                                 alt={`Floorplan of ${property.title}`}
                                 className="w-full h-[80vh] 2xl:h-[60vh] object-cover rounded-t-md"
-                                onClick={() => setSelectedImageIndex(-1)}
+                                onClick={() => {
+                                    setSelectedImageIndex(-1);
+                                    handleOpen();
+                                }}
                             />
                         </CarouselItem>
                     </CarouselContent>
@@ -115,8 +134,11 @@ export default function ImageCarousel({ images, property, page }: { images: stri
                                     <img
                                         src={process.env.NEXT_PUBLIC_BUCKET_URL + "properties/" + property.id + "/" + firstImageUrl}
                                         alt={`Main image of ${property.title}`}
-                                        className={page === "property-details" ? "w-full h-[80vh] 2xl:h-[60vh] object-cover rounded-t-md" : "w-full h-64 object-cover rounded-t-md"}
-                                        onClick={() => setSelectedImageIndex(0)}
+                                        className={page === "property-details" ? "w-full h-[40vh] sm:h-[60vh] md:h-[80vh] 2xl:h-[60vh] object-cover rounded-t-md" : "w-full h-64 object-cover rounded-t-md"}
+                                        onClick={() => {
+                                            setSelectedImageIndex(0);
+                                            handleOpen();
+                                        }}
                                     />
                                 )}
                             </CarouselItem>
@@ -128,11 +150,12 @@ export default function ImageCarousel({ images, property, page }: { images: stri
                                             <img
                                                 src={process.env.NEXT_PUBLIC_BUCKET_URL + 'properties/' + property.id + '/' + imageUrl}
                                                 alt={`Image ${index + 1} of ${property.title}`}
-                                                className={page === "property-details" ? "w-full h-[80vh] 2xl:h-[60vh] object-cover rounded-t-md" : "w-full h-64 object-cover rounded-t-md"}
+                                                className={page === "property-details" ? "w-full h-[40vh] sm:h-[60vh] md:h-[80vh] 2xl:h-[60vh] object-cover rounded-t-md" : "w-full h-64 object-cover rounded-t-md"}
                                                 onClick={() => {
                                                     if (page === "property-details") {
                                                         const clickedIndex = displayImages.findIndex((displayImage) => displayImage === imageUrl);
                                                         setSelectedImageIndex(clickedIndex >= 0 ? clickedIndex : 0);
+                                                        handleOpen();
                                                     }
                                                 }}
                                             />
@@ -157,7 +180,7 @@ export default function ImageCarousel({ images, property, page }: { images: stri
                                 <Button onClick={() => {
                                     const clickedIndex = displayImages.findIndex((displayImage) => displayImage === selectedImageUrl);
                                     setSelectedImageIndex(clickedIndex >= 0 ? clickedIndex : 0);
-
+                                    handleOpen();
                                 }} className="bg-white/90 h-12 inline-flex gap-1 text-md" variant="outline">All images <Camera size={16} /></Button>
                                 <Button onClick={() => setShowFloorplan(true)} className="bg-white/90 h-12 text-md p-4 inline-flex gap-1" variant="outline">Floorplan <Grid2X2 size={16} /></Button>
                             </div>
@@ -170,10 +193,22 @@ export default function ImageCarousel({ images, property, page }: { images: stri
             {
                 selectedImageIndex !== null && createPortal(
                     <div
-                        className="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
-                        onClick={() => setSelectedImageIndex(null)}
+                        className="fixed inset-0 bg-black/70 flex items-center justify-center cursor-pointer"
+                        onClick={() => {
+                            setSelectedImageIndex(null);
+                            handleClose();
+                        }
+                        }
+                        style={{zIndex: 1000    }}
                     >
-                        <XCircleIcon size={32} className="absolute top-6 right-6 text-white cursor-pointer" onClick={() => setSelectedImageIndex(null)} />
+                        <XCircleIcon size={32} className="absolute top-6 right-6 text-white"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                console.log("clicked close icon")
+                                setSelectedImageIndex(null);
+                                handleClose();
+                                console.log("clicked close icon, setting selectedImageIndex to null and closing modal")
+                            }} />
                         <div className="w-full max-w-[90vw]">
                             <Carousel
                                 key={selectedImageIndex}
@@ -203,9 +238,9 @@ export default function ImageCarousel({ images, property, page }: { images: stri
                                         </>
                                     }
                                 </CarouselContent>
-                                <div onClick={(e) => e.stopPropagation()}>
-                                    <CarouselPrevious />
-                                    <CarouselNext />
+                                <div onClick={(e) => e.stopPropagation()} >
+                                    <CarouselPrevious className="absolute left-1" />
+                                    <CarouselNext className="absolute right-1" />
                                 </div>
                             </Carousel>
                         </div>

@@ -34,13 +34,13 @@ function PropertyDetails({ params }: { params: Promise<{ id: number }> }) {
     const [images, setImages] = useState<string[]>([]);
     const [agencyDetails, setAgencyDetails] = useState<AgencyLocationDetails | null>(null);
     const [barHeight, setBarHeight] = useState(0);
-    const navRef = useRef(null);
     const barRef = useRef(null);
     const [isFixed, setIsFixed] = useState(false);
+    const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
     // Set the height of the bar for spacing when it becomes fixed and add scroll listener to toggle fixed position
     useEffect(() => {
-        const nav = document.getElementById("navbar"); 
+        const nav = document.getElementById("navbar");
         const bar = barRef.current;
 
         const onScroll = () => {
@@ -78,23 +78,28 @@ function PropertyDetails({ params }: { params: Promise<{ id: number }> }) {
     return (
         <div>
             {/** Agency card scrolls until the navbar disappears, then is fixed */}
-            <div ref={barRef} className={`col-span-1 border-none top-0 right-4 w-1/3 pl-8 py-2 ${isFixed ? 'fixed pt-8' : 'absolute pt-28'}`} style={{ zIndex: 1000, height: barHeight } as CSSProperties}>
-                {agencyDetails && (
+            <div ref={barRef} className={`col-span-1 border-none lg:top-0 lg:right-4 w-1/3 pl-8 lg:py-2 ${isFixed ? 'lg:fixed lg:pt-8' : 'lg:absolute lg:pt-28'}`} style={{ zIndex: 1000, height: barHeight } as CSSProperties}>
+                {!isImageModalOpen && agencyDetails && (
                     <AgencyCard agencyDetails={agencyDetails} />
                 )}
             </div>
             {isFixed && <div style={{ height: barHeight }} />}
-            <div className="grid grid-cols-3 gap-8 px-12 py-2 border-none">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-8 px-4 md:px-12 py-2 border-none">
                 <div className="col-span-2">
                     {property && images.length > 0 ? (
                         <div>
-                            <ImageCarousel images={images} property={property} page="property-details" />
+                            <ImageCarousel
+                                images={images}
+                                property={property}
+                                page="property-details"
+                                isModalOpen={setIsImageModalOpen}
+                            />
                         </div>
                     ) : null}
                 </div>
 
                 {property && (
-                    <div className="px-4 py-4 col-start-1 col-span-2">
+                    <div className="px-2 lg:px-4 py-4 col-start-1 col-span-2">
                         <h1 className="text-3xl font-bold mb-4">{property.title}</h1>
                         <hr />
                         <div className="grid grid-cols-2 lg:grid-cols-3 md:px-8 px-1 py-1 lg:py-2 text-md gap-2 lg:gap-4">
@@ -125,7 +130,7 @@ function PropertyDetails({ params }: { params: Promise<{ id: number }> }) {
                             </div>
                         </div>
                         <hr />
-                        <div className={styles.description + ' mb-8'} dangerouslySetInnerHTML={{ __html: sanitizeDescription(applyClassesToDescription(property.description, styles)) }} />
+                        <div className={styles.description + ' mb-20 md:mb-28 lg:mb-8'} dangerouslySetInnerHTML={{ __html: sanitizeDescription(applyClassesToDescription(property.description, styles)) }} />
                     </div>
                 )}
             </div>

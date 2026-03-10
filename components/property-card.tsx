@@ -52,7 +52,7 @@ export default function PropertyCard({ property, images }: { property: Property;
             <CardContent className="p-0">
                 <div className="flex flex-col md:flex-row gap-2">
                     <div className="flex flex-col gap-0 md:w-80 shrink-0">
-                        <ImageCarousel images={images} property={property} page="properties"/>
+                        <ImageCarousel images={images} property={property} page="properties" isModalOpen={null} />
                         <div>
                             <CardHeader className="p-0 gap-0 m-0 bg-highlight rounded-b-md text-white flex flex-row items-center justify-center">
                                 <CardTitle className="text-2xl text-center">{'£' + property.price.toLocaleString()}</CardTitle>
