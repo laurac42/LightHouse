@@ -2,44 +2,45 @@
 import Navbar from "@/components/navbar";
 import FilterBar from "@/components/filter-bar";
 import { Button } from "@/components/ui/button";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useLayoutEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Database } from "@/types/supabase";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import PropertyCard from "@/components/property-card";
+import { getImagesFromStorage } from "@/lib/data/images";
 
 
 type Property = Database["public"]["Tables"]["properties"]["Row"] & { images: string[] };
+const PAGE_SIZE = 10; // number of properties to display per page
 
 export default function PropertiesPage() {
 
     const [properties, setProperties] = useState<Property[]>([]);
     const [location, setLocation] = useState("Dundee");
-    const PAGE_SIZE = 10; // number of properties to display per page
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [totalProperties, setTotalProperties] = useState(0);
     const [loading, setLoading] = useState(true);
     const [isMobile, setIsMobile] = useState(false);
 
-    useEffect(() => {
-        fetchProperties();
+    useLayoutEffect(() => {
+        setIsMobile(window.innerWidth < 768);
     }, []);
 
-    const updateMedia = () => {
+    const updateMedia = useCallback(() => {
         setIsMobile(window.innerWidth < 768);
-    };
+    }, []);
 
     useEffect(() => {
         window.addEventListener("resize", updateMedia);
         return () => window.removeEventListener("resize", updateMedia);
-    }, []);
+    }, [updateMedia]);
 
     /**
      * Fetch properties and property images for a given search results page
      * @param page Page number to fetch properties for - default is 1
      */
-    async function fetchProperties(page: number = 1) {
+    const fetchProperties = useCallback(async (page: number = 1) => {
         try {
             // scroll to top
             window.scrollTo({ top: 0 });
@@ -73,26 +74,11 @@ export default function PropertiesPage() {
         } catch (error) {
             console.error("Error fetching properties: ", error);
         }
-    }
+    }, []);
 
-    /**
-     * Get property image URLs from Supabase storage for a given property ID
-     * @param id ID of the property to get images for
-     * @returns a list of image URLs for the property, or an empty list if no images are found or an error occurs
-     */
-    async function getImagesFromStorage(id: number) {
-        try {
-            const supabase = await createClient();
-            const { data, error } = await supabase.storage.from("lighthouse-bucket").list(`properties/${id}`);
-            if (error) {
-                throw error;
-            }
-            return data?.map((item) => item.name) || [];
-        } catch (error) {
-            console.error("Error fetching property images: ", error);
-            return [];
-        }
-    }
+    useEffect(() => {
+        fetchProperties();
+    }, [fetchProperties]);
 
 
     return (
@@ -152,7 +138,7 @@ export default function PropertiesPage() {
                                 {page}
                             </Button>
                         ))}
-                        
+
                         {isMobile && totalPages > 3 && currentPage < totalPages - 1 && (
                             <span className="text-lg text-muted-foreground">...</span>
                         )}

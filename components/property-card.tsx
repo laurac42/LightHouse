@@ -9,21 +9,45 @@ import DOMPurify from "dompurify";
 import { Database } from "@/types/supabase";
 import { Home, Bed, Bath, Grid2X2, Lightbulb, Landmark, Mail, Phone } from "lucide-react";
 import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { getAgencyDetails } from "@/lib/data/property";
 import Link from 'next/link';
 import ImageCarousel from "./image-carousel";
+import type{ AgencyLocationDetails }from "@/types/agency";
 
 type Property = Database["public"]["Tables"]["properties"]["Row"];
 
-type AgencyDetails = {
-    email: string;
-    logo_url: string;
-    phone_number: string;
+/**
+  * Sanitize property description to prevent XSS attacks, allowing only basic formatting tags
+  * @param description Property description to sanitize
+  * @returns Sanitized description safe for rendering as HTML
+  */
+function sanitizeDescription(description: string | null) {
+    if (!description) return "";
+    return DOMPurify.sanitize(description, { ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'ul', 'li', 'p', 'br', 'h1'] });
 }
 
+/**
+ * Remove bullet points and headings and p tags from property description for displaying on cards
+ * @param description description to remove bullet points and headings from
+ * @returns Description with bullet points and headings removed
+ */
+function removeBulletsAndHeadings(description: string | null) {
+    if (!description) return "";
+    // remove p tags but not content inside them, remove h1 tags and content inside them, remove ul and li tags but not content inside them
+    return description.replace(/<p> *?|<\/p> *?|<h1>[\s\S]*<\/h1>|<ul>[\s\S]*?<\/ul>|<li>[\s\S]*?<\/li>/g, '');
+}
+
+/**
+ * Make all words in a string uppercase
+ * @param string to convert
+ * @returns string with all words in uppercase
+ */
+function uppercaseWords(str: string) {
+    return str.replace(/\b\w/g, char => char.toUpperCase());
+}
 
 export default function PropertyCard({ property, images }: { property: Property; images: string[] }) {
-    const [agencyDetails, setAgencyDetails] = useState<AgencyDetails | null>(null);
+    const [agencyDetails, setAgencyDetails] = useState<AgencyLocationDetails | null>(null);
 
     useEffect(() => {
         if (property.agency_location_id) {
@@ -33,62 +57,12 @@ export default function PropertyCard({ property, images }: { property: Property;
         }
     }, []);
 
-
-    /**
-     * Sanitize property description to prevent XSS attacks, allowing only basic formatting tags
-     * @param description Property description to sanitize
-     * @returns Sanitized description safe for rendering as HTML
-     */
-    function sanitizeDescription(description: string | null) {
-        if (!description) return "";
-        return DOMPurify.sanitize(description, { ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'ul', 'li', 'p', 'br', 'h1'] });
-    }
-
-    /**
-     * Remove bullet points and headings and p tags from property description for displaying on cards
-     * @param description description to remove bullet points and headings from
-     * @returns Description with bullet points and headings removed
-     */
-    function removeBulletsAndHeadings(description: string | null) {
-        if (!description) return "";
-        // remove p tags but not content inside them, remove h1 tags and content inside them, remove ul and li tags but not content inside them
-        return description.replace(/<p> *?|<\/p> *?|<h1>[\s\S]*<\/h1>|<ul>[\s\S]*?<\/ul>|<li>[\s\S]*?<\/li>/g, '');
-    }
-
-    /**
-     * Gets agency details (email, phone number, logo) for a given agency location ID
-     * @param agencyId Id of the agency location to get details of
-     * @returns Agency details or null if not found
-     */
-    async function getAgencyDetails(agencyId: string) {
-        try {
-            const supabase = await createClient();
-            const { data, error } = await supabase.rpc('getagencylocationdetails', { p_id: agencyId });
-            
-            if (error || !data) { throw error || new Error("No data returned from RPC"); }
-            
-            return Array.isArray(data) ? data[0] : data;
-        } catch (error) {
-            console.error("Error fetching agency details: ", error);
-            return null;
-        }
-    }
-
-    /**
-     * Make all words in a string uppercase
-     * @param string to convert
-     * @returns string with all words in uppercase
-     */
-    function uppercaseWords(str: string) {
-        return str.replace(/\b\w/g, char => char.toUpperCase());
-    }
-
     return (
         <Card key={property.id} className="bg-white/90 border-none mb-6">
             <CardContent className="p-0">
                 <div className="flex flex-col md:flex-row gap-2">
                     <div className="flex flex-col gap-0 md:w-80 shrink-0">
-                        <ImageCarousel images={images} property={property} />
+                        <ImageCarousel images={images} property={property} page="properties"/>
                         <div>
                             <CardHeader className="p-0 gap-0 m-0 bg-highlight rounded-b-md text-white flex flex-row items-center justify-center">
                                 <CardTitle className="text-2xl text-center">{'£' + property.price.toLocaleString()}</CardTitle>
