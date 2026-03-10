@@ -142,6 +142,8 @@ async function generatePropertyImages(description: string, propertyId: number) {
     }
 }
 
+generatePropertyImages("<h1>Key features</h1><ul><li>4 Bedrooms</li><li>2 Bathrooms (1 En-suite)</li><li>Modern Riverside Flat</li><li>Stunning Views</li><li>Allocated Parking</li></ul><h1>Description</h1><p>Experience contemporary urban living at its finest in this impressive 4-bedroom riverside flat, located in the vibrant waterfront district of Dundee. This stylish apartment offers panoramic views of the River Tay and beyond, creating a truly captivating backdrop to your everyday life. The open-plan living, dining, and kitchen area is the heart of the home, designed for modern entertaining and comfortable relaxation.</p><p>Four generously sized bedrooms provide flexible accommodation, with the master suite featuring a private en-suite bathroom. A further family bathroom serves the remaining rooms. The property benefits from secure allocated parking, lift access, and is within easy reach of Dundee's cultural attractions, shops, and transport links. This is an exceptional opportunity for those seeking a sophisticated city lifestyle.</p>", 43);
+
 /**a
  * Uploads generated property image to supabase storage
  * The images are stored in a folder named after the property ID, and the filename is the index of the image
@@ -318,4 +320,4 @@ async function main() {
     }
 }
 
-main();
+//main();

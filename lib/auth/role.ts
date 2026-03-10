@@ -90,9 +90,10 @@ export async function isSeller(userId: string) {
         .from('user_roles')
         .select('role')
         .eq('user_id', userId)
-        .eq('role', 'seller');
+        .eq('role', 'seller')
+        .maybeSingle();
 
-        if (error) {
+        if (error || !isSeller) {
             throw error;
         }
         return isSeller ? true : false;

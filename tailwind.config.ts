@@ -20,6 +20,7 @@ export default {
         buttonHover: "#bd7175",
         lightHover: '#ead3d4',
         yellow: "#FCF891",
+        yellowHover: "#f9f06e",
         midBlue: "#AADBEC",
         midBlueHover: "#7fc9e2",
         navBar: '#C5E3EC',

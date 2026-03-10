@@ -310,9 +310,14 @@ export type Database = {
       getagencylocationdetails: {
         Args: { p_id: string }
         Returns: {
+          address_line_1: string
+          address_line_2: string
+          city: string
           email: string
           logo_url: string
+          name: string
           phone_number: string
+          post_code: string
         }[]
       }
       is_current_user_admin: { Args: never; Returns: boolean }

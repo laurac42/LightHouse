@@ -2,44 +2,41 @@
 import Navbar from "@/components/navbar";
 import FilterBar from "@/components/filter-bar";
 import { Button } from "@/components/ui/button";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useLayoutEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Database } from "@/types/supabase";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import PropertyCard from "@/components/property-card";
+import { getImagesFromStorage } from "@/lib/data/images";
 
 
 type Property = Database["public"]["Tables"]["properties"]["Row"] & { images: string[] };
+const PAGE_SIZE = 10; // number of properties to display per page
 
 export default function PropertiesPage() {
 
     const [properties, setProperties] = useState<Property[]>([]);
     const [location, setLocation] = useState("Dundee");
-    const PAGE_SIZE = 10; // number of properties to display per page
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [totalProperties, setTotalProperties] = useState(0);
     const [loading, setLoading] = useState(true);
-    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+    const [isMobile, setIsMobile] = useState(false);
 
-    useEffect(() => {
-        fetchProperties();
-    }, []);
-
-    const updateMedia = () => {
+    const updateMedia = useCallback(() => {
         setIsMobile(window.innerWidth < 768);
-    };
+    }, []);
 
     useEffect(() => {
         window.addEventListener("resize", updateMedia);
         return () => window.removeEventListener("resize", updateMedia);
-    });
+    }, [updateMedia]);
 
     /**
      * Fetch properties and property images for a given search results page
      * @param page Page number to fetch properties for - default is 1
      */
-    async function fetchProperties(page: number = 1) {
+    const fetchProperties = useCallback(async (page: number = 1) => {
         try {
             // scroll to top
             window.scrollTo({ top: 0 });
@@ -73,26 +70,11 @@ export default function PropertiesPage() {
         } catch (error) {
             console.error("Error fetching properties: ", error);
         }
-    }
+    }, []);
 
-    /**
-     * Get property image URLs from Supabase storage for a given property ID
-     * @param id ID of the property to get images for
-     * @returns a list of image URLs for the property, or an empty list if no images are found or an error occurs
-     */
-    async function getImagesFromStorage(id: number) {
-        try {
-            const supabase = await createClient();
-            const { data, error } = await supabase.storage.from("lighthouse-bucket").list(`properties/${id}`);
-            if (error) {
-                throw error;
-            }
-            return data?.map((item) => item.name) || [];
-        } catch (error) {
-            console.error("Error fetching property images: ", error);
-            return [];
-        }
-    }
+    useEffect(() => {
+        fetchProperties();
+    }, [fetchProperties]);
 
 
     return (
@@ -121,21 +103,42 @@ export default function PropertiesPage() {
                     <ChevronLeft size={16} />
                     Previous
                 </Button> : (
-                    <div className="mx-auto" />)} {/* placeholder to prevent layout shift when the Previous button is hidden */}
+                    <div className="mx-auto w-[100px]" />)} {/* placeholder to prevent layout shift when the Previous button is hidden */}
 
                 <div className="flex flex-col justify-center items-center gap-2">
                     <div className="flex flex-row gap-1">
-                        {/** On sm, show only a     subset of page numbers */}
-
-                        {Array.from({ length: isMobile ? 3 : totalPages > 8 ? 8 : totalPages }, (_, i) => isMobile ? currentPage - 1 + i : i + 1).map((page) => (
+                        {/** On sm, or if there are too many pages, show only a subset of page numbers */}
+                        {isMobile && totalPages > 3 && currentPage > 2 && (
+                            <span className="text-lg text-muted-foreground">...</span>
+                        )}
+                        {!isMobile && totalPages > 8 && currentPage > 4 && (
+                            <span className="text-lg text-muted-foreground">...</span>
+                        )}
+                        {Array.from({ length: isMobile ? 3 : totalPages > 8 ? 8 : totalPages }, (_, i) => {
+                            if (isMobile) {
+                                return currentPage > 1 ? (currentPage === totalPages ? currentPage - 2 + i : currentPage - 1 + i) : i + 1;
+                            } else {
+                                if (totalPages > 8) {
+                                    if (currentPage <= 4) {
+                                        return i + 1;
+                                    } else if (currentPage >= totalPages - 3) {
+                                        return totalPages - 7 + i;
+                                    } else {
+                                        return currentPage - 3 + i;
+                                    }
+                                }
+                                return i + 1; // if total pages is 8 or less, show all page numbers
+                            }
+                        }).map((page) => (
                             <Button key={page} variant="outline" className={page === currentPage ? "bg-highlight text-white border-none hover:bg-highlight hover:text-white" : "hover:bg-midBlue"} size="sm" onClick={() => fetchProperties(page)}>
                                 {page}
                             </Button>
                         ))}
-                        {isMobile && totalPages > 3 && (
+
+                        {isMobile && totalPages > 3 && currentPage < totalPages - 1 && (
                             <span className="text-lg text-muted-foreground">...</span>
                         )}
-                        {!isMobile && totalPages > 8 && (
+                        {!isMobile && totalPages > 8 && currentPage < totalPages - 4 && (
                             <span className="text-lg text-muted-foreground">...</span>
                         )}
                     </div>
@@ -147,7 +150,7 @@ export default function PropertiesPage() {
                         Next
                         <ChevronRight size={16} />
                     </Button>) :
-                    <div className="mx-auto" />
+                    <div className="mx-auto w-[100px]" />
                 }
             </div>
         </div>
