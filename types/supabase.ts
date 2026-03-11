@@ -114,26 +114,26 @@ export type Database = {
       estate_agent_profiles: {
         Row: {
           created_at: string
-          estate_agency_id: string | null
+          estate_agency_location_id: string | null
           id: string
         }
         Insert: {
           created_at?: string
-          estate_agency_id?: string | null
+          estate_agency_location_id?: string | null
           id: string
         }
         Update: {
           created_at?: string
-          estate_agency_id?: string | null
+          estate_agency_location_id?: string | null
           id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "estate_agent_profiles_estate_agency_id_fkey"
-            columns: ["estate_agency_id"]
+            foreignKeyName: "estate_agent_profiles_estate_agency_location_id_fkey"
+            columns: ["estate_agency_location_id"]
             isOneToOne: false
-            referencedRelation: "estate_agencies"
-            referencedColumns: ["id"]
+            referencedRelation: "estate_agency_location"
+            referencedColumns: ["location_id"]
           },
           {
             foreignKeyName: "estate_agent_profiles_id_fkey"
@@ -150,6 +150,7 @@ export type Database = {
           address_line_1: string
           address_line_2: string | null
           agency_location_id: string | null
+          agent_id: string | null
           city: string
           council_tax_band: string | null
           description: string
@@ -159,6 +160,7 @@ export type Database = {
           id: number
           image_url: string | null
           is_new_build: boolean
+          last_updated_at: string | null
           num_bathrooms: number | null
           num_bedrooms: number | null
           post_code: string
@@ -167,6 +169,7 @@ export type Database = {
           property_type: string | null
           seller_id: string | null
           square_feet: number | null
+          status: string
           title: string
         }
         Insert: {
@@ -174,6 +177,7 @@ export type Database = {
           address_line_1: string
           address_line_2?: string | null
           agency_location_id?: string | null
+          agent_id?: string | null
           city: string
           council_tax_band?: string | null
           description: string
@@ -183,6 +187,7 @@ export type Database = {
           id?: number
           image_url?: string | null
           is_new_build?: boolean
+          last_updated_at?: string | null
           num_bathrooms?: number | null
           num_bedrooms?: number | null
           post_code: string
@@ -191,6 +196,7 @@ export type Database = {
           property_type?: string | null
           seller_id?: string | null
           square_feet?: number | null
+          status?: string
           title: string
         }
         Update: {
@@ -198,6 +204,7 @@ export type Database = {
           address_line_1?: string
           address_line_2?: string | null
           agency_location_id?: string | null
+          agent_id?: string | null
           city?: string
           council_tax_band?: string | null
           description?: string
@@ -207,6 +214,7 @@ export type Database = {
           id?: number
           image_url?: string | null
           is_new_build?: boolean
+          last_updated_at?: string | null
           num_bathrooms?: number | null
           num_bedrooms?: number | null
           post_code?: string
@@ -215,6 +223,7 @@ export type Database = {
           property_type?: string | null
           seller_id?: string | null
           square_feet?: number | null
+          status?: string
           title?: string
         }
         Relationships: [
@@ -224,6 +233,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "estate_agency_location"
             referencedColumns: ["location_id"]
+          },
+          {
+            foreignKeyName: "properties_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "estate_agent_profiles"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "properties_seller_id_fkey"
@@ -336,7 +352,7 @@ export type Database = {
         Returns: undefined
       }
       upgrade_user_to_agent: {
-        Args: { p_admin_id: string; p_agency_id: string; p_user_id: string }
+        Args: { p_admin_id: string; p_location_id: string; p_user_id: string }
         Returns: undefined
       }
       upgrade_user_to_seller: {
