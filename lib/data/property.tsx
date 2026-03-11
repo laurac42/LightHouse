@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/client";
 import { Database } from "@/types/supabase";
+import { create } from "domain";
 import DOMPurify from "dompurify"
 
 type Property = Database["public"]["Tables"]["properties"]["Row"];
@@ -56,5 +57,28 @@ export async function getAgencyDetails(agencyId: string) {
 export function sanitizeDescription(description: string | null) {
     if (!description) return "";
     return DOMPurify.sanitize(description, { ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'ul', 'li', 'p', 'br', 'h1'] });
+}
+
+/**
+ * 
+ * @param locationId 
+ * @return Array of properties from the given estate agency location, or null
+ */
+export async function fetchPropertiesByLocationID(locationId: string) {
+    try {
+        const supabase = await createClient();
+        const {data, error} = await supabase
+        .from("properties")
+        .select("*")
+        .eq("agency_location_id", locationId);
+
+        if (!data || error) {
+            throw error ? error : new Error("No properties available at the given Estate Agency Location.");
+        }
+        return data;
+    } catch(error) {
+        console.error("Error fetching properties by location ID", error);
+        return null;
+    }
 }
 
