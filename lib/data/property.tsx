@@ -61,21 +61,23 @@ export function sanitizeDescription(description: string | null) {
 
 /**
  * 
- * @param locationId 
- * @return Array of properties from the given estate agency location, or null
+ * @param locationId ID of the agency location to fetch properties from
+ * @return Number of properties returned, and array of properties from the given estate agency location, or null
  */
-export async function fetchPropertiesByLocationID(locationId: string) {
+export async function fetchPropertiesByLocationID(locationId: string, page: number=1, page_size: number=10) {
     try {
         const supabase = await createClient();
-        const {data, error} = await supabase
+        const {data, error, count} = await supabase
         .from("properties")
-        .select("*")
+        .select("*", {count: "exact"})
+        .range((page - 1) * page_size, page * page_size - 1)
         .eq("agency_location_id", locationId);
 
         if (!data || error) {
             throw error ? error : new Error("No properties available at the given Estate Agency Location.");
         }
-        return data;
+        console.log(count)
+        return { count, data };
     } catch(error) {
         console.error("Error fetching properties by location ID", error);
         return null;
