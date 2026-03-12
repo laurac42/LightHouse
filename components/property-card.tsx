@@ -8,11 +8,12 @@ import {
 import { Database } from "@/types/supabase";
 import { Home, Bed, Bath, Grid2X2, Lightbulb, Landmark, Mail, Phone } from "lucide-react";
 import { useEffect, useState } from "react";
-import { getAgencyDetails } from "@/lib/data/property";
+import { getAgencyDetails } from "@/lib/data/property-utils";
 import Link from 'next/link';
 import ImageCarousel from "./image-carousel";
-import type{ AgencyLocationDetails }from "@/types/agency";
-import { sanitizeDescription } from "@/lib/data/property";
+import type { AgencyLocationDetails } from "@/types/agency";
+import { sanitizeDescription } from "@/lib/data/property-utils";
+import { Button } from "./ui/button";
 
 type Property = Database["public"]["Tables"]["properties"]["Row"];
 
@@ -36,7 +37,7 @@ function uppercaseWords(str: string) {
     return str.replace(/\b\w/g, char => char.toUpperCase());
 }
 
-export default function PropertyCard({ property, images }: { property: Property; images: string[] }) {
+export default function PropertyCard({ property, images, page, editable = false }: { property: Property; images: string[]; page: string; editable?: boolean }) {
     const [agencyDetails, setAgencyDetails] = useState<AgencyLocationDetails | null>(null);
 
     useEffect(() => {
@@ -51,8 +52,8 @@ export default function PropertyCard({ property, images }: { property: Property;
         <Card key={property.id} className="bg-white/90 border-none mb-6">
             <CardContent className="p-0">
                 <div className="flex flex-col md:flex-row gap-2">
-                    <div className="flex flex-col gap-0 md:w-80 shrink-0">
-                        <ImageCarousel images={images} property={property} page="properties" isModalOpen={null} />
+                    <div className={page === "manage" ? "flex flex-col gap-0 md:w-64 shrink-0" : "flex flex-col gap-0 md:w-80 shrink-0"}>
+                        <ImageCarousel images={images} property={property} page={page} isModalOpen={null} />
                         <div>
                             <CardHeader className="p-0 gap-0 m-0 bg-highlight rounded-b-md text-white flex flex-row items-center justify-center">
                                 <CardTitle className="text-2xl text-center">{'£' + property.price.toLocaleString()}</CardTitle>
@@ -61,44 +62,80 @@ export default function PropertyCard({ property, images }: { property: Property;
                         </div>
                     </div>
                     <div className="flex-1 px-4">
-                        <Link href={`properties/${property.id}`}>
-                            <CardHeader className="p-1 pt-2">
-                                <CardTitle className="text-xl">{property.title}</CardTitle>
-                            </CardHeader>
-                        </Link>
-                        <div>
+                        {page === "properties" && (
                             <Link href={`properties/${property.id}`}>
-                                <div className="grid grid-cols-2 lg:grid-cols-3 md:px-8 px-1 py-1 lg:py-2 text-md gap-2 lg:gap-4">
-                                    <div className="inline-flex items-center gap-1 font-bold">
-                                        <Home size={16} />
-                                        {property.property_type ? property.property_type.charAt(0).toUpperCase() + property.property_type.slice(1) : ""}
-                                    </div>
-                                    <div className="inline-flex items-center gap-1 font-bold">
-                                        <Bed size={16} />
-                                        {property.num_bedrooms} {property.num_bedrooms === 1 ? "bedroom" : "bedrooms"}
+                                <CardHeader className="p-1 pt-2">
+                                    <CardTitle className="text-xl">{property.title}</CardTitle>
+                                </CardHeader>
+                            </Link>
+                        )}
+                        {page === "manage" && (
+                            <div className="flex gap-2">
+                                <CardHeader className="p-1 mt-2">
+                                    <CardTitle className="text-xl">{property.title},  {property.post_code}</CardTitle>
+                                </CardHeader>
+                                {editable && (
+                                    <Button className="bg-buttonColor hover:bg-buttonHover justify-end ml-auto mt-2 text-foreground">Edit Property</Button>
+                                )}
+                            </div>
+                        )}
+                        <div>
+                            {page === "properties" ? (
+                                <Link href={`properties/${property.id}`}>
+                                    <div className="grid grid-cols-2 lg:grid-cols-3 md:px-8 px-1 py-1 lg:py-2 text-md gap-2 lg:gap-4">
+                                        <div className="inline-flex items-center gap-1 font-bold">
+                                            <Home size={16} />
+                                            {property.property_type ? property.property_type.charAt(0).toUpperCase() + property.property_type.slice(1) : ""}
+                                        </div>
+                                        <div className="inline-flex items-center gap-1 font-bold">
+                                            <Bed size={16} />
+                                            {property.num_bedrooms} {property.num_bedrooms === 1 ? "bedroom" : "bedrooms"}
 
+                                        </div>
+                                        <div className="inline-flex items-center gap-1 font-bold">
+                                            <Bath size={16} />
+                                            {property.num_bathrooms} {property.num_bathrooms === 1 ? "bathroom" : "bathrooms"}
+                                        </div>
+                                        <div className="inline-flex items-center gap-1 font-bold">
+                                            <Grid2X2 size={16} />
+                                            {property.square_feet} sqft
+                                        </div>
+                                        <div className="inline-flex items-center gap-1 font-bold">
+                                            <Lightbulb size={16} />
+                                            EPC: {property.epc_rating ? property.epc_rating.toUpperCase() : "N/A"}
+                                        </div>
+                                        <div className="inline-flex items-center gap-1 font-bold">
+                                            <Landmark size={16} />
+                                            Council Tax: {property.council_tax_band ? property.council_tax_band.toUpperCase() : "N/A"}
+                                        </div>
                                     </div>
-                                    <div className="inline-flex items-center gap-1 font-bold">
-                                        <Bath size={16} />
-                                        {property.num_bathrooms} {property.num_bathrooms === 1 ? "bathroom" : "bathrooms"}
+                                </Link>) : (
+                                <div className="grid grid-cols-2 lg:grid-cols-3 md:px-8 px-1 py-1 lg:py-2 text-md gap-1 lg:gap-2">
+                                    <div className="inline-flex items-center gap-1">
+                                        <b>Type:</b> {property.property_type ? property.property_type.charAt(0).toUpperCase() + property.property_type.slice(1) : ""}
                                     </div>
-                                    <div className="inline-flex items-center gap-1 font-bold">
-                                        <Grid2X2 size={16} />
-                                        {property.square_feet} sqft
+                                    <div className="inline-flex items-center gap-1">
+                                        <b>Bedrooms:</b> {property.num_bedrooms}
                                     </div>
-                                    <div className="inline-flex items-center gap-1 font-bold">
-                                        <Lightbulb size={16} />
-                                        EPC: {property.epc_rating ? property.epc_rating.toUpperCase() : "N/A"}
+                                    <div className="inline-flex items-center gap-1">
+                                        <b>Bathrooms:</b> {property.num_bathrooms}
                                     </div>
-                                    <div className="inline-flex items-center gap-1 font-bold">
-                                        <Landmark size={16} />
-                                        Council Tax: {property.council_tax_band ? property.council_tax_band.toUpperCase() : "N/A"}
+                                    <div className="inline-flex items-center gap-1">
+                                        <b>Square Feet:</b> {property.square_feet}
+                                    </div>
+                                    <div className="inline-flex items-center gap-1">
+                                        <b>EPC:</b> {property.epc_rating ? property.epc_rating.toUpperCase() : "N/A"}
+                                    </div>
+                                    <div className="inline-flex items-center gap-1">
+                                        <b>Council Tax:</b> {property.council_tax_band ? property.council_tax_band.toUpperCase() : "N/A"}
                                     </div>
                                 </div>
-                            </Link>
+                            )}
                         </div>
-                        <div className='text-sm text-muted-foreground max-h-[100px] mx-1 my-4 overflow-hidden text-ellipsis line-clamp-4 lg:line-clamp-5' dangerouslySetInnerHTML={{ __html: removeBulletsAndHeadings(sanitizeDescription(property.description)) }} />
-                        {agencyDetails && (
+                        <div className={page === "properties" ? "text-sm text-muted-foreground max-h-[100px] mx-1 my-4 overflow-hidden text-ellipsis line-clamp-4 lg:line-clamp-5" : "text-sm text-muted-foreground max-h-[100px] mx-1 my-1 overflow-hidden text-ellipsis line-clamp-2 lg:line-clamp-3"}
+                            dangerouslySetInnerHTML={{ __html: removeBulletsAndHeadings(sanitizeDescription(property.description)) }}
+                        />
+                        {agencyDetails && page !== "manage" && (
                             <div className="flex flex-row items-center gap-4 pb-2 md:py-0">
                                 {agencyDetails.logo_url && (
                                     <img

@@ -84,3 +84,23 @@ export async function fetchPropertiesByLocationID(locationId: string, page: numb
     }
 }
 
+export async function doesPropertyBelongToAgent(propertyId: number, agentId: string) {
+    try {
+        const supabase = await createClient();
+        const { data, error } = await supabase
+        .from("properties")
+        .select("id")
+        .eq("id", propertyId)
+        .eq("agent_id", agentId)
+        .maybeSingle();
+
+        if (error) {
+            throw error;
+        }
+
+        return !!data;
+    } catch (error) {
+        console.error("Error checking property ownership: ", error);
+        return false;
+    }   
+}

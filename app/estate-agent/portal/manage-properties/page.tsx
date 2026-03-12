@@ -12,16 +12,18 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { validateUser } from "@/lib/auth/user";
 import { isEstateAgent, getAgentsLocationId } from "@/lib/auth/role"
-import { fetchPropertiesByLocationID } from "@/lib/data/property";
+import { doesPropertyBelongToAgent, fetchPropertiesByLocationID } from "@/lib/data/property-utils";
 import { Database } from "@/types/supabase";
 import { getImagesFromStorage } from "@/lib/data/images";
 import { ChevronRight, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import PropertyCard from "@/components/property-card";
 
 type Property = Database["public"]["Tables"]["properties"]["Row"];
 type PropertyWithImages = Property & { images: string[] };
 
 const PAGE_SIZE = 10;
+
 
 export default function EstateAgentPropertiesPage() {
     const router = useRouter();
@@ -34,6 +36,7 @@ export default function EstateAgentPropertiesPage() {
     const [totalPages, setTotalPages] = useState(1);
     const [totalProperties, setTotalProperties] = useState(0);
     const [isMobile, setIsMobile] = useState(false);
+    const [editableProperties, setEditableProperties] = useState<Set<number>>(new Set());
 
     const updateMedia = useCallback(() => {
         setIsMobile(window.innerWidth < 768);
@@ -140,6 +143,24 @@ export default function EstateAgentPropertiesPage() {
         fetchProperties();
     }, [fetchProperties]);
 
+    // check which properties are editable by the agent
+    useEffect(() => {
+        async function checkEditableProperties() {
+            if (!user || properties.length === 0) return;
+            
+            const editable = new Set<number>();
+            for (const property of properties) {
+                const isEditable = await doesPropertyBelongToAgent(property.id, user.user.id);
+                if (isEditable) {
+                    editable.add(property.id);
+                }
+            }
+            setEditableProperties(editable);
+        }
+        
+        checkEditableProperties();
+    }, [user, properties]);
+
 
     return (
         <div className="bg-background w-full min-h-svh">
@@ -156,19 +177,21 @@ export default function EstateAgentPropertiesPage() {
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <h1 className="text-xl text-foreground">
+                            <h1 className="text-2xl text-foreground">
                                 All Properties
                             </h1>
                             {loading ? (
                                 <p>Loading properties ...</p>
                             ) : (
                                 <>
-                                    <div className="pt-2 px-6 text-highlight">
+                                    <div className="pt-2 pb-4 px-4 text-highlight">
                                         <p>Showing properties {currentPage * PAGE_SIZE - (PAGE_SIZE - 1)} - {Math.min(currentPage * PAGE_SIZE, totalProperties)} of {totalProperties} properties</p>
                                     </div>
-                                    {properties.map(property =>
-                                        <div key={property.id}>{property.title}</div>
-                                    )}
+                                    <div className="w-full max-w-4xl">
+                                        {properties.map((property) => (
+                                            <PropertyCard key={property.id} property={property} images={property.images} page="manage" editable={editableProperties.has(property.id)} />
+                                        ))}
+                                    </div>
                                     {errorMessage && <p className="text-red-500">{errorMessage}</p>}
                                     {properties.length > PAGE_SIZE &&
                                         <div className="flex flex-row gap-2 justify-center py-8 mb-6">

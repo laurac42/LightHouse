@@ -1,7 +1,7 @@
 'use client';
 import { Suspense, useEffect, useState, CSSProperties } from "react";
 import { use, useRef } from "react";
-import { fetchPropertyDetails, getAgencyDetails } from "@/lib/data/property";
+import { fetchPropertyDetails, getAgencyDetails } from "@/lib/data/property-utils";
 import { Database } from "@/types/supabase";
 import { getImagesFromStorage } from "@/lib/data/images";
 import ImageCarousel from "@/components/image-carousel";
@@ -10,7 +10,7 @@ import Link from "next/link";
 import { Landmark, Lightbulb, MoveLeft, Bath, Bed, Home, Grid2X2 } from "lucide-react";
 import { AgencyLocationDetails } from "@/types/agency";
 import AgencyCard from "@/components/agency-card";
-import { sanitizeDescription } from "@/lib/data/property";
+import { sanitizeDescription } from "@/lib/data/property-utils";
 import styles from '../page.module.css';
 
 type Property = Database["public"]["Tables"]["properties"]["Row"];

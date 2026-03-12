@@ -93,7 +93,7 @@ export default function PropertiesPage() {
             <div className="flex w-full items-center justify-center pt-4 px-6 md:px-10 md:pt-10">
                 <div className="w-full max-w-4xl">
                     {properties.map((property) => (
-                        <PropertyCard key={property.id} property={property} images={property.images} />
+                        <PropertyCard key={property.id} property={property} images={property.images} page="properties" />
                     ))}
                 </div>
 
