@@ -12,7 +12,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { validateUser } from "@/lib/auth/user";
 import { isEstateAgent, getAgentsLocationId } from "@/lib/auth/role"
-import { doesPropertyBelongToAgent, fetchPropertiesByLocationID } from "@/lib/data/property-utils";
+import { doesPropertyBelongToAgent, fetchPropertiesByLocationID, fetchPropertiesByAgentID } from "@/lib/data/property-utils";
 import { Database } from "@/types/supabase";
 import { getImagesFromStorage } from "@/lib/data/images";
 import { ChevronRight, ChevronLeft } from "lucide-react";
@@ -37,6 +37,7 @@ export default function EstateAgentPropertiesPage() {
     const [totalProperties, setTotalProperties] = useState(0);
     const [isMobile, setIsMobile] = useState(false);
     const [editableProperties, setEditableProperties] = useState<Set<number>>(new Set());
+    const [viewMode, setViewMode] = useState<"all" | "mine">("all");
 
     const updateMedia = useCallback(() => {
         setIsMobile(window.innerWidth < 768);
@@ -94,18 +95,19 @@ export default function EstateAgentPropertiesPage() {
          * @param page Page number to fetch properties for - default is 1
          */
     const fetchProperties = useCallback(async (page: number = 1) => {
-        if (!locationId) return;
+        if (!locationId || !user) return;
 
         try {
             setLoading(true);
             setErrorMessage("");
-            console.log("fetching properties")
             // scroll to top
             window.scrollTo({ top: 0 });
 
-            const result = await fetchPropertiesByLocationID(locationId, page, PAGE_SIZE);
+            const result = viewMode === "mine"
+                ? await fetchPropertiesByAgentID(user.user.id, page, PAGE_SIZE)
+                : await fetchPropertiesByLocationID(locationId, page, PAGE_SIZE);
+
             if (!result) {
-                console.log("unable to fetch properties")
                 setErrorMessage("Unable to fetch properties");
                 return;
             }
@@ -137,10 +139,10 @@ export default function EstateAgentPropertiesPage() {
         } finally {
             setLoading(false);
         }
-    }, [locationId]);
+    }, [locationId, user, viewMode]);
 
     useEffect(() => {
-        fetchProperties();
+        fetchProperties(1);
     }, [fetchProperties]);
 
     // check which properties are editable by the agent
@@ -177,9 +179,22 @@ export default function EstateAgentPropertiesPage() {
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <h1 className="text-2xl text-foreground">
-                                All Properties
-                            </h1>
+                            <div className="flex gap-2 mb-4">
+                                <Button
+                                    variant={viewMode === "all" ? "default" : "outline"}
+                                    onClick={() => { setViewMode("all"); setCurrentPage(1); }}
+                                    className={viewMode === "all" ? "bg-buttonColor hover:bg-buttonHover text-foreground font-semibold" : ""}
+                                >
+                                    All Properties
+                                </Button>
+                                <Button
+                                    variant={viewMode === "mine" ? "default" : "outline"}
+                                    onClick={() => { setViewMode("mine"); setCurrentPage(1); }}
+                                    className={viewMode === "mine" ? "bg-buttonColor hover:bg-buttonHover text-foreground font-semibold" : ""}
+                                >
+                                    My Properties
+                                </Button>
+                            </div>
                             {loading ? (
                                 <p>Loading properties ...</p>
                             ) : (

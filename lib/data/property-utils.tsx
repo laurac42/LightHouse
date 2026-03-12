@@ -84,6 +84,32 @@ export async function fetchPropertiesByLocationID(locationId: string, page: numb
     }
 }
 
+/**
+ * Fetch properties assigned to a specific agent (i.e. where agent_id matches)
+ * @param agentId User ID of the estate agent
+ * @param page Page number (1-based)
+ * @param page_size Number of results per page
+ * @returns Count and array of properties, or null on error
+ */
+export async function fetchPropertiesByAgentID(agentId: string, page: number = 1, page_size: number = 10) {
+    try {
+        const supabase = await createClient();
+        const { data, error, count } = await supabase
+            .from("properties")
+            .select("*", { count: "exact" })
+            .range((page - 1) * page_size, page * page_size - 1)
+            .eq("agent_id", agentId);
+
+        if (!data || error) {
+            throw error ? error : new Error("No properties found for the given agent.");
+        }
+        return { count, data };
+    } catch (error) {
+        console.error("Error fetching properties by agent ID", error);
+        return null;
+    }
+}
+
 export async function doesPropertyBelongToAgent(propertyId: number, agentId: string) {
     try {
         const supabase = await createClient();
