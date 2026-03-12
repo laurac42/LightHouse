@@ -130,3 +130,15 @@ export async function doesPropertyBelongToAgent(propertyId: number, agentId: str
         return false;
     }   
 }
+
+/**
+ * Descritpion has no classes, so features class is applied to the 'Key Features' heading in the description to allow styling of the features section
+ * @param description The description to apply classes to
+ * @param styles The CSS module styles object containing the features class
+ * @returns The description with the features class applied to the 'Key Features' heading
+ */
+export function applyClassesToDescription(description: string, styles: { [key: string]: string }) {
+    // apply the features class to the 'Key Features' heading
+    description = description.replace(/<h1>(Key [fF]eatures)<\/h1>/, `<h1 class="${styles.features}">Key Features</h1>`);
+    return description;
+}

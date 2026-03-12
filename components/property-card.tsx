@@ -75,9 +75,14 @@ export default function PropertyCard({ property, images, page, editable = false 
                                     <CardTitle className="text-xl">{property.title},  {property.post_code}</CardTitle>
                                 </CardHeader>
                                 {editable ? (
-                                    <Button className="bg-buttonColor hover:bg-buttonHover justify-end ml-auto mt-2 text-foreground">Edit Property</Button>
+                                    <Link href={`manage-properties/edit/${property.id}`}>
+                                        <Button
+                                            className="bg-buttonColor hover:bg-buttonHover justify-end ml-auto mt-2 text-foreground">Edit Property</Button>
+                                    </Link>
                                 ) : (
-                                <Button className="bg-midBlue hover:bg-midBlueHover justify-end ml-auto mt-2 text-foreground">View Property</Button>
+                                    <Link href={`manage-properties/${property.id}`}>
+                                        <Button className="bg-midBlue hover:bg-midBlueHover justify-end ml-auto mt-2 text-foreground">View Property</Button>
+                                    </Link>
                                 )}
                             </div>
                         )}

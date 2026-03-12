@@ -7,7 +7,7 @@ import { getImagesFromStorage } from "@/lib/data/images";
 import ImageCarousel from "@/components/image-carousel";
 import Navbar from "@/components/navbar";
 import Link from "next/link";
-import { MoveLeft} from "lucide-react";
+import { MoveLeft } from "lucide-react";
 import { AgencyLocationDetails } from "@/types/agency";
 import AgencyCard from "@/components/agency-card";
 import PropertyDetails from "@/components/property-details";
@@ -98,7 +98,7 @@ export default function Page({ params }: { params: Promise<{ id: number }> }) {
 
             <div className="bg-background min-h-screen w-full">
                 <Navbar />
-                <Link className="flex inline-flex text-highlight m-6 mb-0 mt-4" href="/properties"><MoveLeft /> &nbsp; Back to Properties</Link>
+                <Link className="flex inline-flex text-highlight m-6 mb-0 mt-4" href="/estate-agent/portal/manage-properties"><MoveLeft /> &nbsp; Back to Agent Portal</Link>
                 <PropertyDetailsPage params={params} />
             </div>
         </Suspense>
