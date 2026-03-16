@@ -71,12 +71,12 @@ export default function EditPropertyForm({ propertyId }: { propertyId: number })
         <div>
             <Card className="bg-white/90 border-none">
                 <CardHeader>
-                    <CardTitle className="text-2xl font-bold">Edit Property with ID: {propertyId}</CardTitle>
+                    <CardTitle className="text-3xl font-bold">Edit Property with ID: {propertyId}</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="flex flex-col gap-8">
                         <div>
-                            <Label className="py-2 text-lg" htmlFor="title">Title</Label>
+                            <Label className="py-2 text-xl" htmlFor="title">Title</Label>
                             <p className="text-muted-foreground text-sm mb-2">Enter the title of the property. This will be displayed to users before they click on a property. It should include the address, property type, and other relevant information.</p>
                             <Input
                                 id="title"
@@ -88,9 +88,9 @@ export default function EditPropertyForm({ propertyId }: { propertyId: number })
                         </div>
 
                         <div>
-                            <Label className="py-2 text-lg" htmlFor="address">Address</Label>
+                            <Label className="py-2 text-xl" htmlFor="address">Address</Label>
 
-                            <div className="ml-2">
+                            <div className="ml-2 w-3/4">
                                 <Label className="py-2 text-sm" htmlFor="address">Address Line 1</Label>
                                 <Input
                                     id="address"
@@ -126,7 +126,7 @@ export default function EditPropertyForm({ propertyId }: { propertyId: number })
                         </div>
 
                         <div>
-                            <Label className="py-2 text-lg" htmlFor="features">Key Points</Label>
+                            <Label className="py-2 text-xl" htmlFor="features">Key Points</Label>
                             <p className="text-muted-foreground text-sm mb-2">Enter the key features of the property. These will be displayed as bullet points on the property details page.</p>
                             <div className="w-3/4">
                                 {features.map((feature, index) => (
@@ -147,13 +147,13 @@ export default function EditPropertyForm({ propertyId }: { propertyId: number })
                                     </InputGroup>
                                 ))}
                                 <div className="flex justify-end">
-                                    <Button className="bg-buttonColor hover:bg-buttonHover ml-2 text-foreground inline-flex" onClick={() => setFeatures([...features, ""])}>Add Feature <PlusCircleIcon /></Button>
+                                    <Button className="bg-buttonColor hover:bg-buttonColor/90 ml-2 text-foreground inline-flex" onClick={() => setFeatures([...features, ""])}>Add Feature <PlusCircleIcon /></Button>
                                 </div>
                             </div>
                         </div>
 
                         <div >
-                            <Label className="py-2 text-lg" htmlFor="description">Description</Label>
+                            <Label className="py-2 text-xl" htmlFor="description">Description</Label>
                             <p className="text-muted-foreground text-sm mb-2">Provide a detailed description of the property, highlighting all important features.</p>
                             <InputGroup className="ml-2">
                                 <InputGroupTextarea
@@ -167,7 +167,7 @@ export default function EditPropertyForm({ propertyId }: { propertyId: number })
                         </div>
 
                         <div>
-                            <Label className="py-2 text-lg" htmlFor="price">Price</Label>
+                            <Label className="py-2 text-xl" htmlFor="price">Price</Label>
                             <InputGroup className="ml-2">
                                 <InputGroupAddon >£</InputGroupAddon>
                                 <InputGroupInput
@@ -191,7 +191,7 @@ export default function EditPropertyForm({ propertyId }: { propertyId: number })
                         </div>
 
                         <div>
-                            <Label className="py-2 text-lg" htmlFor="features">Features</Label>
+                            <Label className="py-2 text-xl" htmlFor="features">Features</Label>
 
                             <div className="grid grid-cols-3 gap-4 mx-2">
                                 <div className="flex flex row items-center">
@@ -297,7 +297,7 @@ export default function EditPropertyForm({ propertyId }: { propertyId: number })
                     </div>
                 </CardContent>
             </Card>
-            <Button className="bg-buttonColor hover:bg-buttonHover mt-4 text-foreground fixed bottom-4 right-4">Save Changes</Button>
+            <Button className="bg-buttonColor hover:bg-buttonHover mt-4 text-foreground fixed bottom-4 right-4 text-lg w-48 h-12">Save Changes</Button>
         </div>
     );
 }
