@@ -142,3 +142,35 @@ export function applyClassesToDescription(description: string, styles: { [key: s
     description = description.replace(/<h1>(Key [fF]eatures)<\/h1>/, `<h1 class="${styles.features}">Key Features</h1>`);
     return description;
 }
+
+/**
+ * Remove bullet points and headings and p tags from property description for displaying on cards
+ * @param description description to remove bullet points and headings from
+ * @returns Description with bullet points and headings removed
+ */
+export function removeBulletsAndHeadings(description: string | null) {
+    if (!description) return "";
+    // remove p tags but not content inside them, remove h1 tags and content inside them, remove ul and li tags but not content inside them
+    return description.replace(/<p> *?|<\/p> *?|<h1>[\s\S]*<\/h1>|<ul>[\s\S]*?<\/ul>|<li>[\s\S]*?<\/li>/g, '');
+}
+
+/**
+ * Make all words in a string uppercase
+ * @param string to convert
+ * @returns string with all words in uppercase
+ */
+export function uppercaseWords(str: string) {
+    return str.replace(/\b\w/g, char => char.toUpperCase());
+}
+
+export function removeParagraphsAndHeadings(description: string | null) {
+    if (!description) return "";
+    // remove p tags and contents, remove h1 tags and contents
+    return description.replace(/<p>[\s\S]*?<\/p>|<h1>[\s\S]*?<\/h1>/g, '');
+}
+
+export function getFeaturesFromDescription(description: string | null) {
+    if (!description) return [];
+    // all features are in <li> tags, so extract content between all <li> tags in the description, then remove <li> tags from the extracted content
+    return description.match(/<li>([^<]*)<\/li>/g)?.map(li => li.replace(/<\/?li>/g, '').trim()) || [];
+}

@@ -12,30 +12,10 @@ import { getAgencyDetails } from "@/lib/data/property-utils";
 import Link from 'next/link';
 import ImageCarousel from "./image-carousel";
 import type { AgencyLocationDetails } from "@/types/agency";
-import { sanitizeDescription } from "@/lib/data/property-utils";
+import { sanitizeDescription, removeBulletsAndHeadings, uppercaseWords } from "@/lib/data/property-utils";
 import { Button } from "./ui/button";
 
 type Property = Database["public"]["Tables"]["properties"]["Row"];
-
-/**
- * Remove bullet points and headings and p tags from property description for displaying on cards
- * @param description description to remove bullet points and headings from
- * @returns Description with bullet points and headings removed
- */
-function removeBulletsAndHeadings(description: string | null) {
-    if (!description) return "";
-    // remove p tags but not content inside them, remove h1 tags and content inside them, remove ul and li tags but not content inside them
-    return description.replace(/<p> *?|<\/p> *?|<h1>[\s\S]*<\/h1>|<ul>[\s\S]*?<\/ul>|<li>[\s\S]*?<\/li>/g, '');
-}
-
-/**
- * Make all words in a string uppercase
- * @param string to convert
- * @returns string with all words in uppercase
- */
-function uppercaseWords(str: string) {
-    return str.replace(/\b\w/g, char => char.toUpperCase());
-}
 
 export default function PropertyCard({ property, images, page, editable = false }: { property: Property; images: string[]; page: string; editable?: boolean }) {
     const [agencyDetails, setAgencyDetails] = useState<AgencyLocationDetails | null>(null);
@@ -75,7 +55,7 @@ export default function PropertyCard({ property, images, page, editable = false 
                                     <CardTitle className="text-xl">{property.title},  {property.post_code}</CardTitle>
                                 </CardHeader>
                                 {editable ? (
-                                    <Link href={`manage-properties/edit/${property.id}`}>
+                                    <Link href={`manage-properties/${property.id}/edit`}>
                                         <Button
                                             className="bg-buttonColor hover:bg-buttonHover justify-end ml-auto mt-2 text-foreground">Edit Property</Button>
                                     </Link>

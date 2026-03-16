@@ -1,0 +1,32 @@
+import { Suspense, use } from "react";
+import Navbar from "@/components/navbar";
+import Link from "next/link";
+import { MoveLeft } from "lucide-react";
+import EditPropertyForm from "@/components/edit-property-form";
+
+export function EditProperty({ params }: { params: Promise<{ id: number }> }) {
+    const { id } = use(params);
+    return (
+
+        <div className="flex min-h-svh w-full justify-center p-6 md:p-10">
+            <div className="w-full max-w-5xl">
+                <EditPropertyForm propertyId={id} />
+            </div>
+        </div>
+    );
+}
+
+
+// Separate component to allow use of suspense for loading state while fetching property details and agency details
+export default function EditPropertyPage({ params }: { params: Promise<{ id: number }> }) {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+
+            <div className="bg-background min-h-screen w-full">
+                <Navbar />
+                <Link className="flex inline-flex text-highlight m-6 mb-0 mt-4" href="/estate-agent/portal/manage-properties"><MoveLeft /> &nbsp; Back to Agent Portal</Link>
+                <EditProperty params={params} />
+            </div>
+        </Suspense>
+    );
+}
