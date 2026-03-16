@@ -14,6 +14,7 @@ import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGr
 import { X, PlusCircleIcon } from "lucide-react";
 import type { Address } from "@/types/address";
 import { Button } from "./ui/button";
+import EditImages from "./edit-images";
 
 function removeFeature(index: number, features: string[], setFeatures: React.Dispatch<React.SetStateAction<string[]>>) {
     const newFeatures = [...features];
@@ -288,9 +289,15 @@ export default function EditPropertyForm({ propertyId }: { propertyId: number })
                                 </div>
                             </div>
                         </div>
+
+                        <div>
+                            <Label className="py-2 text-2xl">Images</Label>
+                            <EditImages params={{ id: propertyId }} />
+                        </div>
                     </div>
                 </CardContent>
             </Card>
+            <Button className="bg-buttonColor hover:bg-buttonHover mt-4 text-foreground fixed bottom-4 right-4">Save Changes</Button>
         </div>
     );
 }
