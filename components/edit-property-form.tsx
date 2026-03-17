@@ -2,7 +2,6 @@
 import {
     Card,
     CardContent,
-    CardDescription,
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
@@ -10,12 +9,22 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useEffect, useState } from "react";
 import { fetchPropertyDetails } from "@/lib/data/property-utils";
-import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupText, InputGroupTextarea } from "./ui/input-group";
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupTextarea } from "./ui/input-group";
 import { X, PlusCircleIcon } from "lucide-react";
 import type { Address } from "@/types/address";
 import { Button } from "./ui/button";
 import EditImages from "./edit-images";
 import { editProperty } from "@/lib/data/edit-property";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+    DialogClose,
+    DialogFooter,
+} from "@/components/ui/dialog"
 
 /**
  * Remove a feature from the features array at the specified index and update the state
@@ -44,6 +53,7 @@ export default function EditPropertyForm({ propertyId }: { propertyId: number })
     const [propertyType, setPropertyType] = useState("");
     const [garage, setGarage] = useState(false);
     const [newBuild, setNewBuild] = useState(false);
+    const [loading, setLoading] = useState(false)
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -82,46 +92,77 @@ export default function EditPropertyForm({ propertyId }: { propertyId: number })
  */
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
+        try {
+            setLoading(true);
+            await editProperty(propertyId, {
+                title,
+                description: description,
+                features: features,
+                price: parseFloat(price),
+                price_type: priceType,
+                address_line_1: address?.address_line_1 || undefined,
+                address_line_2: address?.address_line_2 || null,
+                city: address?.city || undefined,
+                post_code: address?.post_code || undefined,
+                epc_rating: epc || null,
+                council_tax_band: councilTaxBand || null,
+                num_bedrooms: numBedrooms ? parseInt(numBedrooms) : null,
+                num_bathrooms: numBathrooms ? parseInt(numBathrooms) : null,
+                square_feet: squareFeet ? parseInt(squareFeet) : null,
+                property_type: propertyType || null,
+                has_garage: garage,
+                is_new_build: newBuild,
+            });
+            setSuccessMessage("Property details updated successfully!");
+            setErrorMessage(null);
 
-        const descriptionHTML = setDescriptionHTML(description, features);
-        console.log("Description HTML: ", descriptionHTML);
-
-        // try {
-        //     await editProperty(propertyId, {
-        //         title,
-        //         description: setDescriptionHTML(description, features),
-        //         price: parseFloat(price),
-        //         price_type: priceType,
-        //         address_line_1: address?.address_line_1 || undefined,
-        //         address_line_2: address?.address_line_2 || null,
-        //         city: address?.city || undefined,
-        //         post_code: address?.post_code || undefined,
-        //         epc_rating: epc || null,
-        //         council_tax_band: councilTaxBand || null,
-        //         num_bedrooms: numBedrooms ? parseInt(numBedrooms) : null,
-        //         num_bathrooms: numBathrooms ? parseInt(numBathrooms) : null,
-        //         square_feet: squareFeet ? parseInt(squareFeet) : null,
-        //         property_type: propertyType || null,
-        //         has_garage: garage,
-        //         is_new_build: newBuild,
-        //     });
-        //     setSuccessMessage("Property details updated successfully!");
-        //     setErrorMessage(null);
-
-        // } catch (error) {
-        //     console.error("Error updating property", error);
-        //     setErrorMessage("Failed to update property details.");
-        //     setSuccessMessage(null);
-        // }
-    }
-
-    function setDescriptionHTML(description: string, features: string[]) {
-        const featuresHTML = features.map(feature => `<li>${feature}</li>`).join("");
-        return `<h1>Key Features</h1><ul>${featuresHTML}</ul><h1>Description</h1><p>${description.replace(/\n/g, "<br>")}</p>`;
+        } catch (error) {
+            console.error("Error updating property", error);
+            setErrorMessage("Failed to update property details.");
+            setSuccessMessage(null);
+        } finally {
+            setLoading(false);
+        }
     }
 
     return (
         <div>
+            <Dialog open={loading}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Editing Property</DialogTitle>
+                    </DialogHeader>
+                    <p>Your property is being edited...</p>
+                </DialogContent>
+            </Dialog>
+            <Dialog open={!!errorMessage}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Error Editing Property</DialogTitle>
+                    </DialogHeader>
+                    <p className="text-red-600">{errorMessage}</p>
+                    <p>Please try again</p>
+                    <DialogFooter className="justify-end">
+                        <DialogClose asChild > 
+                            <Button className="bg-buttonColor hover:bg-buttonColor/90 text-foreground" onClick={() => setErrorMessage(null)} type="button">Close</Button>
+                        </DialogClose>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={!!successMessage}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Property Successfully Edited!</DialogTitle>
+                    </DialogHeader>
+                    <p className="text-green-600">{successMessage}</p>
+                    <DialogFooter className="justify-end">
+                        <DialogClose asChild>
+                            <Button className="bg-buttonColor hover:bg-buttonColor/90 text-foreground" onClick={() => setSuccessMessage(null)} type="button">Close</Button>
+                        </DialogClose>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
             <form onSubmit={handleSubmit}>
                 <Card className="bg-white/90 border-none">
                     <CardHeader>
@@ -201,7 +242,7 @@ export default function EditPropertyForm({ propertyId }: { propertyId: number })
                                         </InputGroup>
                                     ))}
                                     <div className="flex justify-end">
-                                        <Button className="bg-buttonColor hover:bg-buttonColor/90 ml-2 text-foreground inline-flex" onClick={() => setFeatures([...features, ""])}>Add Feature <PlusCircleIcon /></Button>
+                                        <Button type="button" className="bg-buttonColor hover:bg-buttonColor/90 ml-2 text-foreground inline-flex" onClick={() => setFeatures([...features, ""])}>Add Feature <PlusCircleIcon /></Button>
                                     </div>
                                 </div>
                             </div>
@@ -305,7 +346,6 @@ export default function EditPropertyForm({ propertyId }: { propertyId: number })
                                             value={propertyType}
                                             onChange={(e) => setPropertyType(e.target.value)}
                                             className="ml-2"
-                                            maxLength={2}
                                         />
                                     </div>
 
@@ -349,9 +389,6 @@ export default function EditPropertyForm({ propertyId }: { propertyId: number })
                                 <EditImages params={{ id: propertyId }} />
                             </div>
                         </div>
-
-                        {errorMessage && <p className="text-red-500">{errorMessage}</p>}
-                        {successMessage && <p className="text-green-500">{successMessage}</p>}
                     </CardContent>
                 </Card>
                 <Button type="submit" className="bg-buttonColor hover:bg-buttonHover mt-4 text-foreground fixed bottom-4 right-4 text-lg w-48 h-12">Save Changes</Button>

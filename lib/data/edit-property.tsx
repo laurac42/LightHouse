@@ -10,6 +10,7 @@ type Property = Database["public"]["Tables"]["properties"]["Row"];
  */
 export async function editProperty(propertyId: number, updatedData: Partial<Property>) {
     const supabase = await createClient();
+    console.log("editing property: ", propertyId);
     const { error } = await supabase
         .from("properties")
         .update(updatedData)
