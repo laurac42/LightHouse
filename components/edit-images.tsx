@@ -22,14 +22,16 @@ export type StagedFiles = Record<CategoryKey, File[]>;
 type Props = {
     params: { id: number };
     onStagedFilesChange: (files: StagedFiles) => void;
+    onDeletedImagesChange: (images: string[]) => void;
 };
 
 const emptyStagedFiles = (): StagedFiles =>
     Object.fromEntries(CATEGORIES.map((c) => [c.key, []])) as unknown as StagedFiles;
 
-export default function EditImages({ params, onStagedFilesChange }: Props) {
+export default function EditImages({ params, onStagedFilesChange, onDeletedImagesChange }: Props) {
     const [imageUrls, setImageUrls] = useState<string[]>([]);
     const [staged, setStaged] = useState<StagedFiles>(emptyStagedFiles);
+    const [imagesMarkedForDeletion, setImagesMarkedForDeletion] = useState<string[]>([]);
 
     useEffect(() => {
         const fetchImages = async () => {
@@ -45,8 +47,27 @@ export default function EditImages({ params, onStagedFilesChange }: Props) {
         onStagedFilesChange(updated);
     };
 
+    const handleDeleteImage = (filename: string) => {
+        setImageUrls((current) => current.filter((url) => url !== filename));
+        setImagesMarkedForDeletion((current) => {
+            if (current.includes(filename)) {
+                return current;
+            }
+
+            const updated = [...current, filename];
+            return updated;
+        });
+        onDeletedImagesChange([...imagesMarkedForDeletion, filename]);
+
+    };
+
     return (
         <div className="flex flex-col gap-6">
+            {imagesMarkedForDeletion.length > 0 && (
+                <p className="text-sm text-muted-foreground">
+                    {imagesMarkedForDeletion.length} image{imagesMarkedForDeletion.length === 1 ? "" : "s"} pending deletion. Changes will be applied when you click save.
+                </p>
+            )}
             {CATEGORIES.map(({ key, label, ...rest }) => {
                 const description = "description" in rest ? rest.description : undefined;
                 const filtered = imageUrls.filter((url) => url.startsWith(key));
@@ -65,7 +86,12 @@ export default function EditImages({ params, onStagedFilesChange }: Props) {
                                         alt={`Property Image ${index + 1}`}
                                         className="w-full h-48 object-cover rounded"
                                     />
-                                    <button className="absolute top-2 right-2 bg-buttonColor hover:bg-buttonColor/90 text-white rounded-full p-1">
+                                    <button
+                                        type="button"
+                                        className="absolute top-2 right-2 bg-buttonColor hover:bg-buttonColor/90 text-white rounded-full p-1"
+                                        onClick={() => handleDeleteImage(url)}
+                                        aria-label={`Delete image ${index + 1}`}
+                                    >
                                         <X size={16} />
                                     </button>
                                 </div>

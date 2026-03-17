@@ -14,7 +14,7 @@ import { X, PlusCircleIcon } from "lucide-react";
 import type { Address } from "@/types/address";
 import { Button } from "./ui/button";
 import EditImages, { type StagedFiles } from "./edit-images";
-import { getNumberOfImagesInCategory, uploadImageToStorage } from "@/lib/data/images";
+import { deleteImageFromStorage, getNumberOfImagesInCategory, uploadImageToStorage } from "@/lib/data/images";
 import { editProperty } from "@/lib/data/edit-property";
 import {
     Dialog,
@@ -58,6 +58,7 @@ export default function EditPropertyForm({ propertyId }: { propertyId: number })
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const [stagedImages, setStagedImages] = useState<StagedFiles>();
+    const [imagesMarkedForDeletion, setImagesMarkedForDeletion] = useState<string[]>([]);
 
     useEffect(() => {
         const fetchProperty = async () => {
@@ -116,11 +117,9 @@ export default function EditPropertyForm({ propertyId }: { propertyId: number })
                 is_new_build: newBuild,
             });
 
-            console.log("staged images: ", stagedImages)
             if (stagedImages && propertyId) {
                 for (const [category, files] of Object.entries(stagedImages)) {
                     let numImagesInCategory = await getNumberOfImagesInCategory(category, propertyId)
-                    console.log("category: ", category, " has ", numImagesInCategory, " images")
                     for (const file of files) {
                         numImagesInCategory++;
                         const path = `${category}_${numImagesInCategory}`;
@@ -128,6 +127,15 @@ export default function EditPropertyForm({ propertyId }: { propertyId: number })
                     }
                 }
             }
+
+            if (imagesMarkedForDeletion.length > 0) {
+                for (const filename of imagesMarkedForDeletion) {
+                    await deleteImageFromStorage(propertyId, filename);
+                }
+            }
+
+            setImagesMarkedForDeletion([]);
+
             setSuccessMessage("Property details updated successfully!");
             setErrorMessage(null);
 
@@ -401,7 +409,11 @@ export default function EditPropertyForm({ propertyId }: { propertyId: number })
 
                             <div>
                                 <Label className="py-2 text-2xl">Images</Label>
-                                <EditImages params={{ id: propertyId }} onStagedFilesChange={setStagedImages} />
+                                <EditImages
+                                    params={{ id: propertyId }}
+                                    onStagedFilesChange={setStagedImages}
+                                    onDeletedImagesChange={setImagesMarkedForDeletion}
+                                />
                             </div>
                         </div>
                     </CardContent>

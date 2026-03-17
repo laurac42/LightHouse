@@ -33,6 +33,17 @@ export async function uploadImageToStorage(propertyId: number, file: File, filen
     }
 }
 
+export async function deleteImageFromStorage(propertyId: number, filename: string) {
+    const supabase = await createClient();
+    const { error } = await supabase.storage
+        .from("lighthouse-bucket")
+        .remove([`properties/${propertyId}/${filename}`]);
+
+    if (error) {
+        throw error;
+    }
+}
+
 /**
  * Get the number of properties in a given category in supabase storage
  * @param category 
