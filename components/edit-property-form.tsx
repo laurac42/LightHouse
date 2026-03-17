@@ -13,7 +13,8 @@ import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGr
 import { X, PlusCircleIcon } from "lucide-react";
 import type { Address } from "@/types/address";
 import { Button } from "./ui/button";
-import EditImages from "./edit-images";
+import EditImages, { type StagedFiles } from "./edit-images";
+import { getNumberOfImagesInCategory, uploadImageToStorage } from "@/lib/data/images";
 import { editProperty } from "@/lib/data/edit-property";
 import {
     Dialog,
@@ -56,6 +57,7 @@ export default function EditPropertyForm({ propertyId }: { propertyId: number })
     const [loading, setLoading] = useState(false)
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
+    const [stagedImages, setStagedImages] = useState<StagedFiles>();
 
     useEffect(() => {
         const fetchProperty = async () => {
@@ -113,12 +115,25 @@ export default function EditPropertyForm({ propertyId }: { propertyId: number })
                 has_garage: garage,
                 is_new_build: newBuild,
             });
+
+            console.log("staged images: ", stagedImages)
+            if (stagedImages && propertyId) {
+                for (const [category, files] of Object.entries(stagedImages)) {
+                    let numImagesInCategory = await getNumberOfImagesInCategory(category, propertyId)
+                    console.log("category: ", category, " has ", numImagesInCategory, " images")
+                    for (const file of files) {
+                        numImagesInCategory++;
+                        const path = `${category}_${numImagesInCategory}`;
+                        await uploadImageToStorage(propertyId, file, path)
+                    }
+                }
+            }
             setSuccessMessage("Property details updated successfully!");
             setErrorMessage(null);
 
         } catch (error) {
             console.error("Error updating property", error);
-            setErrorMessage("Failed to update property details.");
+            setErrorMessage("Failed to update property details: " + error);
             setSuccessMessage(null);
         } finally {
             setLoading(false);
@@ -128,7 +143,7 @@ export default function EditPropertyForm({ propertyId }: { propertyId: number })
     return (
         <div>
             <Dialog open={loading}>
-                <DialogContent>
+                <DialogContent aria-describedby="Editing property">
                     <DialogHeader>
                         <DialogTitle>Editing Property</DialogTitle>
                     </DialogHeader>
@@ -136,14 +151,14 @@ export default function EditPropertyForm({ propertyId }: { propertyId: number })
                 </DialogContent>
             </Dialog>
             <Dialog open={!!errorMessage}>
-                <DialogContent>
+                <DialogContent aria-describedby="Error editing property">
                     <DialogHeader>
                         <DialogTitle>Error Editing Property</DialogTitle>
                     </DialogHeader>
                     <p className="text-red-600">{errorMessage}</p>
                     <p>Please try again</p>
                     <DialogFooter className="justify-end">
-                        <DialogClose asChild > 
+                        <DialogClose asChild >
                             <Button className="bg-buttonColor hover:bg-buttonColor/90 text-foreground" onClick={() => setErrorMessage(null)} type="button">Close</Button>
                         </DialogClose>
                     </DialogFooter>
@@ -151,7 +166,7 @@ export default function EditPropertyForm({ propertyId }: { propertyId: number })
             </Dialog>
 
             <Dialog open={!!successMessage}>
-                <DialogContent>
+                <DialogContent aria-describedby="Success editing property">
                     <DialogHeader>
                         <DialogTitle>Property Successfully Edited!</DialogTitle>
                     </DialogHeader>
@@ -386,7 +401,7 @@ export default function EditPropertyForm({ propertyId }: { propertyId: number })
 
                             <div>
                                 <Label className="py-2 text-2xl">Images</Label>
-                                <EditImages params={{ id: propertyId }} />
+                                <EditImages params={{ id: propertyId }} onStagedFilesChange={setStagedImages} />
                             </div>
                         </div>
                     </CardContent>
