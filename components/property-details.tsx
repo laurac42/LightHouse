@@ -1,7 +1,6 @@
 import { Database } from "@/types/supabase";
-import { sanitizeDescription, applyClassesToDescription } from "@/lib/data/property-utils";
 import styles from '../app/public/properties/page.module.css';
-import {Home, Bed, Bath, Grid2X2, Landmark, Lightbulb } from "lucide-react";
+import { Home, Bed, Bath, Grid2X2, Landmark, Lightbulb } from "lucide-react";
 
 type Property = Database["public"]["Tables"]["properties"]["Row"];
 
@@ -41,7 +40,16 @@ export default function PropertyDetails({ params }: { params: { id: number, prop
                         </div>
                     </div>
                     <hr />
-                    <div className={styles.description + ' mb-20 md:mb-28 lg:mb-8'} dangerouslySetInnerHTML={{ __html: sanitizeDescription(applyClassesToDescription(property.description, styles)) }} />
+                    <div className={styles.description + ' mb-20 md:mb-28 lg:mb-8 whitespace:'}>
+                        <h1 className={styles.features}>Key Features</h1>
+                        <ul>
+                            {property.features?.map((feature) => 
+                                <li>{feature}</li>
+                        )}
+                        </ul>
+                        <h1>Description</h1>
+                        <p>{property.description}</p>
+                    </div>
                 </div>
             )}
         </>

@@ -155,6 +155,7 @@ export type Database = {
           council_tax_band: string | null
           description: string
           epc_rating: string | null
+          features: string[] | null
           floorplan_url: string | null
           has_garage: boolean | null
           id: number
@@ -182,6 +183,7 @@ export type Database = {
           council_tax_band?: string | null
           description: string
           epc_rating?: string | null
+          features?: string[] | null
           floorplan_url?: string | null
           has_garage?: boolean | null
           id?: number
@@ -209,6 +211,7 @@ export type Database = {
           council_tax_band?: string | null
           description?: string
           epc_rating?: string | null
+          features?: string[] | null
           floorplan_url?: string | null
           has_garage?: boolean | null
           id?: number

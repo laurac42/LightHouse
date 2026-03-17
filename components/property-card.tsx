@@ -12,7 +12,7 @@ import { getAgencyDetails } from "@/lib/data/property-utils";
 import Link from 'next/link';
 import ImageCarousel from "./image-carousel";
 import type { AgencyLocationDetails } from "@/types/agency";
-import { sanitizeDescription, removeBulletsAndHeadings, uppercaseWords } from "@/lib/data/property-utils";
+import { uppercaseWords } from "@/lib/data/property-utils";
 import { Button } from "./ui/button";
 
 type Property = Database["public"]["Tables"]["properties"]["Row"];
@@ -119,9 +119,9 @@ export default function PropertyCard({ property, images, page, editable = false 
                                 </div>
                             )}
                         </div>
-                        <div className={page === "properties" ? "text-sm text-muted-foreground max-h-[100px] mx-1 my-4 overflow-hidden text-ellipsis line-clamp-4 lg:line-clamp-5" : "text-sm text-muted-foreground max-h-[100px] mx-1 my-1 overflow-hidden text-ellipsis line-clamp-2 lg:line-clamp-3"}
-                            dangerouslySetInnerHTML={{ __html: removeBulletsAndHeadings(sanitizeDescription(property.description)) }}
-                        />
+                        <div className={page === "properties" ? "text-sm text-muted-foreground max-h-[100px] mx-1 my-4 overflow-hidden text-ellipsis line-clamp-4 lg:line-clamp-5" : "text-sm text-muted-foreground max-h-[100px] mx-1 my-1 overflow-hidden text-ellipsis line-clamp-2 lg:line-clamp-3"}>
+                            {property.description}
+                        </div>
                         {agencyDetails && page !== "manage" && (
                             <div className="flex flex-row items-center gap-4 pb-2 md:py-0">
                                 {agencyDetails.logo_url && (

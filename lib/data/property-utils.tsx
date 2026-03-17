@@ -48,19 +48,8 @@ export async function getAgencyDetails(agencyId: string) {
     }
 }
 
-
 /**
-  * Sanitize property description to prevent XSS attacks, allowing only basic formatting tags
-  * @param description Property description to sanitize
-  * @returns Sanitized description safe for rendering as HTML
-  */
-export function sanitizeDescription(description: string | null) {
-    if (!description) return "";
-    return DOMPurify.sanitize(description, { ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'ul', 'li', 'p', 'br', 'h1'] });
-}
-
-/**
- * 
+ * Fetch properties assigned to a specific agency location (i.e. where agency_location_id matches)
  * @param locationId ID of the agency location to fetch properties from
  * @return Number of properties returned, and array of properties from the given estate agency location, or null
  */
@@ -132,45 +121,19 @@ export async function doesPropertyBelongToAgent(propertyId: number, agentId: str
 }
 
 /**
- * Descritpion has no classes, so features class is applied to the 'Key Features' heading in the description to allow styling of the features section
- * @param description The description to apply classes to
- * @param styles The CSS module styles object containing the features class
- * @returns The description with the features class applied to the 'Key Features' heading
- */
-export function applyClassesToDescription(description: string, styles: { [key: string]: string }) {
-    // apply the features class to the 'Key Features' heading
-    description = description.replace(/<h1>(Key [fF]eatures)<\/h1>/, `<h1 class="${styles.features}">Key Features</h1>`);
-    return description;
-}
-
-/**
- * Remove bullet points and headings and p tags from property description for displaying on cards
- * @param description description to remove bullet points and headings from
- * @returns Description with bullet points and headings removed
- */
-export function removeBulletsAndHeadings(description: string | null) {
-    if (!description) return "";
-    // remove p tags but not content inside them, remove h1 tags and content inside them, remove ul and li tags but not content inside them
-    return description.replace(/<p> *?|<\/p> *?|<h1>[\s\S]*<\/h1>|<ul>[\s\S]*?<\/ul>|<li>[\s\S]*?<\/li>/g, '');
-}
-
-/**
  * Make all words in a string uppercase
- * @param string to convert
+ * @param string string to convert
  * @returns string with all words in uppercase
  */
 export function uppercaseWords(str: string) {
     return str.replace(/\b\w/g, char => char.toUpperCase());
 }
 
-export function removeParagraphsAndHeadings(description: string | null) {
-    if (!description) return "";
-    // remove p tags and contents, remove h1 tags and contents
-    return description.replace(/<p>[\s\S]*?<\/p>|<h1>[\s\S]*?<\/h1>/g, '');
-}
-
-export function getFeaturesFromDescription(description: string | null) {
-    if (!description) return [];
-    // all features are in <li> tags, so extract content between all <li> tags in the description, then remove <li> tags from the extracted content
-    return description.match(/<li>([^<]*)<\/li>/g)?.map(li => li.replace(/<\/?li>/g, '').trim()) || [];
+/**
+ * Add new lines to the description where there are new lines, so that it is displayed as a paragraph
+ * @param description description to add paragraphs to
+ * @return description with paragraphs added
+ */
+export function addParagraphs(description: string) {
+    
 }
