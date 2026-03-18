@@ -115,6 +115,7 @@ export default function AdminPropertiesPage() {
         try {
             setLoading(true);
             setErrorMessage("");
+            resetValues();
             // scroll to top
             window.scrollTo({ top: 0 });
 
@@ -154,12 +155,23 @@ export default function AdminPropertiesPage() {
         } finally {
             setLoading(false);
         }
-    }, [selectedAgencyId, selectedLocationId]);
+    }, [selectedLocationId]);
+
+    useEffect(() => {
+        setSelectedLocationId("");
+        resetValues();
+    }, [selectedAgencyId])
 
     useEffect(() => {
         fetchPropertiesForAgency(1);
     }, [fetchPropertiesForAgency]);
 
+    function resetValues() {
+        setProperties([]);
+        setTotalProperties(0);
+        setCurrentPage(1);
+        setTotalPages(0);
+    }
 
     return (
         <div className="bg-background w-full min-h-svh">
@@ -215,73 +227,78 @@ export default function AdminPropertiesPage() {
                                 <p>Loading properties ...</p>
                             ) : (
                                 <>
-                                    <div className="pt-2 pb-4 px-4 text-highlight">
-                                        <p>Showing properties {currentPage * PAGE_SIZE - (PAGE_SIZE - 1)} - {Math.min(currentPage * PAGE_SIZE, totalProperties)} of {totalProperties} properties</p>
-                                    </div>
-                                    <div className="w-full max-w-4xl">
-                                        {properties.map((property) => (
-                                            <PropertyCard key={property.id} property={property} images={property.images} page="manage" editable={true} />
-                                        ))}
-                                    </div>
-                                    {errorMessage && <p className="text-red-500">{errorMessage}</p>}
-                                    {properties.length > PAGE_SIZE &&
-                                        <div className="flex flex-row gap-2 justify-center py-8 mb-6">
-                                            {currentPage > 1 ? <Button className="mx-auto bg-background hover:bg-midBlue text-highlight border-none" size="sm" onClick={() => fetchPropertiesForAgency(currentPage - 1)}>
-                                                <ChevronLeft size={16} />
-                                                Previous
-                                            </Button> : (
-                                                <div className="mx-auto w-[100px]" />)} {/* placeholder to prevent layout shift when the Previous button is hidden */}
-
-                                            <div className="flex flex-col justify-center items-center gap-2">
-                                                <div className="flex flex-row gap-1">
-                                                    {/** On sm, or if there are too many pages, show only a subset of page numbers */}
-                                                    {isMobile && totalPages > 3 && currentPage > 2 && (
-                                                        <span className="text-lg text-muted-foreground">...</span>
-                                                    )}
-                                                    {!isMobile && totalPages > 8 && currentPage > 4 && (
-                                                        <span className="text-lg text-muted-foreground">...</span>
-                                                    )}
-                                                    {Array.from({ length: isMobile ? 3 : totalPages > 8 ? 8 : totalPages }, (_, i) => {
-                                                        if (isMobile) {
-                                                            return currentPage > 1 ? (currentPage === totalPages ? currentPage - 2 + i : currentPage - 1 + i) : i + 1;
-                                                        } else {
-                                                            if (totalPages > 8) {
-                                                                if (currentPage <= 4) {
-                                                                    return i + 1;
-                                                                } else if (currentPage >= totalPages - 3) {
-                                                                    return totalPages - 7 + i;
-                                                                } else {
-                                                                    return currentPage - 3 + i;
-                                                                }
-                                                            }
-                                                            return i + 1; // if total pages is 8 or less, show all page numbers
-                                                        }
-                                                    }).map((page) => (
-                                                        <Button key={page} variant="outline" className={page === currentPage ? "bg-highlight text-white border-none hover:bg-highlight hover:text-white" : "hover:bg-midBlue"} size="sm" onClick={() => fetchPropertiesForAgency(page)}>
-                                                            {page}
-                                                        </Button>
-                                                    ))}
-
-                                                    {isMobile && totalPages > 3 && currentPage < totalPages - 1 && (
-                                                        <span className="text-lg text-muted-foreground">...</span>
-                                                    )}
-                                                    {!isMobile && totalPages > 8 && currentPage < totalPages - 4 && (
-                                                        <span className="text-lg text-muted-foreground">...</span>
-                                                    )}
-                                                </div>
-                                                <p>Page {currentPage} of {totalPages}</p>
+                                    {properties.length > 0 &&
+                                        <>
+                                            <div className="pt-2 pb-4 px-4 text-highlight">
+                                                <p>Showing properties {currentPage * PAGE_SIZE - (PAGE_SIZE - 1)} - {Math.min(currentPage * PAGE_SIZE, totalProperties)} of {totalProperties} properties</p>
                                             </div>
 
-                                            {currentPage < totalPages ? (
-                                                <Button className="mx-auto bg-background hover:bg-midBlue text-highlight border-none" size="sm" onClick={() => fetchPropertiesForAgency(currentPage + 1)} hidden={currentPage === totalPages}>
-                                                    Next
-                                                    <ChevronRight size={16} />
-                                                </Button>) :
-                                                <div className="mx-auto w-[100px]" />
-                                            }
+                                            <div className="w-full max-w-4xl">
+                                                {properties.map((property) => (
+                                                    <PropertyCard key={property.id} property={property} images={property.images} page="manage" editable={true} />
+                                                ))}
+                                            </div>
+                                            {errorMessage && <p className="text-red-500">{errorMessage}</p>}
+                                            {properties.length > PAGE_SIZE &&
+                                                <div className="flex flex-row gap-2 justify-center py-8 mb-6">
+                                                    {currentPage > 1 ? <Button className="mx-auto bg-background hover:bg-midBlue text-highlight border-none" size="sm" onClick={() => fetchPropertiesForAgency(currentPage - 1)}>
+                                                        <ChevronLeft size={16} />
+                                                        Previous
+                                                    </Button> : (
+                                                        <div className="mx-auto w-[100px]" />)} {/* placeholder to prevent layout shift when the Previous button is hidden */}
 
-                                        </div>
-                                    }
+                                                    <div className="flex flex-col justify-center items-center gap-2">
+                                                        <div className="flex flex-row gap-1">
+                                                            {/** On sm, or if there are too many pages, show only a subset of page numbers */}
+                                                            {isMobile && totalPages > 3 && currentPage > 2 && (
+                                                                <span className="text-lg text-muted-foreground">...</span>
+                                                            )}
+                                                            {!isMobile && totalPages > 8 && currentPage > 4 && (
+                                                                <span className="text-lg text-muted-foreground">...</span>
+                                                            )}
+                                                            {Array.from({ length: isMobile ? 3 : totalPages > 8 ? 8 : totalPages }, (_, i) => {
+                                                                if (isMobile) {
+                                                                    return currentPage > 1 ? (currentPage === totalPages ? currentPage - 2 + i : currentPage - 1 + i) : i + 1;
+                                                                } else {
+                                                                    if (totalPages > 8) {
+                                                                        if (currentPage <= 4) {
+                                                                            return i + 1;
+                                                                        } else if (currentPage >= totalPages - 3) {
+                                                                            return totalPages - 7 + i;
+                                                                        } else {
+                                                                            return currentPage - 3 + i;
+                                                                        }
+                                                                    }
+                                                                    return i + 1; // if total pages is 8 or less, show all page numbers
+                                                                }
+                                                            }).map((page) => (
+                                                                <Button key={page} variant="outline" className={page === currentPage ? "bg-highlight text-white border-none hover:bg-highlight hover:text-white" : "hover:bg-midBlue"} size="sm" onClick={() => fetchPropertiesForAgency(page)}>
+                                                                    {page}
+                                                                </Button>
+                                                            ))}
+
+                                                            {isMobile && totalPages > 3 && currentPage < totalPages - 1 && (
+                                                                <span className="text-lg text-muted-foreground">...</span>
+                                                            )}
+                                                            {!isMobile && totalPages > 8 && currentPage < totalPages - 4 && (
+                                                                <span className="text-lg text-muted-foreground">...</span>
+                                                            )}
+                                                        </div>
+                                                        <p>Page {currentPage} of {totalPages}</p>
+                                                    </div>
+
+                                                    {currentPage < totalPages ? (
+                                                        <Button className="mx-auto bg-background hover:bg-midBlue text-highlight border-none" size="sm" onClick={() => fetchPropertiesForAgency(currentPage + 1)} hidden={currentPage === totalPages}>
+                                                            Next
+                                                            <ChevronRight size={16} />
+                                                        </Button>) :
+                                                        <div className="mx-auto w-[100px]" />
+                                                    }
+
+                                                </div>
+                                            }
+                                        </>}
+
                                 </>
                             )}
                         </CardContent>
