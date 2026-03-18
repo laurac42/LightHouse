@@ -47,7 +47,7 @@ export default function EditPropertyPage({ params }: { params: Promise<{ id: num
 
             <div className="bg-background min-h-screen w-full">
                 <Navbar />
-                <Link className="flex inline-flex text-highlight m-6 mb-0 mt-4" href="/estate-agent/portal/manage-properties"><MoveLeft /> &nbsp; Back to Agent Portal</Link>
+                <Link className="flex inline-flex text-highlight m-6 mb-0 mt-4" href="/admin/portal/manage-properties"><MoveLeft /> &nbsp; Back to Admin Portal</Link>
                 <EditProperty params={params} />
             </div>
         </Suspense>

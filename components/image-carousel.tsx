@@ -134,7 +134,7 @@ export default function ImageCarousel({ images, property, page, isModalOpen }: {
                                     <img
                                         src={process.env.NEXT_PUBLIC_BUCKET_URL + "properties/" + property.id + "/" + firstImageUrl}
                                         alt={`Main image of ${property.title}`}
-                                        className={page === "property-details" ? "w-full h-[40vh] sm:h-[60vh] md:h-[80vh] 2xl:h-[60vh] object-cover rounded-t-md" : page === "manage" ? "w-full h-40 object-cover rounded-t-md" : "w-full h-64 object-cover rounded-t-md" }
+                                        className={page === "property-details" ? "w-full h-[40vh] sm:h-[60vh] md:h-[80vh] 2xl:h-[60vh] object-cover rounded-t-md" : page === "manage" ? "w-full h-48 object-cover rounded-t-md" : "w-full h-64 object-cover rounded-t-md" }
                                         onClick={() => {
                                             setSelectedImageIndex(0);
                                             handleOpen();
@@ -150,7 +150,7 @@ export default function ImageCarousel({ images, property, page, isModalOpen }: {
                                             <img
                                                 src={process.env.NEXT_PUBLIC_BUCKET_URL + 'properties/' + property.id + '/' + imageUrl}
                                                 alt={`Image ${index + 1} of ${property.title}`}
-                                                className={page === "property-details" ? "w-full h-[40vh] sm:h-[60vh] md:h-[80vh] 2xl:h-[60vh] object-cover rounded-t-md" : page === "manage" ? "w-full h-40 object-cover rounded-t-md" : "w-full h-64 object-cover rounded-t-md"}
+                                                className={page === "property-details" ? "w-full h-[40vh] sm:h-[60vh] md:h-[80vh] 2xl:h-[60vh] object-cover rounded-t-md" : page === "manage" ? "w-full h-48 object-cover rounded-t-md" : "w-full h-64 object-cover rounded-t-md"}
                                                 onClick={() => {
                                                     if (page === "property-details") {
                                                         const clickedIndex = displayImages.findIndex((displayImage) => displayImage === imageUrl);
