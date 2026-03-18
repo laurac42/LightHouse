@@ -162,9 +162,14 @@ export default function PropertyCard({ property, images, page, editable = false 
                                         </Link>
                                     </div>
                                 ) : (
-                                    <Link href={`manage-properties/${property.id}`}>
-                                        <Button className="bg-midBlue hover:bg-midBlueHover mb-2 text-foreground">View Property</Button>
-                                    </Link>
+                                    <div className="flex flex-row gap-1 justify-between items-center pt-2">
+                                        <div className="flex  flex-row gap-3 items-center">
+                                            <p className="font-bold mb-2">Status: <span className={property.status === "active" || property.status === "under offer" ? "text-green-600" : "text-red-600"}><b>{property.status}</b></span></p>
+                                        </div>
+                                        <Link href={`manage-properties/${property.id}`}>
+                                            <Button className="bg-midBlue hover:bg-midBlueHover mb-2 text-foreground">View Property</Button>
+                                        </Link>
+                                    </div>
                                 )}
                             </>
                         }
