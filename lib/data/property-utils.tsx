@@ -1,7 +1,5 @@
 import { createClient } from "@/lib/supabase/client";
 import { Database } from "@/types/supabase";
-import { create } from "domain";
-import DOMPurify from "dompurify"
 
 type Property = Database["public"]["Tables"]["properties"]["Row"];
 
