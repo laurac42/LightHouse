@@ -169,6 +169,11 @@ export default function ImageCarousel({ images, property, page, isModalOpen }: {
                         <CarouselPrevious className="absolute left-2" />
                         <CarouselNext className="absolute right-2" />
                         <p className="absolute right-2 top-2 text-sm inline-flex gap-1 items-center bg-navBar rounded-md p-1"><Camera size={16} /> {current} of {count}</p>
+                        
+                        {page === "properties" && property.status == "under offer" &&
+                        <p className="absolute left-2 top-2 text-sm inline-flex gap-1 items-center bg-buttonColor rounded-md p-1">
+                            Under Offer
+                        </p>}
                     </>
                 )}
                 {page === "property-details" && (
