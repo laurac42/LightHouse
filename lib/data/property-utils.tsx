@@ -132,3 +132,22 @@ export async function doesPropertyBelongToAgent(propertyId: number, agentId: str
 export function uppercaseWords(str: string) {
     return str.replace(/\b\w/g, char => char.toUpperCase());
 }
+
+/**
+ * Fetch the status of a property with a given ID
+ * @param propertyId Property ID to fetch status of
+ * @returns The status of the given property
+ */
+export async function fetchPropertyStatus(propertyId: number) {
+    const supabase = await createClient();  
+    const {data, error } = await supabase.from("properties")
+    .select("status")
+    .eq("id", propertyId)
+    .single();
+
+    if (error) {
+        throw error;
+    }
+
+    return data;
+}
