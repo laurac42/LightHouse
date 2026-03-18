@@ -19,6 +19,12 @@ export async function getImagesFromStorage(id: number) {
     }
 }
 
+/**
+ * Upload an image to storage
+ * @param propertyId Id of the property to upload the image for
+ * @param file The image file to upload
+ * @param filename The name to give the file in storage (without extension, category and index will be added to this)
+ */
 export async function uploadImageToStorage(propertyId: number, file: File, filename: string) {
     const supabase = await createClient();
     const fileType = file.type || "image/png"; // default to png if type is not available
@@ -51,8 +57,8 @@ export async function deleteImageFromStorage(propertyId: number, filename: strin
 
 /**
  * Get the next index of a category of images so that it can be decided what to name the next image
- * @param category 
- * @param propertyId 
+ * @param category Category to get index for
+ * @param propertyId Id of the property to get the index for
  */
 export async function getNextIndexInCategory(category: string, propertyId: number) {
     const supabase = await createClient();

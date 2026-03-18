@@ -99,6 +99,12 @@ export async function fetchPropertiesByAgentID(agentId: string, page: number = 1
     }
 }
 
+/**
+ * Check if a property belongs to a given agent
+ * @param propertyId Id of the property to check
+ * @param agentId Id of the agent to check
+ * @returns boolean indicating whether the property belongs to the agent, or false if an error occurs
+ */
 export async function doesPropertyBelongToAgent(propertyId: number, agentId: string) {
     try {
         const supabase = await createClient();
@@ -127,13 +133,4 @@ export async function doesPropertyBelongToAgent(propertyId: number, agentId: str
  */
 export function uppercaseWords(str: string) {
     return str.replace(/\b\w/g, char => char.toUpperCase());
-}
-
-/**
- * Add new lines to the description where there are new lines, so that it is displayed as a paragraph
- * @param description description to add paragraphs to
- * @return description with paragraphs added
- */
-export function addParagraphs(description: string) {
-    
 }
