@@ -10,13 +10,31 @@ type Property = Database["public"]["Tables"]["properties"]["Row"];
  */
 export async function editProperty(propertyId: number, updatedData: Partial<Property>) {
     const supabase = await createClient();
-    console.log("editing property: ", propertyId);
+
     const { error } = await supabase
         .from("properties")
         .update(updatedData)
         .eq("id", propertyId)
         .select("*")
         .single();
+    if (error) {
+        throw error;
+    }
+}
+
+/**
+ * Update a property's status
+ * @param propertyId Id of the property to update the status of
+ * @param newStatus New status to set for the property
+ */
+export async function editStatus(propertyId: number, newStatus: string) {
+    const supabase = await createClient();
+
+    const { error } = await supabase
+        .from("properties")
+        .update({ status: newStatus })
+        .eq("id", propertyId);
+        
     if (error) {
         throw error;
     }

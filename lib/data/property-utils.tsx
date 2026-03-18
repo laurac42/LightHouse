@@ -1,7 +1,5 @@
 import { createClient } from "@/lib/supabase/client";
 import { Database } from "@/types/supabase";
-import { create } from "domain";
-import DOMPurify from "dompurify"
 
 type Property = Database["public"]["Tables"]["properties"]["Row"];
 
@@ -51,16 +49,25 @@ export async function getAgencyDetails(agencyId: string) {
 /**
  * Fetch properties assigned to a specific agency location (i.e. where agency_location_id matches)
  * @param locationId ID of the agency location to fetch properties from
+ * @param page Page number (1-based)
+ * @param page_size Number of results per page
+ * @param status Optional status filter
  * @return Number of properties returned, and array of properties from the given estate agency location, or null
  */
-export async function fetchPropertiesByLocationID(locationId: string, page: number=1, page_size: number=10) {
+export async function fetchPropertiesByLocationID(locationId: string, page: number=1, page_size: number=10, status?: string) {
     try {
         const supabase = await createClient();
-        const {data, error, count} = await supabase
+        let query = supabase
         .from("properties")
         .select("*", {count: "exact"})
-        .range((page - 1) * page_size, page * page_size - 1)
         .eq("agency_location_id", locationId);
+
+        if (status) {
+            query = query.eq("status", status);
+        }
+
+        const {data, error, count} = await query
+        .range((page - 1) * page_size, page * page_size - 1);
 
         if (!data || error) {
             throw error ? error : new Error("No properties available at the given Estate Agency Location.");
@@ -78,16 +85,23 @@ export async function fetchPropertiesByLocationID(locationId: string, page: numb
  * @param agentId User ID of the estate agent
  * @param page Page number (1-based)
  * @param page_size Number of results per page
+ * @param status Optional status filter
  * @returns Count and array of properties, or null on error
  */
-export async function fetchPropertiesByAgentID(agentId: string, page: number = 1, page_size: number = 10) {
+export async function fetchPropertiesByAgentID(agentId: string, page: number = 1, page_size: number = 10, status?: string) {
     try {
         const supabase = await createClient();
-        const { data, error, count } = await supabase
+        let query = supabase
             .from("properties")
             .select("*", { count: "exact" })
-            .range((page - 1) * page_size, page * page_size - 1)
             .eq("agent_id", agentId);
+
+        if (status) {
+            query = query.eq("status", status);
+        }
+
+        const { data, error, count } = await query
+            .range((page - 1) * page_size, page * page_size - 1);
 
         if (!data || error) {
             throw error ? error : new Error("No properties found for the given agent.");
@@ -133,4 +147,23 @@ export async function doesPropertyBelongToAgent(propertyId: number, agentId: str
  */
 export function uppercaseWords(str: string) {
     return str.replace(/\b\w/g, char => char.toUpperCase());
+}
+
+/**
+ * Fetch the status of a property with a given ID
+ * @param propertyId Property ID to fetch status of
+ * @returns The status of the given property
+ */
+export async function fetchPropertyStatus(propertyId: number) {
+    const supabase = await createClient();  
+    const {data, error } = await supabase.from("properties")
+    .select("status")
+    .eq("id", propertyId)
+    .single();
+
+    if (error) {
+        throw error;
+    }
+
+    return data;
 }

@@ -45,6 +45,7 @@ export default function PropertiesPage() {
             const { data, error, count } = await supabase
                 .from("properties")
                 .select("*", { count: "exact" })
+                .or(`status.eq."under offer",status.eq."active"`)
                 .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
 
             setTotalProperties(count || 0);

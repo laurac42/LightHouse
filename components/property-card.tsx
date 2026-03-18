@@ -6,7 +6,7 @@ import {
     CardTitle,
 } from "@/components/ui/card";;
 import { Database } from "@/types/supabase";
-import { Home, Bed, Bath, Grid2X2, Lightbulb, Landmark, Mail, Phone } from "lucide-react";
+import { Home, Bed, Bath, Grid2X2, Lightbulb, Landmark, Mail, Phone, Pencil } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getAgencyDetails } from "@/lib/data/property-utils";
 import Link from 'next/link';
@@ -29,13 +29,13 @@ export default function PropertyCard({ property, images, page, editable = false 
     }, []);
 
     return (
-        <Card key={property.id} className="bg-white/90 border-none mb-6">
+        <Card key={property.id} className={page === "manage" ? "bg-white/90 border-none mb-6 h-60" : "bg-white/90 border-none mb-6"}>
             <CardContent className="p-0">
                 <div className="flex flex-col md:flex-row gap-2">
                     <div className={page === "manage" ? "flex flex-col gap-0 md:w-64 shrink-0" : "flex flex-col gap-0 md:w-80 shrink-0"}>
                         <ImageCarousel images={images} property={property} page={page} isModalOpen={null} />
                         <div>
-                            <CardHeader className="p-0 gap-0 m-0 bg-highlight rounded-b-md text-white flex flex-row items-center justify-center">
+                            <CardHeader className={page === "manage" ? "h-12 p-0 gap-0 m-0 bg-highlight rounded-b-md text-white flex flex-row items-center justify-center" : "p-0 gap-0 m-0 bg-highlight rounded-b-md text-white flex flex-row items-center justify-center"}>
                                 <CardTitle className="text-2xl text-center">{'£' + property.price.toLocaleString()}</CardTitle>
                                 <p className="text-center text-sm"> &nbsp; {uppercaseWords(property.price_type || '')}</p>
                             </CardHeader>
@@ -45,25 +45,23 @@ export default function PropertyCard({ property, images, page, editable = false 
                         {page === "properties" && (
                             <Link href={`properties/${property.id}`}>
                                 <CardHeader className="p-1 pt-2">
-                                    <CardTitle className="text-xl">{property.title}</CardTitle>
+                                    {property.status === "under offer" ? (
+                                        <CardTitle className="text-xl flex flex-row justify-between">
+                                            <div>{property.title}</div>
+                                            <div className="text-buttonHover text-underline">Under Offer</div>
+                                        </CardTitle>
+                                    ) : (
+
+                                        <CardTitle className="text-xl">{property.title}</CardTitle>
+                                    )}
                                 </CardHeader>
                             </Link>
                         )}
                         {page === "manage" && (
                             <div className="flex gap-2">
-                                <CardHeader className="p-1 mt-2">
-                                    <CardTitle className="text-xl">{property.title},  {property.post_code}</CardTitle>
+                                <CardHeader className="p-1 mt-2 ">
+                                    <CardTitle className="text-xl line-clamp-1">{property.title},  {property.post_code}</CardTitle>
                                 </CardHeader>
-                                {editable ? (
-                                    <Link href={`manage-properties/${property.id}/edit`}>
-                                        <Button
-                                            className="bg-buttonColor hover:bg-buttonHover justify-end ml-auto mt-2 text-foreground">Edit Property</Button>
-                                    </Link>
-                                ) : (
-                                    <Link href={`manage-properties/${property.id}`}>
-                                        <Button className="bg-midBlue hover:bg-midBlueHover justify-end ml-auto mt-2 text-foreground">View Property</Button>
-                                    </Link>
-                                )}
                             </div>
                         )}
                         <div>
@@ -147,7 +145,29 @@ export default function PropertyCard({ property, images, page, editable = false 
                                 </div>
                             </div>
                         )}
-
+                        {page === "manage" &&
+                            <>
+                                {editable ? (
+                                    <div className="flex flex-row gap-1 justify-between items-center pt-2">
+                                        <div className="flex  flex-row gap-3 items-center">
+                                            <p className="font-bold mb-2">Status: <span className={property.status === "active" || property.status === "under offer" ? "text-green-600" : "text-red-600"}><b>{property.status}</b></span></p>
+                                            <Link href={`manage-properties/${property.id}/edit-status`}>
+                                                <Button variant={"link"}
+                                                    className=" mb-2 p-1 text-foreground">Edit Status <Pencil /></Button>
+                                            </Link>
+                                        </div>
+                                        <Link href={`manage-properties/${property.id}/edit`}>
+                                            <Button
+                                                className="bg-buttonColor hover:bg-buttonColor/90 mb-2 p-1 text-foreground">Edit Property <Pencil /></Button>
+                                        </Link>
+                                    </div>
+                                ) : (
+                                    <Link href={`manage-properties/${property.id}`}>
+                                        <Button className="bg-midBlue hover:bg-midBlueHover mb-2 text-foreground">View Property</Button>
+                                    </Link>
+                                )}
+                            </>
+                        }
                     </div>
                 </div>
             </CardContent>

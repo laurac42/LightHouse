@@ -27,7 +27,7 @@ type PropertyWithImages = Property & { images: string[] };
 type AgencyDetails = { name: string | null, id: string }
 
 const PAGE_SIZE = 10;
-
+const STATUSES = ["active", "under offer", "draft", "completed", "withdrawn", "deleted"];
 
 export default function AdminPropertiesPage() {
     const router = useRouter();
@@ -43,6 +43,7 @@ export default function AdminPropertiesPage() {
     const [agencyLocations, setAgencyLocations] = useState<{ location_id: string, city: string | null }[] | null>([]);
     const [selectedLocationId, setSelectedLocationId] = useState<string>("");
     const [loadingLocations, setLoadingLocations] = useState<boolean>(false);
+    const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
 
     const updateMedia = useCallback(() => {
         setIsMobile(window.innerWidth < 768);
@@ -119,7 +120,7 @@ export default function AdminPropertiesPage() {
             // scroll to top
             window.scrollTo({ top: 0 });
 
-            const result = await fetchPropertiesByLocationID(selectedLocationId, page, PAGE_SIZE);
+            const result = await fetchPropertiesByLocationID(selectedLocationId, page, PAGE_SIZE, selectedStatus || undefined);
 
             console.log("Fetched properties for agency ", selectedAgencyId, ": ", result);
 
@@ -155,7 +156,7 @@ export default function AdminPropertiesPage() {
         } finally {
             setLoading(false);
         }
-    }, [selectedLocationId]);
+    }, [selectedLocationId, selectedStatus]);
 
     useEffect(() => {
         setSelectedLocationId("");
@@ -223,6 +224,27 @@ export default function AdminPropertiesPage() {
                                         </Select>)}
                                 </div>
                             }
+                            {selectedLocationId && (
+                                <div className="flex flex-wrap gap-2 mb-4">
+                                    <Button
+                                        variant={selectedStatus === null ? "default" : "outline"}
+                                        onClick={() => { setSelectedStatus(null); setCurrentPage(1); }}
+                                        className={selectedStatus === null ? "bg-buttonColor hover:bg-buttonHover text-foreground font-semibold" : ""}
+                                    >
+                                        All Statuses
+                                    </Button>
+                                    {STATUSES.map((status) => (
+                                        <Button
+                                            key={status}
+                                            variant={selectedStatus === status ? "default" : "outline"}
+                                            onClick={() => { setSelectedStatus(status); setCurrentPage(1); }}
+                                            className={selectedStatus === status ? "bg-buttonColor hover:bg-buttonHover text-foreground font-semibold" : ""}
+                                        >
+                                            {status.charAt(0).toUpperCase() + status.slice(1)}
+                                        </Button>
+                                    ))}
+                                </div>
+                            )}
                             {loading ? (
                                 <p>Loading properties ...</p>
                             ) : (

@@ -23,7 +23,7 @@ type Property = Database["public"]["Tables"]["properties"]["Row"];
 type PropertyWithImages = Property & { images: string[] };
 
 const PAGE_SIZE = 10;
-
+const STATUSES = ["active", "under offer", "draft", "completed", "withdrawn", "deleted"];
 
 export default function EstateAgentPropertiesPage() {
     const router = useRouter();
@@ -38,6 +38,7 @@ export default function EstateAgentPropertiesPage() {
     const [isMobile, setIsMobile] = useState(false);
     const [editableProperties, setEditableProperties] = useState<Set<number>>(new Set());
     const [viewMode, setViewMode] = useState<"all" | "mine">("all");
+    const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
 
     const updateMedia = useCallback(() => {
         setIsMobile(window.innerWidth < 768);
@@ -104,8 +105,8 @@ export default function EstateAgentPropertiesPage() {
             window.scrollTo({ top: 0 });
 
             const result = viewMode === "mine"
-                ? await fetchPropertiesByAgentID(user.user.id, page, PAGE_SIZE)
-                : await fetchPropertiesByLocationID(locationId, page, PAGE_SIZE);
+                ? await fetchPropertiesByAgentID(user.user.id, page, PAGE_SIZE, selectedStatus || undefined)
+                : await fetchPropertiesByLocationID(locationId, page, PAGE_SIZE, selectedStatus || undefined);
 
             if (!result) {
                 setErrorMessage("Unable to fetch properties");
@@ -139,7 +140,7 @@ export default function EstateAgentPropertiesPage() {
         } finally {
             setLoading(false);
         }
-    }, [locationId, user, viewMode]);
+    }, [locationId, user, viewMode, selectedStatus]);
 
     useEffect(() => {
         fetchProperties(1);
@@ -194,6 +195,25 @@ export default function EstateAgentPropertiesPage() {
                                 >
                                     My Properties
                                 </Button>
+                            </div>
+                            <div className="flex flex-wrap gap-2 mb-4">
+                                <Button
+                                    variant={selectedStatus === null ? "default" : "outline"}
+                                    onClick={() => { setSelectedStatus(null); setCurrentPage(1); }}
+                                    className={selectedStatus === null ? "bg-buttonColor hover:bg-buttonHover text-foreground font-semibold" : ""}
+                                >
+                                    All Statuses
+                                </Button>
+                                {STATUSES.map((status) => (
+                                    <Button
+                                        key={status}
+                                        variant={selectedStatus === status ? "default" : "outline"}
+                                        onClick={() => { setSelectedStatus(status); setCurrentPage(1); }}
+                                        className={selectedStatus === status ? "bg-buttonColor hover:bg-buttonHover text-foreground font-semibold" : ""}
+                                    >
+                                        {status.charAt(0).toUpperCase() + status.slice(1)}
+                                    </Button>
+                                ))}
                             </div>
                             {loading ? (
                                 <p>Loading properties ...</p>
