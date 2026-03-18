@@ -5,7 +5,7 @@ import Link from "next/link";
 import { MoveLeft } from "lucide-react";
 import { EditStatusForm } from "@/components/edit-status-form";
 import { validateUser } from "@/lib/auth/user";
-import { isAdmin } from "@/lib/auth/role";
+import { isEstateAgent } from "@/lib/auth/role";
 import { useRouter } from "next/navigation";
 
 export function EditStatus({ params }: { params: Promise<{ id: number }> }) {
@@ -14,26 +14,26 @@ export function EditStatus({ params }: { params: Promise<{ id: number }> }) {
 
     // check user is authenticated to be on this page
     useEffect(() => {
-        async function checkAdmin() {
+        async function checkAgent() {
             const user = await validateUser();
             if (!user) {
                 router.push("/public/home");
                 return;
             }
-            const admin = await isAdmin();
-            if (!admin) {
+            const agent = await isEstateAgent();
+            if (!agent) {
                 router.push("/public/home");
             }
         }
 
-        checkAdmin();
+        checkAgent();
     }, [router]);
 
     return (
 
         <div className="flex min-h-svh w-full justify-center p-6 md:p-10">
             <div className="w-full max-w-5xl">
-                <EditStatusForm propertyId={id}/>
+                <EditStatusForm propertyId={id} />
             </div>
         </div>
     );
@@ -47,7 +47,7 @@ export default function EditStatusPage({ params }: { params: Promise<{ id: numbe
 
             <div className="bg-background min-h-screen w-full">
                 <Navbar />
-                <Link className="flex inline-flex text-highlight m-6 mb-0 mt-4" href="/admin/portal/manage-properties"><MoveLeft /> &nbsp; Back to Admin Portal</Link>
+                <Link className="flex inline-flex text-highlight m-6 mb-0 mt-4" href="/estate-agent/portal/manage-properties"><MoveLeft /> &nbsp; Back to Agent Portal</Link>
                 <EditStatus params={params} />
             </div>
         </Suspense>
