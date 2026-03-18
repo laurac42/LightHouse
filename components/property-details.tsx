@@ -43,8 +43,8 @@ export default function PropertyDetails({ params }: { params: { id: number, prop
                     <div className={styles.description + ' mb-20 md:mb-28 lg:mb-8 whitespace:'}>
                         <h1 className={styles.features}>Key Features</h1>
                         <ul>
-                            {property.features?.map((feature) => 
-                                <li>{feature}</li>
+                            {property.features?.map((feature, index) => 
+                                <li key={index}>{feature}</li>
                         )}
                         </ul>
                         <h1>Description</h1>

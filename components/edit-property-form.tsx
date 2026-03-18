@@ -26,6 +26,7 @@ import {
     DialogClose,
     DialogFooter,
 } from "@/components/ui/dialog"
+import { hrtime } from "process";
 
 /**
  * Remove a feature from the features array at the specified index and update the state
@@ -181,7 +182,12 @@ export default function EditPropertyForm({ propertyId }: { propertyId: number })
                     <p className="text-green-600">{successMessage}</p>
                     <DialogFooter className="justify-end">
                         <DialogClose asChild>
-                            <Button className="bg-buttonColor hover:bg-buttonColor/90 text-foreground" onClick={() => setSuccessMessage(null)} type="button">Close</Button>
+                            <Button className="bg-buttonColor hover:bg-buttonColor/90 text-foreground" 
+                            onClick={() => {
+                                setSuccessMessage(null);
+                                window.location.href = `/estate-agent/portal/manage-properties`;
+                            }} 
+                                type="button">Close</Button>
                         </DialogClose>
                     </DialogFooter>
                 </DialogContent>
