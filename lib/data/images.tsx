@@ -18,3 +18,68 @@ export async function getImagesFromStorage(id: number) {
         return [];
     }
 }
+
+/**
+ * Upload an image to storage
+ * @param propertyId Id of the property to upload the image for
+ * @param file The image file to upload
+ * @param filename The name to give the file in storage (without extension, category and index will be added to this)
+ */
+export async function uploadImageToStorage(propertyId: number, file: File, filename: string) {
+    const supabase = await createClient();
+    const fileType = file.type || "image/png"; // default to png if type is not available
+    console.log(fileType)
+    const { data, error } = await supabase.storage.from("lighthouse-bucket")
+    .upload(`properties/${propertyId}/${filename}.${fileType.replace("image/", "")}`, file, {
+            contentType: `${fileType}`,
+        });
+    
+    if (error) {
+        throw error;
+    }
+}
+
+/**
+ * Delete an image from supabase storage for a given property ID and filename
+ * @param propertyId Id of the property 
+ * @param filename Name of the file to delete the image 
+ */
+export async function deleteImageFromStorage(propertyId: number, filename: string) {
+    const supabase = await createClient();
+    const { error } = await supabase.storage
+        .from("lighthouse-bucket")
+        .remove([`properties/${propertyId}/${filename}`]);
+
+    if (error) {
+        throw error;
+    }
+}
+
+/**
+ * Get the next index of a category of images so that it can be decided what to name the next image
+ * @param category Category to get index for
+ * @param propertyId Id of the property to get the index for
+ */
+export async function getNextIndexInCategory(category: string, propertyId: number) {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase.storage.from("lighthouse-bucket")
+        .list(`properties/${propertyId}`);
+    
+    if (error) {
+        throw error;
+    }
+    var maxIndex = 0;
+
+    // find the last index of the given category to account for image deletions)
+    for (const file in data) {
+        if (data[file].name.startsWith(category)) {
+           let index = parseInt(data[file].name.split('_').pop() ?? '0', 10);
+            if (index > maxIndex) {
+                maxIndex = index;
+            }
+        }
+    }
+    
+    return maxIndex;
+}

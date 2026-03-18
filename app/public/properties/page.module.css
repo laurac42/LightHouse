@@ -25,6 +25,10 @@
     font-weight: bold;
 }
 
+.description p {
+    white-space: pre-wrap;
+}
+
 .features {
     background-color: #AADBEC;
     border-top-left-radius: 10px;

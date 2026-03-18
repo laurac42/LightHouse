@@ -101,3 +101,28 @@ export async function isSeller(userId: string) {
         return false;
     }
 }
+
+/**
+ * Fetch the agency location ID of the agency that a given agent works at
+ * @param agentId ID to check the agency location of
+ * @returns The ID of the agnency location the agent works at
+ */
+export async function getAgentsLocationId(agentId: string) {
+    try {
+        const supabase = await createClient();
+        const {data, error} = await supabase
+        .from("estate_agent_profiles")
+        .select("estate_agency_location_id")
+        .eq("id", agentId)
+        .single();
+
+        if (!data || error) {
+            throw error ? error : new Error("Unable to fetch agency location ID");
+        }
+        console.log("Fetched agency location ID: ", data);
+        return data;
+    } catch(error) {
+        console.error("Error fetching agency location ID", error);
+        return null;
+    }
+}

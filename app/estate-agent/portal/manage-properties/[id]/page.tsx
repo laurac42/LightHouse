@@ -7,10 +7,13 @@ import { getImagesFromStorage } from "@/lib/data/images";
 import ImageCarousel from "@/components/image-carousel";
 import Navbar from "@/components/navbar";
 import Link from "next/link";
-import { MoveLeft} from "lucide-react";
+import { MoveLeft } from "lucide-react";
 import { AgencyLocationDetails } from "@/types/agency";
 import AgencyCard from "@/components/agency-card";
 import PropertyDetails from "@/components/property-details";
+import { useRouter } from "next/router";
+import { validateUser } from "@/lib/auth/user";
+import { isEstateAgent } from "@/lib/auth/role";
 
 type Property = Database["public"]["Tables"]["properties"]["Row"];
 
@@ -24,6 +27,25 @@ function PropertyDetailsPage({ params }: { params: Promise<{ id: number }> }) {
     const barRef = useRef(null);
     const [isFixed, setIsFixed] = useState(false);
     const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+
+    const router = useRouter();
+
+    // check user is authenticated to be on this page
+    useEffect(() => {
+        async function checkEstateAgent() {
+            const user = await validateUser();
+            if (!user) {
+                router.push("/public/home");
+                return;
+            }
+            const estateAgent = await isEstateAgent();
+            if (!estateAgent) {
+                router.push("/public/home");
+            }
+        }
+
+        checkEstateAgent();
+    }, [router]);
 
     // Set the height of the bar for spacing when it becomes fixed and add scroll listener to toggle fixed position
     useEffect(() => {
@@ -98,7 +120,7 @@ export default function Page({ params }: { params: Promise<{ id: number }> }) {
 
             <div className="bg-background min-h-screen w-full">
                 <Navbar />
-                <Link className="flex inline-flex text-highlight m-6 mb-0 mt-4" href="/properties"><MoveLeft /> &nbsp; Back to Properties</Link>
+                <Link className="flex inline-flex text-highlight m-6 mb-0 mt-4" href="/estate-agent/portal/manage-properties"><MoveLeft /> &nbsp; Back to Agent Portal</Link>
                 <PropertyDetailsPage params={params} />
             </div>
         </Suspense>

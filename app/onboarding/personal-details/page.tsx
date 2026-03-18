@@ -23,6 +23,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { CheckOnboarding } from "@/lib/auth/onboarding";
 import { validateUser } from "@/lib/auth/user";
+import { isEstateAgent } from "@/lib/auth/role";
 
 export default function PersonalDetails() {
   const [firstName, setFirstName] = useState("");
@@ -32,6 +33,7 @@ export default function PersonalDetails() {
   const [browsing, setBrowsing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isAgent, setIsAgent] = useState<boolean>(false);
   const router = useRouter();
 
 
@@ -44,6 +46,9 @@ export default function PersonalDetails() {
       } else if (status === "onboarded") {
         router.push("/public/home");
       }
+
+      const agent = await isEstateAgent();
+      setIsAgent(agent);
     }
 
     verifyOnboarding();
@@ -69,7 +74,7 @@ export default function PersonalDetails() {
       const { error } = await supabase.from("users").update({
         first_name: firstName,
         last_name: lastName,
-        user_goals: [buying ? "buying" : null, selling ? "selling" : null, browsing ? "browsing" : null].filter((goal) => goal !== null) as string[],
+        user_goals: [buying ? "buying" : null, selling ? "selling" : null, browsing ? "browsing" : null, isAgent ? "agent" : null].filter((goal) => goal !== null) as string[],
         onboarded: buying ? false : true,
       }).eq("id", user.user.id).select().single();
 
@@ -82,7 +87,7 @@ export default function PersonalDetails() {
         await addBuyerProfile(user.user.id);
         router.push("/onboarding/buyer-profile");
       } else {
-          router.push("/public/home");
+        router.push("/public/home");
       }
     } catch (error) {
       setError(error instanceof Error ? error.message : "An error occurred");
@@ -119,7 +124,7 @@ export default function PersonalDetails() {
                 <CardTitle className="text-2xl">
                   Your Details
                 </CardTitle>
-                <CardDescription>Enter your personal details to complete your profile.</CardDescription>
+                <CardDescription>Enter your personal details to complete your {isAgent && " estate agent"} profile.</CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleDetailsSubmit}>
@@ -148,31 +153,33 @@ export default function PersonalDetails() {
                         className="border border-border"
                       />
                     </div>
-                    <FieldSet>
-                      <FieldLegend variant="label">
-                        What are you using LightHouse for?
-                      </FieldLegend>
-                      <FieldGroup className="gap-3">
-                        <Field orientation="horizontal">
-                          <Checkbox className="border-foreground text-foreground data-[state=checked]:text-white data-[state=checked]:border-foreground data-[state=checked]:bg-highlight" id="buying-checkbox" name="buying-checkbox" checked={buying} onCheckedChange={(checked) => setBuying(checked as boolean)} />
-                          <FieldLabel htmlFor="buying-checkbox" className="font-normal">
-                            Buying
-                          </FieldLabel>
-                        </Field>
-                        <Field orientation="horizontal">
-                          <Checkbox className="border-foreground text-foreground data-[state=checked]:text-white data-[state=checked]:border-foreground data-[state=checked]:bg-highlight" id="selling-checkbox" name="selling-checkbox" checked={selling} onCheckedChange={(checked) => setSelling(checked as boolean)} />
-                          <FieldLabel htmlFor="selling-checkbox" className="font-normal">
-                            Selling
-                          </FieldLabel>
-                        </Field>
-                        <Field orientation="horizontal">
-                          <Checkbox className="border-foreground text-foreground data-[state=checked]:text-white data-[state=checked]:border-foreground data-[state=checked]:bg-highlight" id="browsing-checkbox" name="browsing-checkbox" checked={browsing} onCheckedChange={(checked) => setBrowsing(checked as boolean)} />
-                          <FieldLabel htmlFor="browsing-checkbox" className="font-normal">
-                            Just Browsing
-                          </FieldLabel>
-                        </Field>
-                      </FieldGroup>
-                    </FieldSet>
+                    {!isAgent &&
+                      <FieldSet>
+                        <FieldLegend variant="label">
+                          What are you using LightHouse for?
+                        </FieldLegend>
+                        <FieldGroup className="gap-3">
+                          <Field orientation="horizontal">
+                            <Checkbox className="border-foreground text-foreground data-[state=checked]:text-white data-[state=checked]:border-foreground data-[state=checked]:bg-highlight" id="buying-checkbox" name="buying-checkbox" checked={buying} onCheckedChange={(checked) => setBuying(checked as boolean)} />
+                            <FieldLabel htmlFor="buying-checkbox" className="font-normal">
+                              Buying
+                            </FieldLabel>
+                          </Field>
+                          <Field orientation="horizontal">
+                            <Checkbox className="border-foreground text-foreground data-[state=checked]:text-white data-[state=checked]:border-foreground data-[state=checked]:bg-highlight" id="selling-checkbox" name="selling-checkbox" checked={selling} onCheckedChange={(checked) => setSelling(checked as boolean)} />
+                            <FieldLabel htmlFor="selling-checkbox" className="font-normal">
+                              Selling
+                            </FieldLabel>
+                          </Field>
+                          <Field orientation="horizontal">
+                            <Checkbox className="border-foreground text-foreground data-[state=checked]:text-white data-[state=checked]:border-foreground data-[state=checked]:bg-highlight" id="browsing-checkbox" name="browsing-checkbox" checked={browsing} onCheckedChange={(checked) => setBrowsing(checked as boolean)} />
+                            <FieldLabel htmlFor="browsing-checkbox" className="font-normal">
+                              Just Browsing
+                            </FieldLabel>
+                          </Field>
+                        </FieldGroup>
+                      </FieldSet>
+                    }
 
                     {error && <p className="text-sm text-red-500">{error}</p>}
                     <Button type="submit" className="w-full text-md text-foreground bg-buttonColor hover:bg-buttonHover shadow-xl" disabled={isLoading}>

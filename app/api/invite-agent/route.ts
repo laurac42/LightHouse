@@ -9,7 +9,7 @@ const supabaseAdmin = createClient(
 );
 
 export async function POST(req: Request) {
-    const { email, selectedAgencyId, grantedBy } = await req.json();
+    const { email, selectedLocationId, grantedBy } = await req.json();
     const origin = new URL(req.url).origin;
     // check if user is an admin
     if (!grantedBy || !(await isAdminById(grantedBy))) {
@@ -20,7 +20,7 @@ export async function POST(req: Request) {
         data: {
             invited: true,
             role: "agent",
-            agency_id: selectedAgencyId,
+            location_id: selectedLocationId,
             granted_by: grantedBy,
         },
     });

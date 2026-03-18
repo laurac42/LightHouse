@@ -25,6 +25,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { validateUser } from "@/lib/auth/user";
 import { isAdmin } from "@/lib/auth/role";
+import { loadAllAgencies, loadAgencyLocations } from "@/lib/data/agency-utils";
 import PortalMenu from "@/components/portal-menu";
 
 export default function ManageEstateAgentsPage() {
@@ -33,8 +34,11 @@ export default function ManageEstateAgentsPage() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
-  const [agencies, setAgencies] = useState<{ id: string; name: string | null}[]>([]);
+  const [agencies, setAgencies] = useState<{ id: string; name: string | null }[]>([]);
   const [loadingAgencies, setLoadingAgencies] = useState(true);
+  const [loadingLocations, setLoadingLocations] = useState(true);
+  const [agencyLocations, setAgencyLocations] = useState<{ location_id: string; city: string | null }[]>([]);
+  const [selectedLocationId, setSelectedLocationId] = useState<string>("");
   const router = useRouter();
 
 
@@ -46,16 +50,39 @@ export default function ManageEstateAgentsPage() {
         return;
       }
       setUser(user);
+      console.log("user: ", user)
       const admin = await isAdmin();
       if (!admin) {
         router.push("/public/home");
       }
     }
 
-    fetchEstateAgencies().then(setAgencies).finally(() => setLoadingAgencies(false));
+    loadAllAgencies().then(setAgencies).finally(() => setLoadingAgencies(false));
 
     checkAdmin();
-  }, [router]);
+  }, []);
+
+  // when a agency is selected, fetch all agency locations for that agency
+  useEffect(() => {
+    async function fetchAgencyLocations() {
+      try {
+        setErrorMessage(null);
+
+        const data = await loadAgencyLocations(selectedAgencyId);
+        setAgencyLocations(data);
+        
+      } catch (error) {
+        console.error("Error fetching agency locations:", error);
+        setErrorMessage("Failed to fetch agency locations.");
+      } finally {
+        setLoadingLocations(false);
+      }
+    }
+
+    if (selectedAgencyId) {
+      fetchAgencyLocations();
+    }
+  }, [selectedAgencyId]);
 
   /**
    * Function to handle adding a new estate agent.
@@ -104,7 +131,7 @@ export default function ManageEstateAgentsPage() {
 
       const { data, error } = await supabase.rpc("upgrade_user_to_agent", {
         p_user_id: id,
-        p_agency_id: selectedAgencyId,
+        p_location_id: selectedLocationId,
         p_admin_id: user.user.id
       });
       if (error) {
@@ -148,47 +175,25 @@ export default function ManageEstateAgentsPage() {
    */
   async function inviteNewAgent(email: string) {
     try {
-      const response = await fetch("/api/invite-estate-agent", {
+      const response = await fetch("/api/invite-agent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email,
-          selectedAgencyId,
+          selectedLocationId,
           grantedBy: user.user.id,
         }),
       });
 
       const data = await response.json();
       if (data.error) {
-        console.error("Error inviting new estate agent:", data.error);
-        setErrorMessage(data.error);
+        throw data.error;
       } else {
         setSuccessMessage("Invitation sent to new estate agent.");
       }
     } catch (error) {
       console.error("Error inviting new estate agent:", error);
       setErrorMessage("Failed to invite new estate agent.");
-    }
-  }
-
-  /**
-   * Fetch the estate agencies from the database and populate the select options in the form. 
-   * This will allow the admin to select which agency the new estate agent works for when adding them.
-   */
-  async function fetchEstateAgencies() {
-    try {
-      const supabase = await createClient();
-      const { data, error } = await supabase
-        .from("estate_agencies")
-        .select("id, name");
-      if (error) {
-        console.error("Error fetching estate agencies:", error);
-        throw error;
-      }
-      return data;
-    } catch (error) {
-      console.error("Error fetching estate agencies:", error);
-      return [];
     }
   }
 
@@ -228,14 +233,14 @@ export default function ManageEstateAgentsPage() {
                         <FieldDescription>Email address of the person you want to add as an estate agent.</FieldDescription>
                       </Field>
                     </div>
-                    <div className="flex flex-col">
+                    <div className="flex flex-col gap-8">
                       <Field>
                         <FieldLabel>Select Estate Agent Company</FieldLabel>
 
                         {loadingAgencies ? (
                           <p>Loading companies...</p>
                         ) : (
-                          <Select onValueChange={(value) => setSelectedAgencyId(value)} required>
+                          <Select onValueChange={(value) => {setSelectedAgencyId(value); setSelectedLocationId("")}} required>
                             <SelectTrigger className="border border-foreground">
                               <SelectValue placeholder="Select Company" />
                             </SelectTrigger>
@@ -250,6 +255,29 @@ export default function ManageEstateAgentsPage() {
                         )}
                         <FieldDescription className="pt-0 mt-0">Select the company the estate agent works for.</FieldDescription>
                       </Field>
+
+                      {selectedAgencyId &&
+                        <Field>
+                          <FieldLabel>Select Location</FieldLabel>
+
+                          {loadingLocations ? (
+                            <p>Loading locations...</p>
+                          ) : (
+                            <Select onValueChange={(value) => setSelectedLocationId(value)} required>
+                              <SelectTrigger className="border border-foreground">
+                                <SelectValue placeholder="Select Location" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectGroup>
+                                  {agencyLocations.map(location => (
+                                    <SelectItem key={location.location_id} value={location.location_id.toString()}>{location.city}</SelectItem>
+                                  ))}
+                                </SelectGroup>
+                              </SelectContent>
+                            </Select>
+                          )}
+                          <FieldDescription className="pt-0 mt-0">Select the location the estate agent works at.</FieldDescription>
+                        </Field>}
 
                       {successMessage && <p className="text-green-600 mt-4">{successMessage}</p>}
                       {errorMessage && <p className="text-red-600 mt-4">{errorMessage}</p>}
