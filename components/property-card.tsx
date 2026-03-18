@@ -59,8 +59,8 @@ export default function PropertyCard({ property, images, page, editable = false 
                         )}
                         {page === "manage" && (
                             <div className="flex gap-2">
-                                <CardHeader className="p-1 mt-2">
-                                    <CardTitle className="text-xl">{property.title},  {property.post_code}</CardTitle>
+                                <CardHeader className="p-1 mt-2 ">
+                                    <CardTitle className="text-xl line-clamp-1">{property.title},  {property.post_code}</CardTitle>
                                 </CardHeader>
                             </div>
                         )}
