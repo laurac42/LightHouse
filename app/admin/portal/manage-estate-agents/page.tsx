@@ -25,6 +25,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { validateUser } from "@/lib/auth/user";
 import { isAdmin } from "@/lib/auth/role";
+import { loadAllAgencies, loadAgencyLocations } from "@/lib/data/agency-utils";
 import PortalMenu from "@/components/portal-menu";
 
 export default function ManageEstateAgentsPage() {
@@ -56,7 +57,7 @@ export default function ManageEstateAgentsPage() {
       }
     }
 
-    fetchEstateAgencies().then(setAgencies).finally(() => setLoadingAgencies(false));
+    loadAllAgencies().then(setAgencies).finally(() => setLoadingAgencies(false));
 
     checkAdmin();
   }, []);
@@ -65,17 +66,11 @@ export default function ManageEstateAgentsPage() {
   useEffect(() => {
     async function fetchAgencyLocations() {
       try {
-        const supabase = await createClient();
-        const { data, error } = await supabase
-          .from("estate_agency_location")
-          .select("location_id, city")
-          .eq("estate_agency_id", selectedAgencyId);
-        if (error) {
-          throw error
-        } else {
-          setAgencyLocations(data);
-          setErrorMessage(null);
-        }
+        setErrorMessage(null);
+
+        const data = await loadAgencyLocations(selectedAgencyId);
+        setAgencyLocations(data);
+        
       } catch (error) {
         console.error("Error fetching agency locations:", error);
         setErrorMessage("Failed to fetch agency locations.");
@@ -202,27 +197,6 @@ export default function ManageEstateAgentsPage() {
     }
   }
 
-  /**
-   * Fetch the estate agencies from the database and populate the select options in the form. 
-   * This will allow the admin to select which agency the new estate agent works for when adding them.
-   */
-  async function fetchEstateAgencies() {
-    try {
-      const supabase = await createClient();
-      const { data, error } = await supabase
-        .from("estate_agencies")
-        .select("id, name");
-      if (error) {
-        console.error("Error fetching estate agencies:", error);
-        throw error;
-      }
-      return data;
-    } catch (error) {
-      console.error("Error fetching estate agencies:", error);
-      return [];
-    }
-  }
-
 
   return (
     <div className="bg-background w-full min-h-svh">
@@ -241,7 +215,6 @@ export default function ManageEstateAgentsPage() {
                   <br />
                   If the email address entered is <b>not associated with an existing user account</b>, an invitation will be sent to that email address to join the platform and create an account. If the email address is <b>already associated with an existing user account</b>, that account will be upgraded to have estate agent permissions and linked to the selected company.
                 </p>
-                <p>User ID: {user.user.id}</p>
               </CardDescription>
             </CardHeader>
             <CardContent>
