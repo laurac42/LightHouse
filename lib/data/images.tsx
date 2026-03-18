@@ -33,6 +33,11 @@ export async function uploadImageToStorage(propertyId: number, file: File, filen
     }
 }
 
+/**
+ * Delete an image from supabase storage for a given property ID and filename
+ * @param propertyId Id of the property 
+ * @param filename Name of the file to delete the image 
+ */
 export async function deleteImageFromStorage(propertyId: number, filename: string) {
     const supabase = await createClient();
     const { error } = await supabase.storage
@@ -45,11 +50,11 @@ export async function deleteImageFromStorage(propertyId: number, filename: strin
 }
 
 /**
- * Get the number of properties in a given category in supabase storage
+ * Get the next index of a category of images so that it can be decided what to name the next image
  * @param category 
  * @param propertyId 
  */
-export async function getNumberOfImagesInCategory(category: string, propertyId: number) {
+export async function getNextIndexInCategory(category: string, propertyId: number) {
     const supabase = await createClient();
 
     const { data, error } = await supabase.storage.from("lighthouse-bucket")
@@ -58,12 +63,17 @@ export async function getNumberOfImagesInCategory(category: string, propertyId: 
     if (error) {
         throw error;
     }
-    var count = 0;
+    var maxIndex = 0;
+
+    // find the last index of the given category to account for image deletions)
     for (const file in data) {
         if (data[file].name.startsWith(category)) {
-           count ++;
+           let index = parseInt(data[file].name.split('_').pop() ?? '0', 10);
+            if (index > maxIndex) {
+                maxIndex = index;
+            }
         }
     }
     
-    return count;
+    return maxIndex;
 }

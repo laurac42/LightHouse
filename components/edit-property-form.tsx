@@ -14,19 +14,16 @@ import { X, PlusCircleIcon } from "lucide-react";
 import type { Address } from "@/types/address";
 import { Button } from "./ui/button";
 import EditImages, { type StagedFiles } from "./edit-images";
-import { deleteImageFromStorage, getNumberOfImagesInCategory, uploadImageToStorage } from "@/lib/data/images";
+import { deleteImageFromStorage, getNextIndexInCategory, uploadImageToStorage } from "@/lib/data/images";
 import { editProperty } from "@/lib/data/edit-property";
 import {
     Dialog,
     DialogContent,
-    DialogDescription,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
     DialogClose,
     DialogFooter,
-} from "@/components/ui/dialog"
-import { hrtime } from "process";
+} from "@/components/ui/dialog";
 
 /**
  * Remove a feature from the features array at the specified index and update the state
@@ -40,7 +37,7 @@ function removeFeature(index: number, features: string[], setFeatures: React.Dis
     setFeatures(newFeatures);
 }
 
-export default function EditPropertyForm({ propertyId }: { propertyId: number }) {
+export default function EditPropertyForm({ propertyId, role }: { propertyId: number, role: string }) {
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [price, setPrice] = useState("");
@@ -116,14 +113,15 @@ export default function EditPropertyForm({ propertyId }: { propertyId: number })
                 property_type: propertyType || null,
                 has_garage: garage,
                 is_new_build: newBuild,
+                last_updated_at: new Date().toISOString(),
             });
 
             if (stagedImages && propertyId) {
                 for (const [category, files] of Object.entries(stagedImages)) {
-                    let numImagesInCategory = await getNumberOfImagesInCategory(category, propertyId)
+                    let nextIndex = await getNextIndexInCategory(category, propertyId)
                     for (const file of files) {
-                        numImagesInCategory++;
-                        const path = `${category}_${numImagesInCategory}`;
+                        nextIndex++;
+                        const path = `${category}_${nextIndex}`;
                         await uploadImageToStorage(propertyId, file, path)
                     }
                 }
@@ -156,7 +154,7 @@ export default function EditPropertyForm({ propertyId }: { propertyId: number })
                     <DialogHeader>
                         <DialogTitle>Editing Property</DialogTitle>
                     </DialogHeader>
-                    <p>Your property is being edited...</p>
+                    <p>Your property is being edited. Please be patient. If you are uploading images, this may take a few minutes ...</p>
                 </DialogContent>
             </Dialog>
             <Dialog open={!!errorMessage}>
@@ -182,12 +180,21 @@ export default function EditPropertyForm({ propertyId }: { propertyId: number })
                     <p className="text-green-600">{successMessage}</p>
                     <DialogFooter className="justify-end">
                         <DialogClose asChild>
-                            <Button className="bg-buttonColor hover:bg-buttonColor/90 text-foreground" 
-                            onClick={() => {
-                                setSuccessMessage(null);
-                                window.location.href = `/estate-agent/portal/manage-properties`;
-                            }} 
-                                type="button">Close</Button>
+                            {role === "agent" ?
+                                <Button className="bg-buttonColor hover:bg-buttonColor/90 text-foreground"
+                                    onClick={() => {
+                                        setSuccessMessage(null);
+                                        window.location.href = `/estate-agent/portal/manage-properties`;
+                                    }}
+                                    type="button">Close</Button>
+
+                                : <Button className="bg-buttonColor hover:bg-buttonColor/90 text-foreground"
+                                    onClick={() => {
+                                        setSuccessMessage(null);
+                                        window.location.href = `/admin/portal/manage-properties`;
+                                    }}
+                                    type="button">Close</Button>
+                            }
                         </DialogClose>
                     </DialogFooter>
                 </DialogContent>
