@@ -34,3 +34,20 @@ export async function loadAgencyLocations(agencyId: string) {
 
     return data;
 }
+
+/**
+ * Load agents for a given location id
+ * @param locationId Id of the location to load agents for
+ * @returns The id and name of all agents for the given location id
+ */
+export async function loadAgentsByLocation(locationId: string) {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+        .rpc("fetch_agents_by_location_id", { p_agency_id: locationId });
+
+    if (error) {
+        throw error;
+    }
+    console.log("Agents for location ", locationId, ": ", data);    
+    return data;
+}
