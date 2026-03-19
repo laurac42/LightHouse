@@ -29,7 +29,7 @@ export async function uploadImageToStorage(propertyId: number, file: File, filen
     const supabase = await createClient();
     const fileType = file.type || "image/png"; // default to png if type is not available
     console.log(fileType)
-    const { data, error } = await supabase.storage.from("lighthouse-bucket")
+    const { error } = await supabase.storage.from("lighthouse-bucket")
     .upload(`properties/${propertyId}/${filename}.${fileType.replace("image/", "")}`, file, {
             contentType: `${fileType}`,
         });

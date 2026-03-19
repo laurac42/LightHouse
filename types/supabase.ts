@@ -317,6 +317,22 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      fetch_agents_by_location_id: {
+        Args: { p_agency_id: string }
+        Returns: {
+          first_name: string
+          id: string
+          last_name: string
+        }[]
+      }
+      fetchagentdetailsbyagencyid: {
+        Args: { p_agency_id: string }
+        Returns: {
+          first_name: string
+          id: string
+          last_name: string
+        }[]
+      }
       get_users_granted_by_agent: {
         Args: never
         Returns: {

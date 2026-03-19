@@ -129,51 +129,65 @@ export default function ImageCarousel({ images, property, page, isModalOpen }: {
                 ) : (
                     <>
                         <CarouselContent>
-                            <CarouselItem key={1}>
-                                {firstImageUrl && (
-                                    <img
-                                        src={process.env.NEXT_PUBLIC_BUCKET_URL + "properties/" + property.id + "/" + firstImageUrl}
-                                        alt={`Main image of ${property.title}`}
-                                        className={page === "property-details" ? "w-full h-[40vh] sm:h-[60vh] md:h-[80vh] 2xl:h-[60vh] object-cover rounded-t-md" : page === "manage" ? "w-full h-48 object-cover rounded-t-md" : "w-full h-64 object-cover rounded-t-md" }
-                                        onClick={() => {
-                                            setSelectedImageIndex(0);
-                                            handleOpen();
-                                        }}
-                                    />
-                                )}
-                            </CarouselItem>
-                            {images.map((imageUrl, index) => {
-                                // Skip the first image since it's already displayed as the main image
-                                if (imageUrl !== firstImageUrl && (!imageUrl.includes('floorplan'))) {
-                                    return (
-                                        <CarouselItem key={index}>
+                            {images.length === 0 ? (
+                                <CarouselItem key="no-image">
+                                    <div className={page === "property-details" ? "w-full h-[40vh] sm:h-[60vh] md:h-[80vh] 2xl:h-[60vh] object-cover rounded-t-md" : page === "manage" ? "w-full h-48 object-cover rounded-t-md" : "w-full h-64 object-cover rounded-t-md"}>
+                                        <p className="text-muted-foreground items-center p-2">No images available</p>
+                                    </div>
+                                </CarouselItem>
+                            ) : (
+                                <>
+                                    <CarouselItem key={1}>
+                                        {firstImageUrl && (
                                             <img
-                                                src={process.env.NEXT_PUBLIC_BUCKET_URL + 'properties/' + property.id + '/' + imageUrl}
-                                                alt={`Image ${index + 1} of ${property.title}`}
+                                                src={process.env.NEXT_PUBLIC_BUCKET_URL + "properties/" + property.id + "/" + firstImageUrl}
+                                                alt={`Main image of ${property.title}`}
                                                 className={page === "property-details" ? "w-full h-[40vh] sm:h-[60vh] md:h-[80vh] 2xl:h-[60vh] object-cover rounded-t-md" : page === "manage" ? "w-full h-48 object-cover rounded-t-md" : "w-full h-64 object-cover rounded-t-md"}
                                                 onClick={() => {
-                                                    if (page === "property-details") {
-                                                        const clickedIndex = displayImages.findIndex((displayImage) => displayImage === imageUrl);
-                                                        setSelectedImageIndex(clickedIndex >= 0 ? clickedIndex : 0);
-                                                        handleOpen();
-                                                    }
+                                                    setSelectedImageIndex(0);
+                                                    handleOpen();
                                                 }}
                                             />
-                                        </CarouselItem>
-                                    );
-                                }
-                                return null;
-                            })}
+                                        )}
+                                    </CarouselItem>
+                                    {images.map((imageUrl, index) => {
+                                        // Skip the first image since it's already displayed as the main image
+                                        if (imageUrl !== firstImageUrl && (!imageUrl.includes('floorplan'))) {
+                                            return (
+                                                <CarouselItem key={index}>
+                                                    <img
+                                                        src={process.env.NEXT_PUBLIC_BUCKET_URL + 'properties/' + property.id + '/' + imageUrl}
+                                                        alt={`Image ${index + 1} of ${property.title}`}
+                                                        className={page === "property-details" ? "w-full h-[40vh] sm:h-[60vh] md:h-[80vh] 2xl:h-[60vh] object-cover rounded-t-md" : page === "manage" ? "w-full h-48 object-cover rounded-t-md" : "w-full h-64 object-cover rounded-t-md"}
+                                                        onClick={() => {
+                                                            if (page === "property-details") {
+                                                                const clickedIndex = displayImages.findIndex((displayImage) => displayImage === imageUrl);
+                                                                setSelectedImageIndex(clickedIndex >= 0 ? clickedIndex : 0);
+                                                                handleOpen();
+                                                            }
+                                                        }}
+                                                    />
+                                                </CarouselItem>
+                                            );
+                                        }
+                                        return null;
+                                    })}
+                                </>
+                            )}
                         </CarouselContent>
 
-                        <CarouselPrevious className="absolute left-2" />
-                        <CarouselNext className="absolute right-2" />
-                        <p className="absolute right-2 top-2 text-sm inline-flex gap-1 items-center bg-navBar rounded-md p-1"><Camera size={16} /> {current} of {count}</p>
-                        
+                        {images.length > 1 && (
+                            <>
+                                <CarouselPrevious className="absolute left-2" />
+                                <CarouselNext className="absolute right-2" />
+                                <p className="absolute right-2 top-2 text-sm inline-flex gap-1 items-center bg-navBar rounded-md p-1"><Camera size={16} /> {current} of {count}</p>
+                            </>
+                        )}
+
                         {page === "properties" && property.status == "under offer" &&
-                        <p className="absolute left-2 top-2 text-sm inline-flex gap-1 items-center bg-buttonColor rounded-md p-1">
-                            Under Offer
-                        </p>}
+                            <p className="absolute left-2 top-2 text-sm inline-flex gap-1 items-center bg-buttonColor rounded-md p-1">
+                                Under Offer
+                            </p>}
                     </>
                 )}
                 {page === "property-details" && (
@@ -204,7 +218,7 @@ export default function ImageCarousel({ images, property, page, isModalOpen }: {
                             handleClose();
                         }
                         }
-                        style={{zIndex: 1000    }}
+                        style={{ zIndex: 1000 }}
                     >
                         <XCircleIcon size={32} className="absolute top-6 right-6 text-white"
                             onClick={(e) => {

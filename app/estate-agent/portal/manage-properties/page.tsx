@@ -175,7 +175,7 @@ export default function EstateAgentPropertiesPage() {
                         <CardHeader>
                             <CardTitle className="text-2xl">Manage Properties</CardTitle>
                             <CardDescription>
-                                Here you can view all properties at your agency location, add new properties, and edit or delete existing properties.
+                                Here you can view all properties at your agency location, and edit or delete existing properties.
                                 You are able to view all properties at your agency, and <b>edit only properties which you have added</b>.
                             </CardDescription>
                         </CardHeader>

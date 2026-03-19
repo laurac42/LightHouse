@@ -12,10 +12,12 @@ export default function PortalMenu({ role }: { role: "admin" | "estate-agent" })
     { label: "Overview", href: "/admin/portal" },
     { label: "Manage Properties", href: "/admin/portal/manage-properties" },
     { label: "Manage Estate Agents", href: "/admin/portal/manage-estate-agents" },
+    { label: "Add Property", href: "/admin/portal/add-property" }
   ] : [
     { label: "Overview", href: "/estate-agent/portal" },
     { label: "Manage Properties", href: "/estate-agent/portal/manage-properties" },
     { label: "Manage Sellers", href: "/estate-agent/portal/manage-sellers" },
+    { label: "Add Property", href: "/estate-agent/portal/add-property" }
   ];
 
   return (
