@@ -106,6 +106,7 @@ export default function EditPropertyForm({ propertyId, role }: { propertyId: num
                                         value={property.title}
                                         onChange={(e) => setProperty({ ...property, title: e.target.value })}
                                         className="ml-2"
+                                        required
                                     />
                                 </div>
 
@@ -119,6 +120,7 @@ export default function EditPropertyForm({ propertyId, role }: { propertyId: num
                                             placeholder="Address Line 1"
                                             value={property?.address_line_1 || ""}
                                             onChange={(e) => setProperty(property ? { ...property, address_line_1: e.target.value } : null)}
+                                            required
                                         />
 
                                         <Label className="py-2 text-sm" htmlFor="address2">Address Line 2</Label>
@@ -135,6 +137,7 @@ export default function EditPropertyForm({ propertyId, role }: { propertyId: num
                                             placeholder="Post Code"
                                             value={property?.post_code || ""}
                                             onChange={(e) => setProperty(property ? { ...property, post_code: e.target.value } : null)}
+                                            required
                                         />
 
                                         <Label className="py-2 text-sm" htmlFor="city">City</Label>
@@ -143,6 +146,7 @@ export default function EditPropertyForm({ propertyId, role }: { propertyId: num
                                             placeholder="City"
                                             value={property?.city || ""}
                                             onChange={(e) => setProperty(property ? { ...property, city: e.target.value } : null)}
+                                            required
                                         />
                                     </div>
                                 </div>
@@ -184,6 +188,7 @@ export default function EditPropertyForm({ propertyId, role }: { propertyId: num
                                             value={property?.description || ""}
                                             onChange={(e) => setProperty(property ? { ...property, description: e.target.value } : null)}
                                             className="h-32"
+                                            required
                                         />
                                     </InputGroup>
                                 </div>
@@ -197,6 +202,7 @@ export default function EditPropertyForm({ propertyId, role }: { propertyId: num
                                             placeholder="Price"
                                             value={property?.price || ""}
                                             onChange={(e) => setProperty(property ? { ...property, price: parseFloat(e.target.value) } : null)}
+                                            required
                                         />
                                     </InputGroup>
 
@@ -208,6 +214,7 @@ export default function EditPropertyForm({ propertyId, role }: { propertyId: num
                                             placeholder="Price Type (e.g. Offers Over, Fixed Price)"
                                             value={property?.price_type || ""}
                                             onChange={(e) => setProperty(property ? { ...property, price_type: e.target.value } : null)}
+                                            required
                                         />
                                     </InputGroup>
                                 </div>
@@ -250,6 +257,7 @@ export default function EditPropertyForm({ propertyId, role }: { propertyId: num
                                                 onChange={(e) => setProperty(property ? { ...property, num_bedrooms: parseInt(e.target.value) } : null)}
                                                 className="ml-2 w-[40px]"
                                                 maxLength={2}
+                                                required
                                             />
                                         </div>
 
@@ -262,6 +270,7 @@ export default function EditPropertyForm({ propertyId, role }: { propertyId: num
                                                 onChange={(e) => setProperty(property ? { ...property, num_bathrooms: parseInt(e.target.value) } : null)}
                                                 className="ml-2 w-[40px]"
                                                 maxLength={2}
+                                                required
                                             />
                                         </div>
 
@@ -273,6 +282,7 @@ export default function EditPropertyForm({ propertyId, role }: { propertyId: num
                                                 value={property?.property_type || ""}
                                                 onChange={(e) => setProperty(property ? { ...property, property_type: e.target.value } : null)}
                                                 className="ml-2"
+                                                required
                                             />
                                         </div>
 
