@@ -184,7 +184,7 @@ export default function AdminPropertiesPage() {
                         <CardHeader>
                             <CardTitle className="text-2xl">Manage Properties</CardTitle>
                             <CardDescription>
-                                Here you can view all properties at any agency location, add new properties, and edit or delete existing properties.
+                                Here you can view all properties at any agency location, and edit or delete existing properties.
                                 You are able to view all properties at all agencies.
                             </CardDescription>
                         </CardHeader>
