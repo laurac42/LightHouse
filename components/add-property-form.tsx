@@ -25,7 +25,6 @@ export default function AddPropertyForm({ role, id }: { role: "admin" | "estate-
     const [errorMessage, setErrorMessage] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
     const [stagedImages, setStagedImages] = useState<StagedFiles>();
-    const [imagesMarkedForDeletion, setImagesMarkedForDeletion] = useState<string[]>([]);
 
     const [propertyData, setPropertyData] = useState<AddableProperty>({
         title: "",
@@ -56,7 +55,8 @@ export default function AddPropertyForm({ role, id }: { role: "admin" | "estate-
         setSuccessMessage("");
 
         try {
-            await addProperty({ ...propertyData, status:"active" }, id);
+            await addProperty({ ...propertyData, status: "active" }, id, stagedImages);
+
             setSuccessMessage("Property added successfully.");
         } catch (error) {
             setErrorMessage("An error occurred while adding the property. Please try again.");
@@ -71,7 +71,7 @@ export default function AddPropertyForm({ role, id }: { role: "admin" | "estate-
         setErrorMessage("");
         setSuccessMessage("");
         try {
-            await addProperty({ ...propertyData, status: "draft" }, id);
+            await addProperty({ ...propertyData, status: "draft" }, id, stagedImages);
             setSuccessMessage("Draft saved successfully.");
         } catch (error) {
             setErrorMessage("An error occurred while saving the draft. Please try again.");
@@ -326,7 +326,7 @@ export default function AddPropertyForm({ role, id }: { role: "admin" | "estate-
                                 <EditImages
                                     params={{ id: null }}
                                     onStagedFilesChange={setStagedImages}
-                                    onDeletedImagesChange={setImagesMarkedForDeletion}
+                                    onDeletedImagesChange={null}
                                 />
                             </div>
                         </div>

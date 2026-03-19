@@ -41,9 +41,9 @@ export async function editStatus(propertyId: number, newStatus: string) {
 
 /**
  * Remove a feature from and editable property's features array at the specified index and update the state
- * @param index 
- * @param features 
- * @param setProperty 
+ * @param index index of the feature to remove from the features array
+ * @param features array of features for the property
+ * @param setProperty function to update the property state
  */
 export function removeFeatureEditable(index: number, features: string[], setProperty: React.Dispatch<React.SetStateAction<EditableProperty | null>> ) {
     const newFeatures = [...features];
@@ -53,9 +53,9 @@ export function removeFeatureEditable(index: number, features: string[], setProp
 
 /**
  * Remove a feature from an addable property's features array at the specified index and update the state
- * @param index 
- * @param features 
- * @param setProperty 
+ * @param index index of the feature to remove from the features array
+ * @param features array of features for the property
+ * @param setProperty function to update the property state
  */
 export function removeFeatureAddable(index: number, features: string[], setProperty: React.Dispatch<React.SetStateAction<AddableProperty>> ) {
     const newFeatures = [...features];

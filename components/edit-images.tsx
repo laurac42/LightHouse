@@ -22,7 +22,7 @@ export type StagedFiles = Record<CategoryKey, File[]>;
 type Props = {
     params: { id: number | null};
     onStagedFilesChange: (files: StagedFiles) => void;
-    onDeletedImagesChange: (images: string[]) => void;
+    onDeletedImagesChange: ((images: string[]) => void) | null;
 };
 
 const emptyStagedFiles = (): StagedFiles =>
@@ -58,7 +58,7 @@ export default function EditImages({ params, onStagedFilesChange, onDeletedImage
             const updated = [...current, filename];
             return updated;
         });
-        onDeletedImagesChange([...imagesMarkedForDeletion, filename]);
+        onDeletedImagesChange && onDeletedImagesChange([...imagesMarkedForDeletion, filename]);
 
     };
 
