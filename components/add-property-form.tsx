@@ -163,9 +163,9 @@ export default function AddPropertyForm({ role, id }: { role: "admin" | "estate-
 
     return (
         <div>
-            <LoadingDialog loading={loading} page={"Editing"} />
-            <ErrorDialog message={errorMessage || ""} page={"Editing"} setMessage={(message) => setErrorMessage(message || "")} />
-            <SuccessDialog message={successMessage || ""} page={"Editing"} role={role === "estate-agent" ? "estate-agent" : "admin"} setSuccessMessage={(message) => setSuccessMessage(message || "")} />
+            <LoadingDialog loading={loading} page={"Add"} />
+            <ErrorDialog message={errorMessage || ""} page={"Add"} setMessage={(message) => setErrorMessage(message || "")} />
+            <SuccessDialog message={successMessage || ""} page={"Add"} role={role === "estate-agent" ? "estate-agent" : "admin"} setSuccessMessage={(message) => setSuccessMessage(message || "")} />
 
             <form onSubmit={handleSubmit}>
 
