@@ -33,7 +33,7 @@ export function EditProperty({ params }: { params: Promise<{ id: number }> }) {
 
         <div className="flex min-h-svh w-full justify-center p-6 md:p-10">
             <div className="w-full max-w-5xl">
-                <EditPropertyForm propertyId={id} role="agent"/>
+                <EditPropertyForm propertyId={id} role="estate-agent"/>
             </div>
         </div>
     );

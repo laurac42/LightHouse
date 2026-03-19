@@ -1,7 +1,7 @@
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
-export default function ErrorDialog({ message, page }: { message: string, page: string }) {
+export default function ErrorDialog({ message, page, setMessage }: { message: string, page: string, setMessage: (message: string | null) => void }) {
     return (
         <Dialog open={!!message}>
             <DialogContent aria-describedby="Error">
@@ -12,7 +12,7 @@ export default function ErrorDialog({ message, page }: { message: string, page: 
                 <p>Please try again</p>
                 <DialogFooter className="justify-end">
                     <DialogClose asChild >
-                        <Button className="bg-buttonColor hover:bg-buttonColor/90 text-foreground" type="button">Close</Button>
+                        <Button onClick={() => setMessage(null)} className="bg-buttonColor hover:bg-buttonColor/90 text-foreground" type="button">Close</Button>
                     </DialogClose>
                 </DialogFooter>
             </DialogContent>

@@ -20,7 +20,7 @@ type CategoryKey = (typeof CATEGORIES)[number]["key"];
 export type StagedFiles = Record<CategoryKey, File[]>;
 
 type Props = {
-    params: { id: number };
+    params: { id: number | null};
     onStagedFilesChange: (files: StagedFiles) => void;
     onDeletedImagesChange: (images: string[]) => void;
 };
@@ -35,6 +35,7 @@ export default function EditImages({ params, onStagedFilesChange, onDeletedImage
 
     useEffect(() => {
         const fetchImages = async () => {
+            if (!params.id) return;
             const urls = await getImagesFromStorage(params.id);
             setImageUrls(urls);
         };

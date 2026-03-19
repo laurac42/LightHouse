@@ -14,52 +14,19 @@ import { X, PlusCircleIcon } from "lucide-react";
 import { Button } from "./ui/button";
 import EditImages, { type StagedFiles } from "./edit-images";
 import { deleteImageFromStorage, getNextIndexInCategory, uploadImageToStorage } from "@/lib/data/images";
-import { editProperty } from "@/lib/data/edit-property";
+import { editProperty, removeFeatureEditable } from "@/lib/data/edit-property";
 import ErrorDialog from "./dialogs/error-dialog";
 import LoadingDialog from "./dialogs/loading-dialog";
 import SuccessDialog from "./dialogs/success-dialog";
-import { Database } from "@/types/supabase";
-
-type EditableProperty = Pick<
-    Database["public"]["Tables"]["properties"]["Row"],
-    | "title"
-    | "description"
-    | "price"
-    | "price_type"
-    | "address_line_1"
-    | "address_line_2"
-    | "city"
-    | "post_code"
-    | "epc_rating"
-    | "council_tax_band"
-    | "num_bedrooms"
-    | "num_bathrooms"
-    | "square_feet"
-    | "property_type"
-    | "has_garage"
-    | "is_new_build"
-    | "features"
->;
-
-/**
- * Remove a feature from the features array at the specified index and update the state
- * @param index 
- * @param features 
- * @param setProperty 
- */
-function removeFeature(index: number, features: string[], setProperty: React.Dispatch<React.SetStateAction<EditableProperty | null>>) {
-    const newFeatures = [...features];
-    newFeatures.splice(index, 1);
-    setProperty((prev) => prev ? { ...prev, features: newFeatures } : null);
-}
+import { EditableProperty } from "@/types/property";
 
 export default function EditPropertyForm({ propertyId, role }: { propertyId: number, role: string }) {
     const [loading, setLoading] = useState(false)
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const [stagedImages, setStagedImages] = useState<StagedFiles>();
-    const [property, setProperty] = useState<EditableProperty | null>(null);
     const [imagesMarkedForDeletion, setImagesMarkedForDeletion] = useState<string[]>([]);
+    const [property, setProperty] = useState<EditableProperty | null>(null);
 
     useEffect(() => {
         const fetchProperty = async () => {
@@ -119,7 +86,7 @@ export default function EditPropertyForm({ propertyId, role }: { propertyId: num
     return (
         <div>
             <LoadingDialog loading={loading} page={"Editing"} />
-            <ErrorDialog message={errorMessage || ""} page={"Editing"} />
+            <ErrorDialog message={errorMessage || ""} page={"Editing"} setMessage={(message) => setErrorMessage(message || "")} />
             <SuccessDialog message={successMessage || ""} page={"Editing"} role={role === "estate-agent" ? "estate-agent" : "admin"} setSuccessMessage={setSuccessMessage} />
 
             <form onSubmit={handleSubmit}>
@@ -197,7 +164,7 @@ export default function EditPropertyForm({ propertyId, role }: { propertyId: num
                                                     className="flex-1 border-none"
                                                 />
                                                 <InputGroupAddon className="flex flex-col gap-2" align={"inline-end"}>
-                                                    <InputGroupButton size={"icon-xs"} onClick={() => property.features && removeFeature(index, property.features, setProperty)}> <X /></InputGroupButton>
+                                                    <InputGroupButton size={"icon-xs"} onClick={() => property.features && removeFeatureEditable(index, property.features, setProperty)}> <X /></InputGroupButton>
                                                 </InputGroupAddon>
                                             </InputGroup>
                                         ))}

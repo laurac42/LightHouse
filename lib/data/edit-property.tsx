@@ -1,7 +1,6 @@
 import { createClient } from "@/lib/supabase/client";
-import { Database } from "@/types/supabase";
+import { AddableProperty, EditableProperty, Property } from "@/types/property";
 
-type Property = Database["public"]["Tables"]["properties"]["Row"];
 
 /**
  * Update the details of a property in the database with new values
@@ -34,9 +33,32 @@ export async function editStatus(propertyId: number, newStatus: string) {
         .from("properties")
         .update({ status: newStatus })
         .eq("id", propertyId);
-        
+
     if (error) {
         throw error;
     }
 }
 
+/**
+ * Remove a feature from and editable property's features array at the specified index and update the state
+ * @param index 
+ * @param features 
+ * @param setProperty 
+ */
+export function removeFeatureEditable(index: number, features: string[], setProperty: React.Dispatch<React.SetStateAction<EditableProperty | null>> ) {
+    const newFeatures = [...features];
+    newFeatures.splice(index, 1);
+    setProperty((prev) => prev ? { ...prev, features: newFeatures } : null);
+}
+
+/**
+ * Remove a feature from an addable property's features array at the specified index and update the state
+ * @param index 
+ * @param features 
+ * @param setProperty 
+ */
+export function removeFeatureAddable(index: number, features: string[], setProperty: React.Dispatch<React.SetStateAction<AddableProperty>> ) {
+    const newFeatures = [...features];
+    newFeatures.splice(index, 1);
+    setProperty((prev) => ({ ...prev, features: newFeatures }));
+}
