@@ -14,7 +14,7 @@ export default function SuccessDialog({ message, page, role, setSuccessMessage }
                         <Button className="bg-buttonColor hover:bg-buttonColor/90 text-foreground"
                             onClick={() => {
                                 setSuccessMessage(null);
-                                window.location.href = `${page === "Editing" ? `/${role}/portal/add-property` : `/${role}/portal/manage-properties`}`;
+                                window.location.href = `/${role}/portal/manage-properties`;
                             }}
                             type="button">Close</Button>
                     </DialogClose>

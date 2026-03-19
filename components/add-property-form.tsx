@@ -56,10 +56,25 @@ export default function AddPropertyForm({ role, id }: { role: "admin" | "estate-
         setSuccessMessage("");
 
         try {
-            await addProperty(propertyData, id);
+            await addProperty({ ...propertyData, status:"active" }, id);
             setSuccessMessage("Property added successfully.");
         } catch (error) {
             setErrorMessage("An error occurred while adding the property. Please try again.");
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    // handle saving a draft of the property (same as submitting but with status set to draft and without validating required fields)
+    async function saveDraft() {
+        setLoading(true);
+        setErrorMessage("");
+        setSuccessMessage("");
+        try {
+            await addProperty({ ...propertyData, status: "draft" }, id);
+            setSuccessMessage("Draft saved successfully.");
+        } catch (error) {
+            setErrorMessage("An error occurred while saving the draft. Please try again.");
         } finally {
             setLoading(false);
         }
@@ -317,7 +332,7 @@ export default function AddPropertyForm({ role, id }: { role: "admin" | "estate-
                         </div>
                         <div className="flex flex-row justify-end mt-6 gap-4">
                             <div className="flex justify-end mt-6">
-                                <Button type="button" className="bg-midBlue hover:bg-midBlue/90 text-foreground text-lg p-6">Save Draft <Pencil /></Button>
+                                <Button onClick={saveDraft} type="button" className="bg-midBlue hover:bg-midBlue/90 text-foreground text-lg p-6">Save Draft <Pencil /></Button>
                             </div>
                             <div className="flex justify-end mt-6">
                                 <Button type="submit" className="bg-buttonColor hover:bg-buttonColor/90 text-foreground text-lg p-6">Add Property <CirclePlus /></Button>
