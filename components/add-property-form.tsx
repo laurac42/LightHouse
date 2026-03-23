@@ -22,7 +22,8 @@ import { addProperty } from "@/lib/data/add-property";
 import { Select, SelectContent, SelectValue, SelectTrigger, SelectGroup, SelectItem } from "./ui/select";
 import { loadAgencyLocations, loadAllAgencies, loadAgentsByLocation } from "@/lib/data/agency-utils";
 import { Field, FieldDescription, FieldLabel } from "./ui/field";
-import { isSellerByEmail, getIdByEmail } from "@/lib/auth/role";
+import { isSellerByEmail } from "@/lib/auth/role";
+import { getIdByEmail } from "@/lib/auth/user";
 
 export default function AddPropertyForm({ role, id }: { role: "admin" | "estate-agent"; id: string | null }) {
     const [loading, setLoading] = useState(false);
@@ -49,7 +50,6 @@ export default function AddPropertyForm({ role, id }: { role: "admin" | "estate-
         is_new_build: false,
         features: [],
         status: "draft",
-        seller_id: null,
     });
 
     // fetch agencies for admin to select from when adding a property
@@ -128,19 +128,15 @@ export default function AddPropertyForm({ role, id }: { role: "admin" | "estate-
                 setLoading(false);
                 return;
             }
-            if (sellerEmail) {
-                const isSeller = await isSellerByEmail(sellerEmail);
-                console.log(isSeller)
-                if (!isSeller) {
-                    setErrorMessage("The provided email does not correspond to a seller.");
+            let sellerId: string | null = null;
+            if (sellerEmail && sellerEmail !== null) {
+                sellerId = await getSellerIdFromEmail();
+                if (!sellerId) {
                     setLoading(false);
                     return;
                 }
-                const sellerId = await getIdByEmail(sellerEmail);
-                setPropertyData(prevData => ({ ...prevData, seller_id: sellerId.id }));
-
             }
-            await addProperty({ ...propertyData, status: "active" }, idToUse, stagedImages);
+            await addProperty({ ...propertyData, status: "active" }, idToUse, stagedImages, sellerId);
 
             setSuccessMessage("Property added successfully.");
         } catch (error) {
@@ -167,13 +163,40 @@ export default function AddPropertyForm({ role, id }: { role: "admin" | "estate-
                 setLoading(false);
                 return;
             }
-            await addProperty({ ...propertyData, status: "draft" }, idToUse, stagedImages);
+            let sellerId: string | null = null;
+            if (sellerEmail && sellerEmail !== null) {
+                sellerId = await getSellerIdFromEmail();
+                if (!sellerId) {
+                    setLoading(false);
+                    return;
+                }
+            }
+            await addProperty({ ...propertyData, status: "draft" }, idToUse, stagedImages, sellerId);
             setSuccessMessage("Draft saved successfully.");
         } catch (error) {
             setErrorMessage("An error occurred while saving the draft. Please try again.");
         } finally {
             setLoading(false);
         }
+    }
+
+    /**
+     * Get the ID of a seller from their email address to link them to the property. This will allow the seller to add additional details to the property listing.
+     * The function checks if the provided email corresponds to a registered seller and if so, fetches their ID and updates the property data with the seller ID.
+     * @returns The seller Id, or null if the email is null, or false if the email does not correspond to a valid seller
+     */
+    async function getSellerIdFromEmail() {
+        if (sellerEmail === null) {
+            return null;
+        }
+        const isSeller = await isSellerByEmail(sellerEmail);
+        if (!isSeller) {
+            setErrorMessage("The provided email does not correspond to a seller.");
+            setLoading(false);
+            return null;
+        }
+        const sellerId = await getIdByEmail(sellerEmail);
+        return sellerId.id;
     }
 
     return (
@@ -287,8 +310,8 @@ export default function AddPropertyForm({ role, id }: { role: "admin" | "estate-
                                         />
                                     </InputGroup>
                                     <FieldDescription className="pt-0 mt-0 ml-2">
-                                        Optionally, you can link a seller to the property by entering their email address. This will allow the seller to add additional details to the property listing. The seller will not be able to edit the property details, however will be able to add additional information which will be visible to buyers. 
-                                        <br/><br/>
+                                        Optionally, you can link a seller to the property by entering their email address. This will allow the seller to add additional details to the property listing. The seller will not be able to edit the property details, however will be able to add additional information which will be visible to buyers.
+                                        <br /><br />
                                         To register a seller, please go to <a href="/estate-agent/portal/manage-sellers" target="_blank" className="text-blue-500 underline">Portal -&gt; Manage Sellers</a> and click on the "Add Seller" button. Once the seller is registered, you can return to this form and enter their email address to link them to the property.
                                     </FieldDescription>
                                 </Field>

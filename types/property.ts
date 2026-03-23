@@ -43,5 +43,4 @@ export type AddableProperty = Pick<
     | "is_new_build"
     | "features"
     | "status"
-    | "seller_id"
 >;

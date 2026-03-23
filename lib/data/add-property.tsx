@@ -9,8 +9,9 @@ import { StagedFiles } from "@/components/edit-images";
  * @param agentId Id of the agent who is adding the property
  * @param stagedImages Images to be staged for the property
  * @param imagesMarkedForDeletion Images to be deleted from the property
+ * @param sellerId Id of the seller associated with the property
  */
-export async function addProperty(propertyData: AddableProperty, agentId: string, stagedImages: StagedFiles | undefined) {
+export async function addProperty(propertyData: AddableProperty, agentId: string, stagedImages: StagedFiles | undefined, sellerId: string | null) {
     const supabase = await createClient();
 
     // get agent's agency location id to add to the property
@@ -26,7 +27,7 @@ export async function addProperty(propertyData: AddableProperty, agentId: string
 
     const { data, error } = await supabase
         .from("properties")
-        .insert({ ...propertyData, agent_id: agentId, agency_location_id: agencyData?.estate_agency_location_id })
+        .insert({ ...propertyData, agent_id: agentId, agency_location_id: agencyData?.estate_agency_location_id, seller_id: sellerId })
         .select("id");
 
     if (error) {
