@@ -22,6 +22,7 @@ import { EditableProperty } from "@/types/property";
 import { Field, FieldDescription, FieldLabel } from "./ui/field";
 import { isSellerByEmail } from "@/lib/auth/role";
 import { getIdByEmail, getEmailById } from "@/lib/auth/user";
+import { addImageUrlToProperty } from "@/lib/data/add-property";
 
 export default function EditPropertyForm({ propertyId, role }: { propertyId: number, role: string }) {
     const [loading, setLoading] = useState(false)
@@ -80,6 +81,7 @@ export default function EditPropertyForm({ propertyId, role }: { propertyId: num
             });
 
             if (stagedImages && propertyId) {
+                await addImageUrlToProperty(propertyId);
                 for (const [category, files] of Object.entries(stagedImages)) {
                     let nextIndex = await getNextIndexInCategory(category, propertyId)
                     for (const file of files) {

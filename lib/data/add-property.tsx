@@ -2,6 +2,7 @@ import { createClient } from "../supabase/client";
 import { AddableProperty } from "@/types/property";
 import { uploadImageToStorage } from "./images";
 import { StagedFiles } from "@/components/edit-images";
+import { add } from "cheerio/dist/commonjs/api/traversing";
 
 /**
  * Add a property to the database with the given details and agent ID
@@ -39,7 +40,9 @@ export async function addProperty(propertyData: AddableProperty, agentId: string
     if (!propertyId) {
         throw new Error("Failed to retrieve property ID after insertion.");
     }
+
     if (stagedImages) {
+        await addImageUrlToProperty(propertyId);
         for (const [category, files] of Object.entries(stagedImages)) {
             let nextIndex = 0;
             for (const file of files) {
@@ -51,4 +54,22 @@ export async function addProperty(propertyData: AddableProperty, agentId: string
 
     }
 
+}
+
+/**
+ * Add image URL to a property with the given ID
+ * @param propertyId Id of the property to add image URL to
+ */
+export async function addImageUrlToProperty(propertyId: number) {
+    const supabase = await createClient();
+    const { error: imageError } = await supabase
+        .from("properties")
+        .update({
+            image_url: `https://bqexongxbltlujcyawrj.supabase.co/storage/v1/object/public/lighthouse-bucket/properties/${propertyId}`,
+        })
+        .eq("id", propertyId)
+        .single();
+    if (imageError) {
+        throw imageError;
+    }
 }
