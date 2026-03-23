@@ -39,7 +39,7 @@ export default function SellerImages({ id, editing, onDeletedImagesChange }: Pro
     return (
         <>
             {imagesMarkedForDeletion.length > 0 && editing && (
-                <p className="text-sm text-muted-foreground mb-2">
+                <p className="text-sm text-muted-foreground mb-2 mt-4">
                     {imagesMarkedForDeletion.length} image{imagesMarkedForDeletion.length === 1 ? "" : "s"} pending deletion. Changes will be applied when you click save.
                 </p>
             )}
@@ -48,7 +48,7 @@ export default function SellerImages({ id, editing, onDeletedImagesChange }: Pro
                     opts={{
                         align: "start",
                     }}
-                    className="w-full mt-2 mb-4"
+                    className="w-full mt-4 mb-4"
                 >
                     <CarouselContent>
                         {images.map((filename, index) => (

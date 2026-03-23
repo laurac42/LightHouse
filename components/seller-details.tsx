@@ -4,15 +4,17 @@ import { Label } from "./ui/label";
 import SellerImages from "./seller-images";
 import { StickyNote } from "lucide-react";
 import { useEffect, useState } from "react";
-import { deleteImageFromStorage } from "@/lib/data/images";
+import { deleteImageFromStorage, uploadImageToStorage} from "@/lib/data/images";
 import { updateSellerAddedInfo } from "@/lib/data/edit-property";
 import { Property } from "@/types/property";
+import FileUploadComponent from "@/components/file-upload-list-3";
 
 export default function SellerDetails({ property, reason, description, page }: { property: Property, reason: string | null, description: string | null, page: string }) {
     const [sellerDetails, setSellerDetails] = useState<string | null>(description);
     const [editing, setEditing] = useState(false);
     const [updatedReason, setUpdatedReason] = useState<string | null>(reason);
     const [imagesMarkedForDeletion, setImagesMarkedForDeletion] = useState<string[]>([]);
+    const [staged, setStaged] = useState<File[] | undefined>(undefined);
 
     useEffect(() => {
         setSellerDetails(description);
@@ -27,17 +29,27 @@ export default function SellerDetails({ property, reason, description, page }: {
         try {
             await updateSellerAddedInfo(property.id, sellerDetails || "", updatedReason || "");
 
+            if (staged && staged.length > 0) {
+                for (const file of staged) {
+                    await uploadImageToStorage(property.id, file, file.name, true);
+                }
+            }
+            setStaged(undefined);
+
             if (imagesMarkedForDeletion.length > 0) {
                 for (const filename of imagesMarkedForDeletion) {
                     await deleteImageFromStorage(property.id, filename, true);
                 }
             }
-
             setImagesMarkedForDeletion([]);
         } catch (error) {
             console.error("Error updating seller info:", error);
         }
         setEditing(false);
+    }
+
+    async function handleFilesChange(files: File[]) {
+        setStaged(files);
     }
 
     return (
@@ -57,6 +69,13 @@ export default function SellerDetails({ property, reason, description, page }: {
                     <Input defaultValue={updatedReason || ""} onChange={(e) => setUpdatedReason(e.target.value)} placeholder="Reason for selling" className="mb-4 border border-foreground" />
                     <hr className='my-4' />
                     <h1 className="text-lg font-bold">Images Uploaded by the Seller</h1>
+                    <div className="flex items-center gap-4 mt-4">
+                        <FileUploadComponent
+                            files={staged}
+                            onFilesChange={(files) => handleFilesChange(files)}
+                        />
+                    </div>
+
                     <SellerImages id={property.id} editing={editing} onDeletedImagesChange={setImagesMarkedForDeletion} />
                     <Button onClick={handleSellerInfoUpdate} className="bg-foreground">Save</Button>
                 </div>

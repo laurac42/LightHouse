@@ -24,13 +24,15 @@ export async function getImagesFromStorage(id: number) {
  * @param propertyId Id of the property to upload the image for
  * @param file The image file to upload
  * @param filename The name to give the file in storage (without extension, category and index will be added to this)
+ * @param sellerImage Whether the image is a seller image
  */
-export async function uploadImageToStorage(propertyId: number, file: File, filename: string) {
+export async function uploadImageToStorage(propertyId: number, file: File, filename: string, sellerImage = false) {
     const supabase = await createClient();
     const fileType = file.type || "image/png"; // default to png if type is not available
-    console.log(fileType)
+    const path = sellerImage ? `properties/${propertyId}/seller/${filename}` : `properties/${propertyId}/${filename}`;
+
     const { error } = await supabase.storage.from("lighthouse-bucket")
-    .upload(`properties/${propertyId}/${filename}.${fileType.replace("image/", "")}`, file, {
+    .upload(path, file, {
             contentType: `${fileType}`,
         });
     
