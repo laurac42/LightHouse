@@ -162,7 +162,23 @@ export default function Navbar() {
                 <div className="md:hidden flex items-center gap-2">
                     {isLoggedIn ? (
                         <Link href="/" className='text-2xl'>
-                            <UserRound />
+                            <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button className="text-4xl bg-navBar border-none rounded-full text-foreground" variant="link"><UserRound className="size-8" /></Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                <DropdownMenuGroup>
+                                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                                    <DropdownMenuItem>Favourites</DropdownMenuItem>
+                                </DropdownMenuGroup>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuGroup>
+                                    <DropdownMenuItem onClick={logout}>
+                                        Logout <LogOut className="w-4 h-4 ml-2" />
+                                    </DropdownMenuItem>
+                                </DropdownMenuGroup>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                         </Link>
                     ) : (
                         <Link href="/auth/login" className='text-2xl'>
