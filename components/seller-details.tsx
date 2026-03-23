@@ -4,7 +4,7 @@ import { Label } from "./ui/label";
 import SellerImages from "./seller-images";
 import { StickyNote } from "lucide-react";
 import { useEffect, useState } from "react";
-import { loadSellerAddedInfo } from "@/lib/data/property-utils";
+import { deleteImageFromStorage } from "@/lib/data/images";
 import { updateSellerAddedInfo } from "@/lib/data/edit-property";
 import { Property } from "@/types/property";
 
@@ -12,6 +12,7 @@ export default function SellerDetails({ property, reason, description, page }: {
     const [sellerDetails, setSellerDetails] = useState<string | null>(description);
     const [editing, setEditing] = useState(false);
     const [updatedReason, setUpdatedReason] = useState<string | null>(reason);
+    const [imagesMarkedForDeletion, setImagesMarkedForDeletion] = useState<string[]>([]);
 
     useEffect(() => {
         setSellerDetails(description);
@@ -25,6 +26,14 @@ export default function SellerDetails({ property, reason, description, page }: {
     async function handleSellerInfoUpdate() {
         try {
             await updateSellerAddedInfo(property.id, sellerDetails || "", updatedReason || "");
+
+            if (imagesMarkedForDeletion.length > 0) {
+                for (const filename of imagesMarkedForDeletion) {
+                    await deleteImageFromStorage(property.id, filename, true);
+                }
+            }
+
+            setImagesMarkedForDeletion([]);
         } catch (error) {
             console.error("Error updating seller info:", error);
         }
@@ -46,7 +55,9 @@ export default function SellerDetails({ property, reason, description, page }: {
                     <hr className='my-4' />
                     <Label className="text-foreground-muted text-sm mb-1">Reason for selling</Label>
                     <Input defaultValue={updatedReason || ""} onChange={(e) => setUpdatedReason(e.target.value)} placeholder="Reason for selling" className="mb-4 border border-foreground" />
-                    <SellerImages id={property.id} />
+                    <hr className='my-4' />
+                    <h1 className="text-lg font-bold">Images Uploaded by the Seller</h1>
+                    <SellerImages id={property.id} editing={editing} onDeletedImagesChange={setImagesMarkedForDeletion} />
                     <Button onClick={handleSellerInfoUpdate} className="bg-foreground">Save</Button>
                 </div>
             ) : (
@@ -57,7 +68,7 @@ export default function SellerDetails({ property, reason, description, page }: {
                     <p>{updatedReason}</p>
                     <hr className='my-4' />
                     <h1 className="text-lg font-bold">Images Uploaded by the Seller</h1>
-                    <SellerImages id={property.id} />
+                    <SellerImages id={property.id} editing={editing} onDeletedImagesChange={null} />
                 </div>)}
         </div>
     )

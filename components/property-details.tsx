@@ -71,8 +71,7 @@ export default function PropertyDetails({ params, page = "view" }: { params: { i
                         <p>{property.description}</p>
                     </div>
                     {((sellerDetails) || (page === "edit")) && (
-                        <SellerDetails property={property} reason={reason} description={sellerDetails} page={page} />
-                        
+                        <SellerDetails property={property} reason={reason} description={sellerDetails} page={page} />  
                     )}
                 </div>
             )}

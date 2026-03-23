@@ -2,22 +2,47 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { Card, CardContent } from "@/components/ui/card";
 import { useEffect, useState } from "react";
 import { loadSellerImages } from "@/lib/data/images";
+import { Button } from "./ui/button";
+import { X } from "lucide-react";
 
-export default function SellerImages({ id }: { id: number }) {
+type Props = {
+    id: number;
+    editing: boolean;
+    onDeletedImagesChange: ((images: string[]) => void) | null;
+};
+
+export default function SellerImages({ id, editing, onDeletedImagesChange }: Props) {
     const [images, setImages] = useState<string[]>([]);
+    const [imagesMarkedForDeletion, setImagesMarkedForDeletion] = useState<string[]>([]);
 
     useEffect(() => {
-        console.log(`Loading images for seller with id: ${id}`);
         loadSellerImages(id).then((imageNames) => {
-            console.log(`Loaded image names: ${imageNames}`);
-            const imageUrls = imageNames.map((name) => `${process.env.NEXT_PUBLIC_BUCKET_URL}/properties/${id}/seller/${name}`);
-            setImages(imageUrls);
+            setImages(imageNames);
         });
-    }, []);
+    }, [id]);
+
+    const handleDeleteImage = (filename: string) => {
+        setImages((current) => current.filter((name) => name !== filename));
+        setImagesMarkedForDeletion((current) => {
+            if (current.includes(filename)) return current;
+            return [...current, filename];
+        });
+    };
+
+    useEffect(() => {
+        if (onDeletedImagesChange) {
+            onDeletedImagesChange(imagesMarkedForDeletion);
+        }
+    }, [imagesMarkedForDeletion]);
 
 
     return (
         <>
+            {imagesMarkedForDeletion.length > 0 && editing && (
+                <p className="text-sm text-muted-foreground mb-2">
+                    {imagesMarkedForDeletion.length} image{imagesMarkedForDeletion.length === 1 ? "" : "s"} pending deletion. Changes will be applied when you click save.
+                </p>
+            )}
             {images.length > 0 && (
                 <Carousel
                     opts={{
@@ -26,11 +51,16 @@ export default function SellerImages({ id }: { id: number }) {
                     className="w-full mt-2 mb-4"
                 >
                     <CarouselContent>
-                        {images.map((url, index) => (
+                        {images.map((filename, index) => (
                             <CarouselItem key={index} className="w-full basis-1/2" >
-                                <Card className="w-full h-full">
+                                <Card className="w-full h-full border-none rounded-md relative">
                                     <CardContent className="p-0 w-full h-full">
-                                        <img src={url} alt={`Seller image ${index + 1}`} className="w-full h-full object-cover border-none rounded-md" />
+                                        <img src={`${process.env.NEXT_PUBLIC_BUCKET_URL}/properties/${id}/seller/${filename}`} alt={`Seller image ${index + 1}`} className="w-full h-full object-cover border-none rounded-md" />
+                                        {editing && (
+                                            <Button type="button" className="absolute bg-foreground top-2 right-2" onClick={() => handleDeleteImage(filename)}>
+                                                <X />
+                                            </Button>
+                                        )}
                                     </CardContent>
                                 </Card>
                             </CarouselItem>
