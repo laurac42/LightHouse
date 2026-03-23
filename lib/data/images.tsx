@@ -83,3 +83,14 @@ export async function getNextIndexInCategory(category: string, propertyId: numbe
     
     return maxIndex;
 }
+
+export async function loadSellerImages(propertyId: number) {
+    const supabase = await createClient();
+    const { data, error } = await supabase.storage.from("lighthouse-bucket")
+        .list(`properties/${propertyId}/seller`);
+    if (error) {
+        throw error;
+    }
+    
+    return data?.map((item) => item.name) || [];
+}

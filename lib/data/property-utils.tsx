@@ -54,27 +54,27 @@ export async function getAgencyDetails(agencyId: string) {
  * @param status Optional status filter
  * @return Number of properties returned, and array of properties from the given estate agency location, or null
  */
-export async function fetchPropertiesByLocationID(locationId: string, page: number=1, page_size: number=10, status?: string) {
+export async function fetchPropertiesByLocationID(locationId: string, page: number = 1, page_size: number = 10, status?: string) {
     try {
         const supabase = await createClient();
         let query = supabase
-        .from("properties")
-        .select("*", {count: "exact"})
-        .eq("agency_location_id", locationId);
+            .from("properties")
+            .select("*", { count: "exact" })
+            .eq("agency_location_id", locationId);
 
         if (status) {
             query = query.eq("status", status);
         }
 
-        const {data, error, count} = await query
-        .range((page - 1) * page_size, page * page_size - 1);
+        const { data, error, count } = await query
+            .range((page - 1) * page_size, page * page_size - 1);
 
         if (!data || error) {
             throw error ? error : new Error("No properties available at the given Estate Agency Location.");
         }
         console.log(count)
         return { count, data };
-    } catch(error) {
+    } catch (error) {
         console.error("Error fetching properties by location ID", error);
         return null;
     }
@@ -115,10 +115,10 @@ export async function fetchPropertiesByAgentID(agentId: string, page: number = 1
 
 /**
  * Fetch properties assigned to a specific seller (i.e. where seller_id matches)
- * @param sellerId 
- * @param page 
- * @param page_size 
- * @param status 
+ * @param sellerId Id of the seller to fetch properties for
+ * @param page page number (1-based)
+ * @param page_size number of results per page
+ * @param status status filter (optional)
  * @returns 
  */
 export async function fetchPropertiesBySellerID(sellerId: string, page: number = 1, page_size: number = 10, status?: string) {
@@ -128,7 +128,7 @@ export async function fetchPropertiesBySellerID(sellerId: string, page: number =
             .from("properties")
             .select("*", { count: "exact" })
             .eq("seller_id", sellerId);
-            
+
         if (status) {
             query = query.eq("status", status);
         }
@@ -156,11 +156,11 @@ export async function doesPropertyBelongToAgent(propertyId: number, agentId: str
     try {
         const supabase = await createClient();
         const { data, error } = await supabase
-        .from("properties")
-        .select("id")
-        .eq("id", propertyId)
-        .eq("agent_id", agentId)
-        .maybeSingle();
+            .from("properties")
+            .select("id")
+            .eq("id", propertyId)
+            .eq("agent_id", agentId)
+            .maybeSingle();
 
         if (error) {
             throw error;
@@ -170,7 +170,7 @@ export async function doesPropertyBelongToAgent(propertyId: number, agentId: str
     } catch (error) {
         console.error("Error checking property ownership: ", error);
         return false;
-    }   
+    }
 }
 
 /**
@@ -188,15 +188,30 @@ export function uppercaseWords(str: string) {
  * @returns The status of the given property
  */
 export async function fetchPropertyStatus(propertyId: number) {
-    const supabase = await createClient();  
-    const {data, error } = await supabase.from("properties")
-    .select("status")
-    .eq("id", propertyId)
-    .single();
+    const supabase = await createClient();
+    const { data, error } = await supabase.from("properties")
+        .select("status")
+        .eq("id", propertyId)
+        .single();
 
     if (error) {
         throw error;
     }
 
+    return data;
+}
+
+export async function loadSellerAddedInfo(propertyId: number) {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+        .from("property_seller_info")
+        .select("*")
+        .eq("id", propertyId)
+        .single();
+
+    if (error) {
+        throw error;
+    }
+    console.log("Seller added info: ", data);
     return data;
 }

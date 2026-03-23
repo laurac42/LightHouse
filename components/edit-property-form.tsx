@@ -36,8 +36,6 @@ export default function EditPropertyForm({ propertyId, role }: { propertyId: num
     useEffect(() => {
         const fetchProperty = async () => {
             try {
-
-
                 const property = await fetchPropertyDetails(propertyId);
                 if (property) {
                     setProperty(property);
