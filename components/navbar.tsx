@@ -1,7 +1,16 @@
 'use client';
 
-import { UserRound, Menu, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { UserRound, Menu, X, LogOut } from "lucide-react";
+import { Button } from "@/components/ui/button"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuGroup,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { useEffect, useState } from "react";
 import Link from 'next/link';
 import { validateUser } from '@/lib/auth/user';
@@ -31,7 +40,7 @@ export default function Navbar() {
 
                     const sellerStatus = await isSeller(user.user.id);
                     setUserIsSeller(sellerStatus);
-                } 
+                }
             } catch (error) {
                 console.error("Error checking auth status:", error);
                 setIsLoggedIn(false);
@@ -106,11 +115,23 @@ export default function Navbar() {
                             <Button type="button" className="w-full text-md text-foreground bg-buttonColor hover:bg-buttonHover shadow-md">Seller Portal</Button>
                         </Link>
                     )}
-
+                    
                     {isLoggedIn ? (
-                        <Link href="/">
-                            <Button type="button" className="w-full text-md text-foreground bg-buttonColor hover:bg-buttonHover shadow-md">Profile <UserRound className="w-4 h-4 ml-2" /></Button>
-                        </Link>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button className="text-md bg-buttonColor hover:bg-buttonHover shadow-md text-foreground">Profile<UserRound className="w-4 h-4 ml-2" /></Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                <DropdownMenuGroup>
+                                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                                    <DropdownMenuItem>Favourites</DropdownMenuItem>
+                                </DropdownMenuGroup>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuGroup>
+                                    <DropdownMenuItem>Logout <LogOut className="w-4 h-4 ml-2" /></DropdownMenuItem>
+                                </DropdownMenuGroup>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     ) : (
                         <Link href="/auth/login">
                             <Button type="button" className="w-full text-md text-foreground bg-buttonColor hover:bg-buttonHover shadow-md">Sign In<UserRound className="w-4 h-4 ml-2" /></Button>

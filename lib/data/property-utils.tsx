@@ -207,7 +207,7 @@ export async function loadSellerAddedInfo(propertyId: number) {
         .from("property_seller_info")
         .select("*")
         .eq("id", propertyId)
-        .single();
+        .maybeSingle();
 
     if (error) {
         throw error;

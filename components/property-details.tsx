@@ -19,8 +19,10 @@ export default function PropertyDetails({ params, page = "view" }: { params: { i
         const loadInfo = async () => {
             if (property) {
                 const sellerInfo = await loadSellerAddedInfo(property.id);
-                setSellerDetails(sellerInfo.seller_description || null);
-                setReason(sellerInfo.reason_for_selling || null);
+                if (sellerInfo) {
+                    setSellerDetails(sellerInfo.seller_description || null);
+                    setReason(sellerInfo.reason_for_selling || null);
+                }
             }
         };
         loadInfo();
