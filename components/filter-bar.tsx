@@ -33,12 +33,12 @@ export default function FilterBar() {
                         onChange={(e) => setLocation(e.target.value)}
                         className="flex-1 border-none"
                     />
-                    <InputGroupButton size="sm" className="text-md text-foreground bg-white hover:bg-lightHover md:w-10 h-full"><X /></InputGroupButton>
+                    <InputGroupButton size="sm" className="text-md text-foreground bg-white hover:bg-lightPink md:w-10 h-full"><X /></InputGroupButton>
                 </InputGroup>
 
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button className="w-40 bg-white hover:bg-lightHover hidden sm:flex" variant="outline">{searchRadius}<ChevronDown /></Button>
+                        <Button className="w-40 bg-white hover:bg-lightPink hidden sm:flex" variant="outline">{searchRadius}<ChevronDown /></Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
                         <DropdownMenuGroup>
@@ -50,7 +50,7 @@ export default function FilterBar() {
                 </DropdownMenu>
                 <DropdownMenu >
                     <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="w-50 hidden sm:flex bg-white hover:bg-lightHover">
+                        <Button variant="outline" className="w-50 hidden sm:flex bg-white hover:bg-lightPink">
                             {!minPrice && !maxPrice ? "Price Range" :
                                 `${minPrice && !maxPrice ? minPrice + " min" : ""}
                             ${minPrice && maxPrice ? minPrice + "-" + maxPrice + " range" : ""}
@@ -63,7 +63,7 @@ export default function FilterBar() {
                             <div className="flex flex-row gap-2">
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                        <Button  variant="outline" className="bg-white hover:bg-lightHover">{minPrice ? minPrice + " Price" : "Min Price"} <ChevronDown /></Button>
+                                        <Button  variant="outline" className="bg-white hover:bg-lightPink">{minPrice ? minPrice + " Price" : "Min Price"} <ChevronDown /></Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent>
                                         <DropdownMenuGroup>
@@ -76,7 +76,7 @@ export default function FilterBar() {
                                 </DropdownMenu>
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                        <Button variant="outline" className="bg-white hover:bg-lightHover">{maxPrice ? maxPrice + " Price" : "Max Price"} <ChevronDown /></Button>
+                                        <Button variant="outline" className="bg-white hover:bg-lightPink">{maxPrice ? maxPrice + " Price" : "Max Price"} <ChevronDown /></Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent>
                                         <DropdownMenuGroup>
@@ -107,7 +107,7 @@ export default function FilterBar() {
                             <div className="flex flex-row gap-2">
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                        <Button variant="outline" className="bg-white hover:bg-lightHover">
+                                        <Button variant="outline" className="bg-white hover:bg-lightPink">
                                             {minBedrooms ? minBedrooms + " Bedrooms" : "Min Bedrooms"} <ChevronDown /></Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent>
@@ -123,7 +123,7 @@ export default function FilterBar() {
                                 </DropdownMenu>
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                        <Button variant="outline" className="bg-white hover:bg-lightHover">
+                                        <Button variant="outline" className="bg-white hover:bg-lightPink">
                                             {maxBedrooms ? maxBedrooms + " Bedrooms" : "Max Bedrooms"} <ChevronDown />
                                         </Button>
                                     </DropdownMenuTrigger>
@@ -157,7 +157,7 @@ export default function FilterBar() {
                             <div className="flex flex-row gap-2">
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                        <Button variant="outline" className="bg-white hover:bg-lightHover">
+                                        <Button variant="outline" className="bg-white hover:bg-lightPink">
                                             {minBathrooms ? minBathrooms + " Bathrooms" : "Min Bathrooms"} <ChevronDown />
                                         </Button>
                                     </DropdownMenuTrigger>
@@ -174,7 +174,7 @@ export default function FilterBar() {
                                 </DropdownMenu>
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                        <Button variant="outline" className="bg-white hover:bg-lightHover">
+                                        <Button variant="outline" className="bg-white hover:bg-lightPink">
                                             {maxBathrooms ? maxBathrooms + " Bathrooms" : "Max Bathrooms"} <ChevronDown />
                                             </Button>
                                     </DropdownMenuTrigger>
@@ -194,7 +194,7 @@ export default function FilterBar() {
                     </DropdownMenuContent>
                 </DropdownMenu>
                 <div className="text-foreground cursor-pointer ml-auto" >
-                    <Button className="w-40 bg-white hover:bg-lightHover" onClick={() => setIsMoreFiltersOpen(!isMoreFiltersOpen)} variant={"outline"}>
+                    <Button className="w-40 bg-white hover:bg-lightPink" onClick={() => setIsMoreFiltersOpen(!isMoreFiltersOpen)} variant={"outline"}>
                         More Filters <ChevronDown />
                     </Button>
                 </div>

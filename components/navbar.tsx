@@ -15,7 +15,8 @@ import { useEffect, useState } from "react";
 import Link from 'next/link';
 import { validateUser } from '@/lib/auth/user';
 import { isAdmin, isEstateAgent, isSeller } from '@/lib/auth/role';
-
+import { createClient } from "@/lib/supabase/client";
+import { useRouter, usePathname } from "next/navigation";
 
 export default function Navbar() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -23,6 +24,9 @@ export default function Navbar() {
     const [userIsAdmin, setUserIsAdmin] = useState(false);
     const [userIsEstateAgent, setUserIsEstateAgent] = useState(false);
     const [userIsSeller, setUserIsSeller] = useState(false);
+
+    const router = useRouter();
+    const pathname = usePathname();
 
     useEffect(() => {
 
@@ -52,6 +56,20 @@ export default function Navbar() {
         }
         checkAuthStatus();
     }, []);
+
+    // log the user out and redirect if necessary (if they were on a protected page)
+    const logout = async () => {
+        const supabase = createClient();
+        await supabase.auth.signOut();
+
+        if (!pathname.startsWith("/public")) {
+            router.push("/auth/login");
+        } else {
+            // refresh the page to update the UI for logged out state
+            await new Promise((resolve) => setTimeout(resolve, 100)); // slight delay to ensure signOut has completed
+            window.location.reload();
+        }
+    };
 
     return (
         <nav id="navbar" className="w-full bg-navBar">
@@ -115,7 +133,7 @@ export default function Navbar() {
                             <Button type="button" className="w-full text-md text-foreground bg-buttonColor hover:bg-buttonHover shadow-md">Seller Portal</Button>
                         </Link>
                     )}
-                    
+
                     {isLoggedIn ? (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -128,7 +146,9 @@ export default function Navbar() {
                                 </DropdownMenuGroup>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuGroup>
-                                    <DropdownMenuItem>Logout <LogOut className="w-4 h-4 ml-2" /></DropdownMenuItem>
+                                    <DropdownMenuItem onClick={logout}>
+                                        Logout <LogOut className="w-4 h-4 ml-2" />
+                                    </DropdownMenuItem>
                                 </DropdownMenuGroup>
                             </DropdownMenuContent>
                         </DropdownMenu>
