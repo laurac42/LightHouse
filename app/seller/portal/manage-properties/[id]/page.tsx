@@ -13,7 +13,7 @@ import AgencyCard from "@/components/agency-card";
 import PropertyDetails from "@/components/property-details";
 import { useRouter } from "next/navigation";
 import { validateUser } from "@/lib/auth/user";
-import { isEstateAgent } from "@/lib/auth/role";
+import { isSeller } from "@/lib/auth/role";
 
 type Property = Database["public"]["Tables"]["properties"]["Row"];
 
@@ -32,19 +32,18 @@ function PropertyDetailsPage({ params }: { params: Promise<{ id: number }> }) {
 
     // check user is authenticated to be on this page
     useEffect(() => {
-        async function checkEstateAgent() {
+        async function checkSeller() {
             const user = await validateUser();
             if (!user) {
-                router.push("/public/home");
-                return;
+            router.push("/public/home");
+            return;
             }
-            const estateAgent = await isEstateAgent();
-            if (!estateAgent) {
-                router.push("/public/home");
+            const seller = await isSeller(user.user.id);
+            if (!seller) {
+            router.push("/public/home");
             }
         }
-
-        checkEstateAgent();
+        checkSeller();
     }, [router]);
 
     // Set the height of the bar for spacing when it becomes fixed and add scroll listener to toggle fixed position

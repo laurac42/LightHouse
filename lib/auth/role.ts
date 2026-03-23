@@ -120,25 +120,6 @@ export async function isSellerByEmail(email: string) {
 }
 
 /**
- * Fetches the ID of a user with a given email address
- * @param email email address to fetch the corresponding user ID of
- * @returns The ID of the user
- */
-export async function getIdByEmail(email: string) {
-    const supabase = await createClient();
-    const { data: userId, error } = await supabase
-        .from('users')
-        .select('id')
-        .eq('email', email)
-        .maybeSingle();
-
-    if (error || !userId) {
-        throw error;
-    }
-    return userId;
-}
-
-/**
  * Fetch the agency location ID of the agency that a given agent works at
  * @param agentId ID to check the agency location of
  * @returns The ID of the agnency location the agent works at

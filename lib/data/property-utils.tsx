@@ -114,6 +114,39 @@ export async function fetchPropertiesByAgentID(agentId: string, page: number = 1
 }
 
 /**
+ * Fetch properties assigned to a specific seller (i.e. where seller_id matches)
+ * @param sellerId 
+ * @param page 
+ * @param page_size 
+ * @param status 
+ * @returns 
+ */
+export async function fetchPropertiesBySellerID(sellerId: string, page: number = 1, page_size: number = 10, status?: string) {
+    try {
+        const supabase = await createClient();
+        let query = supabase
+            .from("properties")
+            .select("*", { count: "exact" })
+            .eq("seller_id", sellerId);
+            
+        if (status) {
+            query = query.eq("status", status);
+        }
+
+        const { data, error, count } = await query
+            .range((page - 1) * page_size, page * page_size - 1);
+
+        if (!data || error) {
+            throw error ? error : new Error("No properties found for the given seller.");
+        }
+        return { count, data };
+    } catch (error) {
+        console.error("Error fetching properties by seller ID", error);
+        return null;
+    }
+}
+
+/**
  * Check if a property belongs to a given agent
  * @param propertyId Id of the property to check
  * @param agentId Id of the agent to check
