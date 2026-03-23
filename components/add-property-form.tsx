@@ -22,6 +22,7 @@ import { addProperty } from "@/lib/data/add-property";
 import { Select, SelectContent, SelectValue, SelectTrigger, SelectGroup, SelectItem } from "./ui/select";
 import { loadAgencyLocations, loadAllAgencies, loadAgentsByLocation } from "@/lib/data/agency-utils";
 import { Field, FieldDescription, FieldLabel } from "./ui/field";
+import { isSellerByEmail, getIdByEmail } from "@/lib/auth/role";
 
 export default function AddPropertyForm({ role, id }: { role: "admin" | "estate-agent"; id: string | null }) {
     const [loading, setLoading] = useState(false);
@@ -48,6 +49,7 @@ export default function AddPropertyForm({ role, id }: { role: "admin" | "estate-
         is_new_build: false,
         features: [],
         status: "draft",
+        seller_id: null,
     });
 
     // fetch agencies for admin to select from when adding a property
@@ -60,6 +62,7 @@ export default function AddPropertyForm({ role, id }: { role: "admin" | "estate-
     const [selectedAgentId, setSelectedAgentId] = useState<string>("");
     const [agents, setAgents] = useState<{ id: string; first_name: string; last_name: string | null }[]>([]);
     const [loadingAgents, setLoadingAgents] = useState(false);
+    const [sellerEmail, setSellerEmail] = useState<string>("");
 
     useEffect(() => {
         if (role === "admin") {
@@ -125,6 +128,18 @@ export default function AddPropertyForm({ role, id }: { role: "admin" | "estate-
                 setLoading(false);
                 return;
             }
+            if (sellerEmail) {
+                const isSeller = await isSellerByEmail(sellerEmail);
+                console.log(isSeller)
+                if (!isSeller) {
+                    setErrorMessage("The provided email does not correspond to a seller.");
+                    setLoading(false);
+                    return;
+                }
+                const sellerId = await getIdByEmail(sellerEmail);
+                setPropertyData(prevData => ({ ...prevData, seller_id: sellerId.id }));
+
+            }
             await addProperty({ ...propertyData, status: "active" }, idToUse, stagedImages);
 
             setSuccessMessage("Property added successfully.");
@@ -165,7 +180,7 @@ export default function AddPropertyForm({ role, id }: { role: "admin" | "estate-
         <div>
             <LoadingDialog loading={loading} page={"Add"} />
             <ErrorDialog message={errorMessage || ""} page={"Add"} setMessage={(message) => setErrorMessage(message || "")} />
-            <SuccessDialog message={successMessage || ""} page={"Add"} role={role === "estate-agent" ? "estate-agent" : "admin"} setSuccessMessage={(message) => setSuccessMessage(message || "")} />
+            <SuccessDialog message={successMessage || ""} page={"Add    "} role={role === "estate-agent" ? "estate-agent" : "admin"} setSuccessMessage={(message) => setSuccessMessage(message || "")} />
 
             <form onSubmit={handleSubmit}>
 
@@ -260,10 +275,31 @@ export default function AddPropertyForm({ role, id }: { role: "admin" | "estate-
                             )}
 
                             {((role === "estate-agent") || (role === "admin" && selectedAgentId)) &&
-                                <div>
+                                <Field>
+                                    <FieldLabel className="text-xl">Link a Seller</FieldLabel>
+                                    <InputGroup className="ml-2 w-max cursor-pointer">
+                                        <InputGroupInput
+                                            id="sellerEmail"
+                                            placeholder="Seller's Email"
+                                            value={sellerEmail}
+                                            onChange={(e) => setSellerEmail(e.target.value)}
+                                            className="border-none cursor-pointer"
+                                        />
+                                    </InputGroup>
+                                    <FieldDescription className="pt-0 mt-0 ml-2">
+                                        Optionally, you can link a seller to the property by entering their email address. This will allow the seller to add additional details to the property listing. The seller will not be able to edit the property details, however will be able to add additional information which will be visible to buyers. 
+                                        <br/><br/>
+                                        To register a seller, please go to <a href="/estate-agent/portal/manage-sellers" target="_blank" className="text-blue-500 underline">Portal -&gt; Manage Sellers</a> and click on the "Add Seller" button. Once the seller is registered, you can return to this form and enter their email address to link them to the property.
+                                    </FieldDescription>
+                                </Field>
+                            }
+
+                            <hr />
+
+                            {((role === "estate-agent") || (role === "admin" && selectedAgentId)) &&
+                                <div className="flex flex-col gap-8">
                                     <div>
                                         <Label className="py-2 text-xl" htmlFor="title">Title</Label>
-                                        <p className="text-muted-foreground text-sm mb-2">Enter the title of the property. This will be displayed to users before they click on a property. It should include the address, property type, and other relevant information.</p>
                                         <Input
                                             id="title"
                                             placeholder="Title"
@@ -272,6 +308,7 @@ export default function AddPropertyForm({ role, id }: { role: "admin" | "estate-
                                             className="ml-2"
 
                                         />
+                                        <p className="text-muted-foreground text-sm ml-2 mt-1">Enter the title of the property. This will be displayed to users before they click on a property. It should include the address, property type, and other relevant information.</p>
                                     </div>
 
                                     <div>
@@ -344,7 +381,6 @@ export default function AddPropertyForm({ role, id }: { role: "admin" | "estate-
 
                                     <div >
                                         <Label className="py-2 text-xl" htmlFor="description">Description</Label>
-                                        <p className="text-muted-foreground text-sm mb-2">Provide a detailed description of the property, highlighting all important features.</p>
                                         <InputGroup className="ml-2">
                                             <InputGroupTextarea
                                                 id="description"
@@ -355,6 +391,7 @@ export default function AddPropertyForm({ role, id }: { role: "admin" | "estate-
                                                 required
                                             />
                                         </InputGroup>
+                                        <p className="text-muted-foreground text-sm mt-1 ml-2">Provide a detailed description of the property, highlighting all important features.</p>
                                     </div>
 
                                     <div>
@@ -484,6 +521,8 @@ export default function AddPropertyForm({ role, id }: { role: "admin" | "estate-
                                             </div>
                                         </div>
                                     </div>
+                                    <hr />
+
                                     <div>
                                         <Label className="py-2 text-2xl">Images</Label>
                                         <EditImages

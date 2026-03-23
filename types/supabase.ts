@@ -357,6 +357,7 @@ export type Database = {
       }
       is_current_user_admin: { Args: never; Returns: boolean }
       is_current_user_agent: { Args: never; Returns: boolean }
+      is_seller_by_email: { Args: { p_email: string }; Returns: boolean }
       is_user_admin: { Args: { p_id: string }; Returns: boolean }
       is_user_estate_agent: { Args: { p_id: string }; Returns: boolean }
       update_buyer_profile: {

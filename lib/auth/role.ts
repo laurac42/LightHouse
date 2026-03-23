@@ -87,11 +87,11 @@ export async function isSeller(userId: string) {
     try {
         const supabase = await createClient();
         const { data: isSeller, error } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', userId)
-        .eq('role', 'seller')
-        .maybeSingle();
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', userId)
+            .eq('role', 'seller')
+            .maybeSingle();
 
         if (error || !isSeller) {
             throw error;
@@ -102,6 +102,42 @@ export async function isSeller(userId: string) {
     }
 }
 
+/** 
+ * Checks if a user with a specific email has a seller role
+ * @param email email to check for seller role
+ * @returns boolean indicating whether the user with the given email is a seller or not
+ */
+export async function isSellerByEmail(email: string) {
+    const supabase = await createClient();
+    const { data: isSeller, error } = await supabase
+        .rpc('is_seller_by_email', { p_email: email })
+
+    if (error) {
+        throw error;
+    }
+    console.log("Fetched seller status: ", isSeller);
+    return isSeller;
+}
+
+/**
+ * Fetches the ID of a user with a given email address
+ * @param email email address to fetch the corresponding user ID of
+ * @returns The ID of the user
+ */
+export async function getIdByEmail(email: string) {
+    const supabase = await createClient();
+    const { data: userId, error } = await supabase
+        .from('users')
+        .select('id')
+        .eq('email', email)
+        .maybeSingle();
+
+    if (error || !userId) {
+        throw error;
+    }
+    return userId;
+}
+
 /**
  * Fetch the agency location ID of the agency that a given agent works at
  * @param agentId ID to check the agency location of
@@ -110,18 +146,18 @@ export async function isSeller(userId: string) {
 export async function getAgentsLocationId(agentId: string) {
     try {
         const supabase = await createClient();
-        const {data, error} = await supabase
-        .from("estate_agent_profiles")
-        .select("estate_agency_location_id")
-        .eq("id", agentId)
-        .single();
+        const { data, error } = await supabase
+            .from("estate_agent_profiles")
+            .select("estate_agency_location_id")
+            .eq("id", agentId)
+            .single();
 
         if (!data || error) {
             throw error ? error : new Error("Unable to fetch agency location ID");
         }
         console.log("Fetched agency location ID: ", data);
         return data;
-    } catch(error) {
+    } catch (error) {
         console.error("Error fetching agency location ID", error);
         return null;
     }
