@@ -5,9 +5,9 @@ export default function LoadingDialog({ loading, page }: { loading: boolean, pag
         <Dialog open={loading}>
             <DialogContent aria-describedby="loading">
                 <DialogHeader>
-                    <DialogTitle>{page} Property</DialogTitle>
+                    <DialogTitle>{page === "Editing" ? "Editing" : page === "Add" ? "Creating" : "Updating"} Property</DialogTitle>
                 </DialogHeader>
-                <p>Your property is being {page=== "Editing" ? "edited" : "created"}. Please be patient. If you are uploading images, this may take a few minutes ...</p>
+                <p>Your property is being {page=== "Editing" ? "edited" : page=== "Add" ? "created" : "upd  ated"}. Please be patient. If you are uploading images, this may take a few minutes ...</p>
             </DialogContent>
         </Dialog>
     )

@@ -35,7 +35,6 @@ export default function SellerPropertiesPage() {
     const [totalPages, setTotalPages] = useState(1);
     const [totalProperties, setTotalProperties] = useState(0);
     const [isMobile, setIsMobile] = useState(false);
-    const [viewMode, setViewMode] = useState<"all" | "mine">("all");
     const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
 
     const updateMedia = useCallback(() => {
@@ -112,7 +111,7 @@ export default function SellerPropertiesPage() {
         } finally {
             setLoading(false);
         }
-    }, [user, viewMode, selectedStatus]);
+    }, [user, selectedStatus]);
 
     useEffect(() => {
         fetchProperties(1);
@@ -132,22 +131,6 @@ export default function SellerPropertiesPage() {
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="flex gap-2 mb-4">
-                                <Button
-                                    variant={viewMode === "all" ? "default" : "outline"}
-                                    onClick={() => { setViewMode("all"); setCurrentPage(1); }}
-                                    className={viewMode === "all" ? "bg-buttonColor hover:bg-buttonHover text-foreground font-semibold" : ""}
-                                >
-                                    All Properties
-                                </Button>
-                                <Button
-                                    variant={viewMode === "mine" ? "default" : "outline"}
-                                    onClick={() => { setViewMode("mine"); setCurrentPage(1); }}
-                                    className={viewMode === "mine" ? "bg-buttonColor hover:bg-buttonHover text-foreground font-semibold" : ""}
-                                >
-                                    My Properties
-                                </Button>
-                            </div>
                             <div className="flex flex-wrap gap-2 mb-4">
                                 <Button
                                     variant={selectedStatus === null ? "default" : "outline"}
