@@ -1,5 +1,5 @@
-import { SignUpForm } from "@/components/sign-up-form";
-import { AcceptInviteForm } from "@/components/accept-invite-form";
+import { SignUpForm } from "@/components/auth/sign-up-form";
+import { AcceptInviteForm } from "@/components/auth/accept-invite-form";
 
 import Navbar from "@/components/navbar";
 

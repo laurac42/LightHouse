@@ -1,11 +1,31 @@
 import { Database } from "@/types/supabase";
 import styles from '../app/public/properties/page.module.css';
-import { Home, Bed, Bath, Grid2X2, Landmark, Lightbulb } from "lucide-react";
+import { Home, Bed, Bath, Grid2X2, Landmark, Lightbulb, BookOpenText, StickyNote } from "lucide-react";
+import { useEffect, useState } from "react";
+import { loadSellerAddedInfo } from "@/lib/data/property-utils";
+import { updateSellerAddedInfo } from "@/lib/data/edit-property";
+
+import SellerDetails from "./seller-details";
 
 type Property = Database["public"]["Tables"]["properties"]["Row"];
 
-export default function PropertyDetails({ params }: { params: { id: number, property: Property } }) {
+export default function PropertyDetails({ params, page = "view" }: { params: { id: number, property: Property }, page: string }) {
     const { property } = params;
+    const [sellerDetails, setSellerDetails] = useState<string | null>(null);
+    const [reason, setReason] = useState<string | null>(null);
+
+    // load seller added info
+    useEffect(() => {
+        const loadInfo = async () => {
+            if (property) {
+                const sellerInfo = await loadSellerAddedInfo(property.id);
+                setSellerDetails(sellerInfo.seller_description || null);
+                setReason(sellerInfo.reason_for_selling || null);
+            }
+        };
+        loadInfo();
+    }, [property]);
+
     return (
         <>
             {property && (
@@ -40,16 +60,19 @@ export default function PropertyDetails({ params }: { params: { id: number, prop
                         </div>
                     </div>
                     <hr />
-                    <div className={styles.description + ' mb-20 md:mb-28 lg:mb-8 whitespace:'}>
+                    <div className={styles.description + ` ${sellerDetails ? 'mb-8 md:mb-12 lg:mb-4' : 'mb-20 md:mb-28 lg:mb-8'} whitespace:`}>
                         <h1 className={styles.features}>Key Features</h1>
                         <ul>
-                            {property.features?.map((feature, index) => 
+                            {property.features?.map((feature, index) =>
                                 <li key={index}>{feature}</li>
-                        )}
+                            )}
                         </ul>
                         <h1>Description</h1>
                         <p>{property.description}</p>
                     </div>
+                    {((sellerDetails) || (page === "edit")) && (
+                        <SellerDetails property={property} reason={reason} description={sellerDetails} page={page} />  
+                    )}
                 </div>
             )}
         </>

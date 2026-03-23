@@ -11,7 +11,7 @@ import { MoveLeft } from "lucide-react";
 import { AgencyLocationDetails } from "@/types/agency";
 import AgencyCard from "@/components/agency-card";
 import PropertyDetails from "@/components/property-details";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { validateUser } from "@/lib/auth/user";
 import { isEstateAgent } from "@/lib/auth/role";
 
@@ -106,7 +106,7 @@ function PropertyDetailsPage({ params }: { params: Promise<{ id: number }> }) {
                         </div>
                     ) : null}
                 </div>
-                {property && <PropertyDetails params={{ id, property }} />}
+                {property && <PropertyDetails params={{ id, property }} page="view"/>}
             </div>
         </div>
     );

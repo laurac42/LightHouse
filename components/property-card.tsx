@@ -17,7 +17,7 @@ import { Button } from "./ui/button";
 
 type Property = Database["public"]["Tables"]["properties"]["Row"];
 
-export default function PropertyCard({ property, images, page, editable = false }: { property: Property; images: string[]; page: string; editable?: boolean }) {
+export default function PropertyCard({ property, images, page, editable = false, seller = false }: { property: Property; images: string[]; page: string; editable?: boolean; seller?: boolean }) {
     const [agencyDetails, setAgencyDetails] = useState<AgencyLocationDetails | null>(null);
 
     useEffect(() => {
@@ -29,7 +29,7 @@ export default function PropertyCard({ property, images, page, editable = false 
     }, []);
 
     return (
-        <Card key={property.id} className={page === "manage" ? "bg-white/90 border-none mb-6 h-60" : "bg-white/90 border-none mb-6"}>
+        <Card key={property.id} className={page === "manage" ? "bg-white/90 border-none mb-6 lg:h-60" : "bg-white/90 border-none mb-6"}>
             <CardContent className="p-0">
                 <div className="flex flex-col md:flex-row gap-2">
                     <div className={page === "manage" ? "flex flex-col gap-0 md:w-64 shrink-0" : "flex flex-col gap-0 md:w-80 shrink-0"}>
@@ -161,16 +161,26 @@ export default function PropertyCard({ property, images, page, editable = false 
                                                 className="bg-buttonColor hover:bg-buttonColor/90 mb-2 p-1 text-foreground">Edit Property <Pencil /></Button>
                                         </Link>
                                     </div>
-                                ) : (
+                                ) : seller ? (
                                     <div className="flex flex-row gap-1 justify-between items-center pt-2">
                                         <div className="flex  flex-row gap-3 items-center">
                                             <p className="font-bold mb-2">Status: <span className={property.status === "active" || property.status === "under offer" ? "text-green-600" : "text-red-600"}><b>{property.status}</b></span></p>
                                         </div>
                                         <Link href={`manage-properties/${property.id}`}>
-                                            <Button className="bg-midBlue hover:bg-midBlueHover mb-2 text-foreground">View Property</Button>
+                                            <Button className="bg-midBlue hover:bg-midBlueHover mb-2 text-foreground">Edit Seller Details</Button>
                                         </Link>
                                     </div>
-                                )}
+                                ) :
+                                    (
+                                        <div className="flex flex-row gap-1 justify-between items-center pt-2">
+                                            <div className="flex  flex-row gap-3 items-center">
+                                                <p className="font-bold mb-2">Status: <span className={property.status === "active" || property.status === "under offer" ? "text-green-600" : "text-red-600"}><b>{property.status}</b></span></p>
+                                            </div>
+                                            <Link href={`manage-properties/${property.id}`}>
+                                                <Button className="bg-midBlue hover:bg-midBlueHover mb-2 text-foreground">View Property</Button>
+                                            </Link>
+                                        </div>
+                                    )}
                             </>
                         }
                     </div>

@@ -156,7 +156,6 @@ export type Database = {
           description: string
           epc_rating: string | null
           features: string[] | null
-          floorplan_url: string | null
           has_garage: boolean | null
           id: number
           image_url: string | null
@@ -184,7 +183,6 @@ export type Database = {
           description: string
           epc_rating?: string | null
           features?: string[] | null
-          floorplan_url?: string | null
           has_garage?: boolean | null
           id?: number
           image_url?: string | null
@@ -212,7 +210,6 @@ export type Database = {
           description?: string
           epc_rating?: string | null
           features?: string[] | null
-          floorplan_url?: string | null
           has_garage?: boolean | null
           id?: number
           image_url?: string | null
@@ -250,6 +247,38 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "user_roles"
             referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      property_seller_info: {
+        Row: {
+          created_at: string
+          id: number
+          reason_for_selling: string | null
+          seller_description: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          reason_for_selling?: string | null
+          seller_description?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          reason_for_selling?: string | null
+          seller_description?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_seller_info_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -317,6 +346,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      does_property_belong_to_seller: {
+        Args: { p_id: number }
+        Returns: boolean
+      }
       fetch_agents_by_location_id: {
         Args: { p_agency_id: string }
         Returns: {
@@ -357,6 +390,7 @@ export type Database = {
       }
       is_current_user_admin: { Args: never; Returns: boolean }
       is_current_user_agent: { Args: never; Returns: boolean }
+      is_seller_by_email: { Args: { p_email: string }; Returns: boolean }
       is_user_admin: { Args: { p_id: string }; Returns: boolean }
       is_user_estate_agent: { Args: { p_id: string }; Returns: boolean }
       update_buyer_profile: {

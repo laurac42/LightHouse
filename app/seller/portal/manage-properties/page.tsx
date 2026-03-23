@@ -11,8 +11,8 @@ import PortalMenu from "@/components/portal-menu";
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { validateUser } from "@/lib/auth/user";
-import { isEstateAgent, getAgentsLocationId } from "@/lib/auth/role"
-import { doesPropertyBelongToAgent, fetchPropertiesByLocationID, fetchPropertiesByAgentID } from "@/lib/data/property-utils";
+import { isSeller } from "@/lib/auth/role";
+import { fetchPropertiesBySellerID } from "@/lib/data/property-utils";
 import { Database } from "@/types/supabase";
 import { getImagesFromStorage } from "@/lib/data/images";
 import { ChevronRight, ChevronLeft } from "lucide-react";
@@ -25,9 +25,8 @@ type PropertyWithImages = Property & { images: string[] };
 const PAGE_SIZE = 10;
 const STATUSES = ["active", "under offer", "draft", "completed", "withdrawn", "deleted"];
 
-export default function EstateAgentPropertiesPage() {
+export default function SellerPropertiesPage() {
     const router = useRouter();
-    const [locationId, setLocationId] = useState<string | null>(null);
     const [properties, setProperties] = useState<PropertyWithImages[]>([]);
     const [user, setUser] = useState<any>(null);
     const [errorMessage, setErrorMessage] = useState<string>("");
@@ -36,8 +35,6 @@ export default function EstateAgentPropertiesPage() {
     const [totalPages, setTotalPages] = useState(1);
     const [totalProperties, setTotalProperties] = useState(0);
     const [isMobile, setIsMobile] = useState(false);
-    const [editableProperties, setEditableProperties] = useState<Set<number>>(new Set());
-    const [viewMode, setViewMode] = useState<"all" | "mine">("all");
     const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
 
     const updateMedia = useCallback(() => {
@@ -50,53 +47,29 @@ export default function EstateAgentPropertiesPage() {
     }, [updateMedia]);
 
     useEffect(() => {
-        async function checkEstateAgent() {
+        async function checkSeller() {
             const user = await validateUser();
             if (!user) {
                 router.push("/public/home");
                 return;
             }
             setUser(user);
-            const estateAgent = await isEstateAgent();
-            if (!estateAgent) {
+            const seller = await isSeller(user.user.id);
+            if (!seller) {
                 router.push("/public/home");
             }
         }
 
-        checkEstateAgent();
+        checkSeller();
     }, [router]);
 
-    // load agency location
-    useEffect(() => {
-        if (!user) return; // wait until user has been set
-
-
-        const loadAgencyLocation = async () => {
-            try {
-                setErrorMessage("")
-                const locID = await getAgentsLocationId(user.user.id);
-                if (locID?.estate_agency_location_id) {
-                    setLocationId(locID.estate_agency_location_id);
-                } else {
-                    setErrorMessage("Unable to find estate agency location");
-                    setLoading(false);
-                }
-            } catch (error) {
-                console.error("Error loading agency location: ", error);
-                setErrorMessage("Unable to load agency location");
-                setLoading(false);
-            }
-        }
-        loadAgencyLocation();
-
-    }, [user]);
 
     /**
      * Fetch properties and property images for a given search results page
      * @param page Page number to fetch properties for - default is 1
      */
     const fetchProperties = useCallback(async (page: number = 1) => {
-        if (!locationId || !user) return;
+        if (!user) return;
 
         try {
             setLoading(true);
@@ -104,9 +77,7 @@ export default function EstateAgentPropertiesPage() {
             // scroll to top
             window.scrollTo({ top: 0 });
 
-            const result = viewMode === "mine"
-                ? await fetchPropertiesByAgentID(user.user.id, page, PAGE_SIZE, selectedStatus || undefined)
-                : await fetchPropertiesByLocationID(locationId, page, PAGE_SIZE, selectedStatus || undefined);
+            const result = await fetchPropertiesBySellerID(user.user.id, page, PAGE_SIZE, selectedStatus || undefined);
 
             if (!result) {
                 setErrorMessage("Unable to fetch properties");
@@ -140,62 +111,26 @@ export default function EstateAgentPropertiesPage() {
         } finally {
             setLoading(false);
         }
-    }, [locationId, user, viewMode, selectedStatus]);
+    }, [user, selectedStatus]);
 
     useEffect(() => {
         fetchProperties(1);
     }, [fetchProperties]);
-
-    // check which properties are editable by the agent
-    useEffect(() => {
-        async function checkEditableProperties() {
-            if (!user || properties.length === 0) return;
-            
-            const editable = new Set<number>();
-            for (const property of properties) {
-                const isEditable = await doesPropertyBelongToAgent(property.id, user.user.id);
-                if (isEditable) {
-                    editable.add(property.id);
-                }
-            }
-            setEditableProperties(editable);
-        }
-        
-        checkEditableProperties();
-    }, [user, properties]);
-
 
     return (
         <div className="bg-background w-full min-h-svh">
             <Navbar />
             <div className="w-full p-6 md:p-10">
                 <div className="mx-auto w-full max-w-5xl space-y-6">
-                    <PortalMenu role={"estate-agent"} />
+                    <PortalMenu role={"seller"} />
                     <Card className="border-0 shadow-md">
                         <CardHeader>
                             <CardTitle className="text-2xl">Manage Properties</CardTitle>
                             <CardDescription>
-                                Here you can view all properties at your agency location, and edit or delete existing properties.
-                                You are able to view all properties at your agency, and <b>edit only properties which you have added</b>.
+                                Here you can manage the properties you have listed on Lighthouse. You can view all your properties, or just those with a specific status, using the filters below.
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="flex gap-2 mb-4">
-                                <Button
-                                    variant={viewMode === "all" ? "default" : "outline"}
-                                    onClick={() => { setViewMode("all"); setCurrentPage(1); }}
-                                    className={viewMode === "all" ? "bg-buttonColor hover:bg-buttonHover text-foreground font-semibold" : ""}
-                                >
-                                    All Properties
-                                </Button>
-                                <Button
-                                    variant={viewMode === "mine" ? "default" : "outline"}
-                                    onClick={() => { setViewMode("mine"); setCurrentPage(1); }}
-                                    className={viewMode === "mine" ? "bg-buttonColor hover:bg-buttonHover text-foreground font-semibold" : ""}
-                                >
-                                    My Properties
-                                </Button>
-                            </div>
                             <div className="flex flex-wrap gap-2 mb-4">
                                 <Button
                                     variant={selectedStatus === null ? "default" : "outline"}
@@ -224,7 +159,7 @@ export default function EstateAgentPropertiesPage() {
                                     </div>
                                     <div className="w-full max-w-4xl">
                                         {properties.map((property) => (
-                                            <PropertyCard key={property.id} property={property} images={property.images} page="manage" editable={editableProperties.has(property.id)} />
+                                            <PropertyCard key={property.id} property={property} images={property.images} page="manage" editable={false} seller={true} />
                                         ))}
                                     </div>
                                     {errorMessage && <p className="text-red-500">{errorMessage}</p>}

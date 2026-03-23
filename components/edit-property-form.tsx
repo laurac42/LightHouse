@@ -19,6 +19,10 @@ import ErrorDialog from "./dialogs/error-dialog";
 import LoadingDialog from "./dialogs/loading-dialog";
 import SuccessDialog from "./dialogs/success-dialog";
 import { EditableProperty } from "@/types/property";
+import { Field, FieldDescription, FieldLabel } from "./ui/field";
+import { isSellerByEmail } from "@/lib/auth/role";
+import { getIdByEmail, getEmailById } from "@/lib/auth/user";
+import { addImageUrlToProperty } from "@/lib/data/add-property";
 
 export default function EditPropertyForm({ propertyId, role }: { propertyId: number, role: string }) {
     const [loading, setLoading] = useState(false)
@@ -27,12 +31,24 @@ export default function EditPropertyForm({ propertyId, role }: { propertyId: num
     const [stagedImages, setStagedImages] = useState<StagedFiles>();
     const [imagesMarkedForDeletion, setImagesMarkedForDeletion] = useState<string[]>([]);
     const [property, setProperty] = useState<EditableProperty | null>(null);
+    const [sellerEmail, setSellerEmail] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchProperty = async () => {
-            const property = await fetchPropertyDetails(propertyId);
-            if (property) {
-                setProperty(property);
+            try {
+                const property = await fetchPropertyDetails(propertyId);
+                if (property) {
+                    setProperty(property);
+                    if (property.seller_id) {
+                        const email = await getEmailById(property.seller_id);
+                        if (email) {
+                            setSellerEmail(email.email);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching property details", error);
+                setErrorMessage("Failed to fetch property details: " + error);
             }
         };
 
@@ -40,19 +56,30 @@ export default function EditPropertyForm({ propertyId, role }: { propertyId: num
     }, [propertyId]);
 
     /**
- * Handle the form being submitted and update the property details in the database with the new values from the form
- * @param e event object from the form submission
- */
+     * Handle the form being submitted and update the property details in the database with the new values from the form
+     * @param e event object from the form submission
+     */
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         try {
             setLoading(true);
+
+            let sellerId: string | null = null;
+            if (sellerEmail && sellerEmail !== null) {
+                sellerId = await getSellerIdFromEmail();
+                if (!sellerId) {
+                    setLoading(false);
+                    return;
+                }
+            }
             await editProperty(propertyId, {
                 ...property,
                 last_updated_at: new Date().toISOString(),
+                seller_id: sellerId || null
             });
 
             if (stagedImages && propertyId) {
+                await addImageUrlToProperty(propertyId);
                 for (const [category, files] of Object.entries(stagedImages)) {
                     let nextIndex = await getNextIndexInCategory(category, propertyId)
                     for (const file of files) {
@@ -83,6 +110,25 @@ export default function EditPropertyForm({ propertyId, role }: { propertyId: num
         }
     }
 
+    /**
+     * Get the ID of a seller from their email address to link them to the property. This will allow the seller to add additional details to the property listing.
+     * The function checks if the provided email corresponds to a registered seller and if so, fetches their ID and updates the property data with the seller ID.
+     * @returns The seller Id, or null if the email is null, or false if the email does not correspond to a valid seller
+     */
+    async function getSellerIdFromEmail() {
+        if (sellerEmail === null) {
+            return null;
+        }
+        const isSeller = await isSellerByEmail(sellerEmail);
+        if (!isSeller) {
+            setErrorMessage("The provided email does not correspond to a seller.");
+            setLoading(false);
+            return null;
+        }
+        const sellerId = await getIdByEmail(sellerEmail);
+        return sellerId.id;
+    }
+
     return (
         <div>
             <LoadingDialog loading={loading} page={"Editing"} />
@@ -97,6 +143,27 @@ export default function EditPropertyForm({ propertyId, role }: { propertyId: num
                     <CardContent>
                         {property ? (
                             <div className="flex flex-col gap-8">
+
+                                <div>
+                                    <Field>
+                                        <FieldLabel className="text-xl">Link a Seller</FieldLabel>
+                                        <InputGroup className="ml-2 w-max cursor-pointer">
+                                            <InputGroupInput
+                                                id="sellerEmail"
+                                                placeholder="Seller's Email"
+                                                value={sellerEmail ?? ""}
+                                                onChange={e => setSellerEmail(e.target.value || null)}
+                                                className="border-none cursor-pointer"
+                                            />
+                                        </InputGroup>
+                                        <FieldDescription className="pt-0 mt-0 ml-2">
+                                            Optionally, you can link a seller to the property by entering their email address. This will allow the seller to add additional details to the property listing. The seller will not be able to edit the property details, however will be able to add additional information which will be visible to buyers.
+                                            <br /><br />
+                                            To register a seller, please go to <a href="/estate-agent/portal/manage-sellers" target="_blank" className="text-blue-500 underline">Portal -&gt; Manage Sellers</a> and click on the "Add Seller" button. Once the seller is registered, you can return to this form and enter their email address to link them to the property.
+                                        </FieldDescription>
+                                    </Field>
+                                </div>
+
                                 <div>
                                     <Label className="py-2 text-xl" htmlFor="title">Title</Label>
                                     <p className="text-muted-foreground text-sm mb-2">Enter the title of the property. This will be displayed to users before they click on a property. It should include the address, property type, and other relevant information.</p>

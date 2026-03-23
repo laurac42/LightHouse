@@ -45,7 +45,7 @@ export async function editStatus(propertyId: number, newStatus: string) {
  * @param features array of features for the property
  * @param setProperty function to update the property state
  */
-export function removeFeatureEditable(index: number, features: string[], setProperty: React.Dispatch<React.SetStateAction<EditableProperty | null>> ) {
+export function removeFeatureEditable(index: number, features: string[], setProperty: React.Dispatch<React.SetStateAction<EditableProperty | null>>) {
     const newFeatures = [...features];
     newFeatures.splice(index, 1);
     setProperty((prev) => prev ? { ...prev, features: newFeatures } : null);
@@ -57,8 +57,20 @@ export function removeFeatureEditable(index: number, features: string[], setProp
  * @param features array of features for the property
  * @param setProperty function to update the property state
  */
-export function removeFeatureAddable(index: number, features: string[], setProperty: React.Dispatch<React.SetStateAction<AddableProperty>> ) {
+export function removeFeatureAddable(index: number, features: string[], setProperty: React.Dispatch<React.SetStateAction<AddableProperty>>) {
     const newFeatures = [...features];
     newFeatures.splice(index, 1);
     setProperty((prev) => ({ ...prev, features: newFeatures }));
+}
+
+export async function updateSellerAddedInfo(propertyId: number, sellerDetails: string, reason: string) {
+    const supabase = await createClient();
+    const { error } = await supabase
+        .from("property_seller_info")
+        .update({ seller_description: sellerDetails, reason_for_selling: reason })
+        .eq("id", propertyId);
+
+    if (error) {
+        throw error;
+    }
 }

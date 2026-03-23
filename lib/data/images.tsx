@@ -24,13 +24,15 @@ export async function getImagesFromStorage(id: number) {
  * @param propertyId Id of the property to upload the image for
  * @param file The image file to upload
  * @param filename The name to give the file in storage (without extension, category and index will be added to this)
+ * @param sellerImage Whether the image is a seller image
  */
-export async function uploadImageToStorage(propertyId: number, file: File, filename: string) {
+export async function uploadImageToStorage(propertyId: number, file: File, filename: string, sellerImage = false) {
     const supabase = await createClient();
     const fileType = file.type || "image/png"; // default to png if type is not available
-    console.log(fileType)
+    const path = sellerImage ? `properties/${propertyId}/seller/${filename}` : `properties/${propertyId}/${filename}`;
+
     const { error } = await supabase.storage.from("lighthouse-bucket")
-    .upload(`properties/${propertyId}/${filename}.${fileType.replace("image/", "")}`, file, {
+    .upload(path, file, {
             contentType: `${fileType}`,
         });
     
@@ -44,11 +46,14 @@ export async function uploadImageToStorage(propertyId: number, file: File, filen
  * @param propertyId Id of the property 
  * @param filename Name of the file to delete the image 
  */
-export async function deleteImageFromStorage(propertyId: number, filename: string) {
+export async function deleteImageFromStorage(propertyId: number, filename: string, sellerImage = false) {
     const supabase = await createClient();
+    const path = sellerImage ? `properties/${propertyId}/seller/${filename}` : `properties/${propertyId}/${filename}`;
+    
+    console.log("Deleting image at path: ", path);  
     const { error } = await supabase.storage
         .from("lighthouse-bucket")
-        .remove([`properties/${propertyId}/${filename}`]);
+        .remove([path]);
 
     if (error) {
         throw error;
@@ -82,4 +87,15 @@ export async function getNextIndexInCategory(category: string, propertyId: numbe
     }
     
     return maxIndex;
+}
+
+export async function loadSellerImages(propertyId: number) {
+    const supabase = await createClient();
+    const { data, error } = await supabase.storage.from("lighthouse-bucket")
+        .list(`properties/${propertyId}/seller`);
+    if (error) {
+        throw error;
+    }
+
+    return data?.map((item) => item.name) || [];
 }
