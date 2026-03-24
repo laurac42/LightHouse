@@ -1,5 +1,5 @@
 "use client";
-import { validateUser, fetchUserDetails, fetchUserPreferences, updateUserDetails } from "@/lib/auth/user";
+import { validateUser, fetchUserDetails, fetchUserPreferences, updateUserDetails, updateUserPreferences } from "@/lib/auth/user";
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation";
 import type { User, UserPreferences } from "@/types/user";
@@ -89,6 +89,20 @@ export default function ProfilePage() {
             setSuccessMessage("User details successfully updated");
         } catch (error) {
             setErrorMessage("Unable to update details: " + error);
+        }
+    }
+
+    // save preference update changes
+    async function savePreferences() {
+        try {
+            setErrorMessage("");
+            setSuccessMessage("");
+            if (userPreferences) {
+                await updateUserPreferences(userPreferences);
+            }
+            setSuccessMessage("User preferences successfully updated");
+        } catch (error) {
+            setErrorMessage("Unable to update preferences: " + error);
         }
     }
 
@@ -240,18 +254,52 @@ export default function ProfilePage() {
                                                         <Button onClick={() => { setEditing(!editing); if (editing) { saveChanges() } else { setErrorMessage(""); setSuccessMessage(""); } }} className="w-1/4 ml-auto bg-buttonColor text-foreground hover:bg-buttonHover">{editing ? 'Save Changes' : 'Edit Details'}</Button>
                                                     </div>
                                                     <p>Set your property preferences to help us find you your perfect home.</p>
-                                                    <div>
-                                                        <Label className="text-sm text-foreground/80">Budget</Label>
-                                                        <Label className="text-md w-full p-2 py-1 rounded-md m-2">{'£ ' + userPreferences?.budget?.toLocaleString() || 'No budget set'}</Label>
-                                                    </div>
-                                                    <div>
-                                                        <Label className="text-sm text-foreground/80">Family Size</Label>
-                                                        <Label className="text-md w-full p-2 py-1 rounded-md m-2">{userPreferences?.family_size || 'No family size set'}</Label>
-                                                    </div>
-                                                    <div>
-                                                        <Label className="text-sm text-foreground/80">Preferred Number of Bedrooms</Label>
-                                                        <Label className="text-md w-full p-2 py-1 rounded-md m-2">{userPreferences?.preferred_num_bedrooms || 'No number of bedrooms set'}</Label>
-                                                    </div>
+
+                                                    {editing ? (
+                                                        <Field>
+                                                            <FieldLabel className="text-sm text-foreground/80">Budget</FieldLabel>
+                                                            <Input
+                                                                value={userPreferences?.budget ?? ""}
+                                                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUserPreferences({ ...userPreferences, budget: e.target.value ? Number(e.target.value) : null } as UserPreferences)}
+                                                                className="ml-2"
+                                                            />
+                                                        </Field>
+                                                    ) : (
+                                                        <div>
+                                                            <Label className="text-sm text-foreground/80">Budget</Label>
+                                                            <Label className="text-md w-full p-2 py-1 rounded-md m-2">{'£ ' + userPreferences?.budget?.toLocaleString() || 'No budget set'}</Label>
+                                                        </div>
+                                                    )}
+                                                    {editing ? (
+                                                        <Field>
+                                                            <FieldLabel className="text-sm text-foreground/80">Family Size</FieldLabel>
+                                                            <Input
+                                                                value={userPreferences?.family_size ?? ""}
+                                                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUserPreferences({ ...userPreferences, family_size: e.target.value ? Number(e.target.value) : null } as UserPreferences)}
+                                                                className="ml-2"
+                                                            />
+                                                        </Field>
+                                                    ) : (
+                                                        <div>
+                                                            <Label className="text-sm text-foreground/80">Family Size</Label>
+                                                            <Label className="text-md w-full p-2 py-1 rounded-md m-2">{userPreferences?.family_size || 'No family size set'}</Label>
+                                                        </div>
+                                                    )}
+                                                    {editing ? (
+                                                        <Field>
+                                                            <FieldLabel className="text-sm text-foreground/80">Preferred Number of Bedrooms</FieldLabel>
+                                                            <Input
+                                                                value={userPreferences?.preferred_num_bedrooms ?? ""}
+                                                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUserPreferences({ ...userPreferences, preferred_num_bedrooms: e.target.value ? Number(e.target.value) : null } as UserPreferences)}
+                                                                className="ml-2"
+                                                            />
+                                                        </Field>
+                                                    ) : (
+                                                        <div>
+                                                            <Label className="text-sm text-foreground/80">Preferred Number of Bedrooms</Label>
+                                                            <Label className="text-md w-full p-2 py-1 rounded-md m-2">{userPreferences?.preferred_num_bedrooms || 'No number of bedrooms set'}</Label>
+                                                        </div>
+                                                    )}
 
                                                     <div className="flex flex-col gap-2">
                                                         <FieldSet>
@@ -362,7 +410,7 @@ export default function ProfilePage() {
                                                     </div>
                                                     <div className="flex flex-col gap-2">
                                                         {editing ?
-                                                            <FieldGroup>
+                                                            <FieldGroup className="mt-4 text-foreground/80" >
                                                                 <Field>
                                                                     <FieldLabel htmlFor="locations-input">Are there any specific locations you're interested in?</FieldLabel>
                                                                     <InputGroup>
@@ -393,35 +441,32 @@ export default function ProfilePage() {
                                                                 <Label className="text-sm text-foreground/80 mt-4">Preferred Locations</Label>
                                                             )}
                                                         {(userPreferences?.preferred_locations ?? []).length > 0 ?
-                                                            (<div className="flex flex-wrap gap-2">
+                                                            (<div className="flex flex-wrap gap-2 mb-8">
                                                                 {(userPreferences?.preferred_locations ?? []).map((location, index) => (
                                                                     <Badge key={index} variant="outline" className="bg-midBlue text-foreground border-foreground">
                                                                         {location}
+                                                                        {editing &&
                                                                         <Button variant="ghost" size="sm" className="ml-2 h-4 w-4 p-0" onClick={() => {
                                                                             if (userPreferences) {
                                                                                 setUserPreferences({ ...userPreferences, preferred_locations: (userPreferences.preferred_locations || []).filter((_, i) => i !== index) });
                                                                             }
                                                                         }}>
                                                                             X
-                                                                        </Button>
+                                                                        </Button>}
                                                                     </Badge>
                                                                 ))}
                                                             </div>) : (
-                                                                <Label className="text-md w-full p-2 py-1 rounded-md m-2">No preferred locations set </Label>
+                                                                <Label className="text-md w-full p-2 py-1 rounded-md m-2 mb-8">No preferred locations set </Label>
                                                             )}
-
                                                     </div>
                                                 </div>
-
                                             ) : (
                                                 <div className="flex flex-col gap-4 w-1/2">
                                                     <h2 className="text-xl ">Buyer Preferences</h2>
                                                     <p>Select 'Buying' as a goal to set buyer preferences.</p>
                                                 </div>
                                             )}
-
                                         </>
-
                                     }
                                 </div>
                             </div>
