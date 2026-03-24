@@ -44,15 +44,20 @@ export default function ManageEstateAgentsPage() {
 
   useEffect(() => {
     async function checkAdmin() {
-      const user = await validateUser();
-      if (!user) {
-        router.push("/public/home");
-        return;
-      }
-      setUser(user);
-      console.log("user: ", user)
-      const admin = await isAdmin();
-      if (!admin) {
+      try {
+        const user = await validateUser();
+        if (!user) {
+          router.push("/public/home");
+          return;
+        }
+        setUser(user);
+        console.log("user: ", user)
+        const admin = await isAdmin();
+        if (!admin) {
+          router.push("/public/home");
+        }
+      } catch (error) {
+        console.error("Error validating admin access:", error);
         router.push("/public/home");
       }
     }

@@ -33,13 +33,18 @@ function PropertyDetailsPage({ params }: { params: Promise<{ id: number }> }) {
     // check user is authenticated to be on this page
     useEffect(() => {
         async function checkEstateAgent() {
-            const user = await validateUser();
-            if (!user) {
-                router.push("/public/home");
-                return;
-            }
-            const estateAgent = await isEstateAgent();
-            if (!estateAgent) {
+            try {
+                const user = await validateUser();
+                if (!user) {
+                    router.push("/public/home");
+                    return;
+                }
+                const estateAgent = await isEstateAgent();
+                if (!estateAgent) {
+                    router.push("/public/home");
+                }
+            } catch (error) {
+                console.error("Error validating estate agent access:", error);
                 router.push("/public/home");
             }
         }

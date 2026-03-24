@@ -33,14 +33,19 @@ function PropertyDetailsPage({ params }: { params: Promise<{ id: number }> }) {
     // check user is authenticated to be on this page
     useEffect(() => {
         async function checkSeller() {
-            const user = await validateUser();
-            if (!user) {
-            router.push("/public/home");
-            return;
-            }
-            const seller = await isSeller(user.user.id);
-            if (!seller) {
-            router.push("/public/home");
+            try {
+                const user = await validateUser();
+                if (!user) {
+                    router.push("/public/home");
+                    return;
+                }
+                const seller = await isSeller(user.user.id);
+                if (!seller) {
+                    router.push("/public/home");
+                }
+            } catch (error) {
+                console.error("Error validating seller access:", error);
+                router.push("/public/home");
             }
         }
         checkSeller();

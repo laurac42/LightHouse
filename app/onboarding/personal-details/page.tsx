@@ -39,16 +39,21 @@ export default function PersonalDetails() {
 
   useEffect(() => {
     async function verifyOnboarding() {
-      const status = await CheckOnboarding();
+      try {
+        const status = await CheckOnboarding();
 
-      if (status === "error") {
-        router.push("/");
-      } else if (status === "onboarded") {
-        router.push("/public/home");
+        if (status === "error") {
+          router.push("/");
+        } else if (status === "onboarded") {
+          router.push("/public/home");
+        }
+
+        const agent = await isEstateAgent();
+        setIsAgent(agent);
+      } catch (error) {
+        console.error("Error verifying onboarding:", error);
+        setIsAgent(false);
       }
-
-      const agent = await isEstateAgent();
-      setIsAgent(agent);
     }
 
     verifyOnboarding();

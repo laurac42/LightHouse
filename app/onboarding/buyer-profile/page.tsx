@@ -90,7 +90,7 @@ export default function BuyerProfile() {
                     bungalowChecked ? "bungalow" : null,
                     landChecked ? "land" : null,
                     commercialChecked ? "commercial" : null,
-                ].filter(Boolean),
+                ].filter(Boolean) as string[],
                 p_preferred_locations: locations,
             });
 

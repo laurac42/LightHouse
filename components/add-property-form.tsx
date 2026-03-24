@@ -189,14 +189,20 @@ export default function AddPropertyForm({ role, id }: { role: "admin" | "estate-
         if (sellerEmail === null) {
             return null;
         }
-        const isSeller = await isSellerByEmail(sellerEmail);
-        if (!isSeller) {
-            setErrorMessage("The provided email does not correspond to a seller.");
+        try {
+            const isSeller = await isSellerByEmail(sellerEmail);
+            if (!isSeller) {
+                setErrorMessage("The provided email does not correspond to a seller.");
+                setLoading(false);
+                return null;
+            }
+            const sellerId = await getIdByEmail(sellerEmail);
+            return sellerId.id;
+        } catch (error) {
+            setErrorMessage("Unable to validate seller email. Please try again.");
             setLoading(false);
             return null;
         }
-        const sellerId = await getIdByEmail(sellerEmail);
-        return sellerId.id;
     }
 
     return (

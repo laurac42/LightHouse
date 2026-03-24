@@ -20,16 +20,22 @@ export default function AdminPortalPage() {
 
     useEffect(() => {
         async function checkAdmin() {
-            const user = await validateUser();
-            if (!user) {
+            try {
+                const user = await validateUser();
+                if (!user) {
+                    router.push("/public/home");
+                    return;
+                }
+                const admin = await isAdmin();
+                if (!admin) {
+                    router.push("/public/home");
+                    return;
+                }
+                setUser(user.user.id);
+            } catch (error) {
+                console.error("Error validating admin access:", error);
                 router.push("/public/home");
-                return;
             }
-            const admin = await isAdmin();
-            if (!admin) {
-                router.push("/public/home");
-            }
-            setUser(user.user.id);
         }
 
         checkAdmin();

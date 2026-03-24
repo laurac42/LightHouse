@@ -48,14 +48,19 @@ export default function SellerPropertiesPage() {
 
     useEffect(() => {
         async function checkSeller() {
-            const user = await validateUser();
-            if (!user) {
-                router.push("/public/home");
-                return;
-            }
-            setUser(user);
-            const seller = await isSeller(user.user.id);
-            if (!seller) {
+            try {
+                const user = await validateUser();
+                if (!user) {
+                    router.push("/public/home");
+                    return;
+                }
+                setUser(user);
+                const seller = await isSeller(user.user.id);
+                if (!seller) {
+                    router.push("/public/home");
+                }
+            } catch (error) {
+                console.error("Error validating seller access:", error);
                 router.push("/public/home");
             }
         }
