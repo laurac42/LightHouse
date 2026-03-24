@@ -7,12 +7,13 @@ import Navbar from "@/components/navbar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { FieldLabel, Field, FieldDescription, FieldSet, FieldLegend, FieldGroup } from "@/components/ui/field";
+import { FieldLabel, Field, FieldSet, FieldLegend, FieldGroup } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { isAdmin, isEstateAgent } from "@/lib/auth/role";
 import { Checkbox } from "@/components/ui/checkbox";
 import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupButton } from "@/components/ui/input-group";
 import { Badge } from "@/components/ui/badge";
+import ConfirmDeletion from "@/components/dialogs/confirm-deletion";
 
 export default function ProfilePage() {
     const router = useRouter();
@@ -24,6 +25,7 @@ export default function ProfilePage() {
     const [profileOption, setProfileOption] = useState<string>("profile");
     const [isAdminOrAgent, setIsAdminOrAgent] = useState<boolean>(false);
     const [inputLocation, setInputLocation] = useState<string>("");
+    const [confirm, setConfirm] = useState<boolean>(false);
 
     useEffect(() => {
         async function checkUser() {
@@ -119,6 +121,7 @@ export default function ProfilePage() {
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
+                            <ConfirmDeletion confirm={confirm} setConfirm={setConfirm}/>
                             <div className="flex flex-row gap-8">
                                 <div className="flex flex-col">
                                     <Button onClick={() => { setProfileOption("profile"); setErrorMessage(""); setSuccessMessage(""); }} variant={"ghost"} className={`rounded-none border-b-2 px-3 ${profileOption === "profile"
@@ -190,6 +193,13 @@ export default function ProfilePage() {
                                             {errorMessage && <p className="text-red-600">{errorMessage}</p>}
                                             {successMessage && <p className="text-green-600">{successMessage}</p>}
                                             <Button onClick={() => { setEditing(!editing); if (editing) { saveChanges() } else { setErrorMessage(""); setSuccessMessage(""); } }} className="w-1/3 ml-auto bg-buttonColor text-foreground hover:bg-buttonHover">{editing ? 'Save Changes' : 'Edit Details'}</Button>
+
+                                            <div className="bg-red-100 border border-red-600 rounded-md my-8 p-4">
+                                                <h1 className="text-lg font-bold mb-4">Danger Zone</h1>
+
+                                                <p className="text-sm mb-3">Warning!! This action will permanently delete your profile</p>
+                                                <Button onClick={() => setConfirm(true)} className="bg-red-600 hover:bg-red-700">Delete Profile</Button>
+                                            </div>
                                         </div>
                                     }
                                     {profileOption === "goals" &&
@@ -251,7 +261,7 @@ export default function ProfilePage() {
                                                 <div className="flex flex-col gap-4 w-full ml-8">
                                                     <div className="flex flex-row justify-between items-center">
                                                         <h2 className="text-2xl">Buyer Preferences</h2>
-                                                        <Button onClick={() => { setEditing(!editing); if (editing) { saveChanges() } else { setErrorMessage(""); setSuccessMessage(""); } }} className="w-1/4 ml-auto bg-buttonColor text-foreground hover:bg-buttonHover">{editing ? 'Save Changes' : 'Edit Details'}</Button>
+                                                        <Button onClick={() => { setEditing(!editing); if (editing) { savePreferences() } else { setErrorMessage(""); setSuccessMessage(""); } }} className="w-1/4 ml-auto bg-buttonColor text-foreground hover:bg-buttonHover">{editing ? 'Save Changes' : 'Edit Details'}</Button>
                                                     </div>
                                                     <p>Set your property preferences to help us find you your perfect home.</p>
 
@@ -446,13 +456,13 @@ export default function ProfilePage() {
                                                                     <Badge key={index} variant="outline" className="bg-midBlue text-foreground border-foreground">
                                                                         {location}
                                                                         {editing &&
-                                                                        <Button variant="ghost" size="sm" className="ml-2 h-4 w-4 p-0" onClick={() => {
-                                                                            if (userPreferences) {
-                                                                                setUserPreferences({ ...userPreferences, preferred_locations: (userPreferences.preferred_locations || []).filter((_, i) => i !== index) });
-                                                                            }
-                                                                        }}>
-                                                                            X
-                                                                        </Button>}
+                                                                            <Button variant="ghost" size="sm" className="ml-2 h-4 w-4 p-0" onClick={() => {
+                                                                                if (userPreferences) {
+                                                                                    setUserPreferences({ ...userPreferences, preferred_locations: (userPreferences.preferred_locations || []).filter((_, i) => i !== index) });
+                                                                                }
+                                                                            }}>
+                                                                                X
+                                                                            </Button>}
                                                                     </Badge>
                                                                 ))}
                                                             </div>) : (
