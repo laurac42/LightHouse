@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/client"
+import type { User } from "@/types/user";
 
 /**
  * Checks if the user is authenticated by attempting to fetch their details from Supabase. 
@@ -56,4 +57,40 @@ export async function getEmailById(id: string) {
         throw error;
     }
     return userEmail;
+}
+
+/**
+ * Fetch a user's basic details (name and email address) 
+ * @param userId Id of the user to fetch details for
+ * @returns User first name, last name and email address
+ */
+export async function fetchUserDetails(userId: string) {
+    const supabase = await createClient();
+    const { data: userDetails, error } = await supabase
+        .from('users')
+        .select('first_name, last_name, email')
+        .eq('id', userId)
+        .maybeSingle();
+
+    if (error) {
+        throw error;
+    }
+    return userDetails;
+}
+
+/**
+ * Update a user's details (name) by their id
+ * @param user user to update details of
+ */
+export async function updateUserDetails(user: User) {
+    const supabase = await createClient();
+    console.log("user to update: ", user)
+    const {error} = await supabase
+    .from("users")
+    .update({ first_name: user.first_name, last_name: user.last_name })
+    .eq('id', user.id);
+
+    if (error) {
+        throw error;
+    }
 }

@@ -141,7 +141,7 @@ export default function Navbar() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
                                 <DropdownMenuGroup>
-                                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                                    <DropdownMenuLabel><Link href="/protected/profile">My Account</Link></DropdownMenuLabel>
                                     <DropdownMenuItem>Favourites</DropdownMenuItem>
                                 </DropdownMenuGroup>
                                 <DropdownMenuSeparator />
@@ -168,7 +168,7 @@ export default function Navbar() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
                                 <DropdownMenuGroup>
-                                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                                    <DropdownMenuLabel><Link href="/protected/profile">My Account</Link></DropdownMenuLabel>
                                     <DropdownMenuItem>Favourites</DropdownMenuItem>
                                 </DropdownMenuGroup>
                                 <DropdownMenuSeparator />
