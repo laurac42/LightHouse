@@ -10,21 +10,32 @@ import { Input } from "@/components/ui/input";
 import { FieldLabel, Field, FieldDescription } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { updateUserDetails } from "@/lib/auth/user";
+import { isAdmin, isEstateAgent } from "@/lib/auth/role";
 
 export default function ProfilePage() {
     const router = useRouter();
     const [userDetails, setUserDetails] = useState<User>();
     const [editing, setEditing] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string>("")
+    const [profileOption, setProfileOption] = useState<string>("profile")
+    const [isAdminOrAgent, setIsAdminOrAgent] = useState<boolean>(false);
 
     useEffect(() => {
         async function checkUser() {
-            const user = await validateUser();
-            if (!user || !user.user.id) {
-                router.push("/public/home");
-                return;
+            try {
+                const user = await validateUser();
+                if (!user || !user.user.id) {
+                    router.push("/public/home");
+                    return;
+                }
+                setUserDetails({ ...userDetails, id: user.user.id } as User);
+
+                const admin = await isAdmin();
+                const agent = await isEstateAgent();
+            } catch (error) {
+                console.error("Error fetching user");
             }
-            setUserDetails({ ...userDetails, id: user.user.id } as User);
+            
         }
         checkUser();
     }, [router]);
@@ -45,6 +56,7 @@ export default function ProfilePage() {
         fetchProfile();
     }, [userDetails?.id])
 
+    // get users intiials to display in profile icon
     function getInitials() {
         if (!userDetails) return "";
         const firstInitial = userDetails.first_name ? userDetails.first_name.charAt(0).toUpperCase() : "";
@@ -52,14 +64,15 @@ export default function ProfilePage() {
         return firstInitial + lastInitial;
     }
 
+    // save users update changes
     async function saveChanges() {
         try {
+            setErrorMessage("");
             if (userDetails) {
-                await updateUserDetails(userDetails)
-                console.log("saved details")
+                await updateUserDetails(userDetails);
             }
         } catch (error) {
-            setErrorMessage("Unable to update details: " + error)
+            setErrorMessage("Unable to update details: " + error);
         }
     }
 
@@ -77,49 +90,89 @@ export default function ProfilePage() {
                         </CardHeader>
                         <CardContent>
                             <div className="flex flex-row gap-8">
-                                <div className="w-48 h-48 flex rounded-full bg-navBar border border-highlight text-highlight text-5xl flex items-center justify-center mb-4 ">
-                                    {getInitials()}
+                                <div className="flex flex-col">
+                                    <Button onClick={() => setProfileOption("profile")} variant={"ghost"} className={`rounded-none border-b-2 px-3 ${profileOption === "profile"
+                                        ? "border-buttonColor text-foreground hover:bg-buttonColor/70"
+                                        : "border-transparent text-muted-foreground hover:text-foreground hover:bg-buttonColor/70"
+                                        }`}>Profile</Button>
+                                    {/** Agents and admin should not have goals or buyer preferences */}
+                                    <Button onClick={() => setProfileOption("goals")} variant={"ghost"} className={`rounded-none border-b-2 px-3 ${profileOption === "goals"
+                                        ? "border-buttonColor text-foreground hover:bg-buttonColor/70"
+                                        : "border-transparent text-muted-foreground hover:text-foreground hover:bg-buttonColor/70"
+                                        }`}>Goals</Button>
+                                    <Button onClick={() => setProfileOption("preferences")} variant={"ghost"} className={`rounded-none border-b-2 px-3 ${profileOption === "preferences"
+                                        ? "border-buttonColor text-foreground hover:bg-buttonColor/70"
+                                        : "border-transparent text-muted-foreground hover:text-foreground hover:bg-buttonColor/70"
+                                        }`}>Preferences</Button>
                                 </div>
-                                <div className="flex flex-col gap-4 w-1/2">
-                                    <div>
-                                        <Label>Email Address</Label>
-                                        <Label className="border border-gray-400 w-full p-2 py-3 rounded-md m-2">{userDetails?.email}</Label>
+                                <div className="flex flex-row gap-8 w-full">
+                                    <div className="flex flex-col items-center">
+                                        <div className="w-48 h-48 flex rounded-full bg-navBar border border-highlight text-highlight text-5xl flex items-center justify-center mb-4 ">
+                                            {getInitials()}
+                                        </div>
+                                        <Label className="text-center text-lg">{userDetails?.first_name} {userDetails?.last_name}</Label>
                                     </div>
-                                    {editing ? (
-                                        <>
-                                            <Field>
-                                                <FieldLabel>First Name</FieldLabel>
-                                                <Input
-                                                    value={userDetails?.first_name}
-                                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUserDetails({ ...userDetails, first_name: e.target.value } as User)}
-                                                    className="ml-2"
-                                                />
-                                            </Field>
-                                            <Field>
-                                                <FieldLabel>Last Name</FieldLabel>
-                                                <Input
-                                                    value={userDetails?.last_name}
-                                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUserDetails({ ...userDetails, last_name: e.target.value } as User)}
-                                                    className="ml-2"
-                                                />
-                                            </Field>
-                                        </>
-                                    ) : (
-                                        <>
+                                    {profileOption === "profile" &&
+                                        <div className="flex flex-col gap-4 w-1/2">
                                             <div>
-                                                <Label>First Name </Label>
-                                                <Label className="border border-gray-400 w-full p-2 py-3 rounded-md m-2">{userDetails?.first_name}</Label>
+                                                <Label>Email Address</Label>
+                                                <Label className="border border-gray-400 w-full p-2 py-3 rounded-md m-2">{userDetails?.email}</Label>
                                             </div>
+                                            {editing ? (
+                                                <>
+                                                    <Field>
+                                                        <FieldLabel>First Name</FieldLabel>
+                                                        <Input
+                                                            value={userDetails?.first_name}
+                                                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUserDetails({ ...userDetails, first_name: e.target.value } as User)}
+                                                            className="ml-2"
+                                                        />
+                                                    </Field>
+                                                    <Field>
+                                                        <FieldLabel>Last Name</FieldLabel>
+                                                        <Input
+                                                            value={userDetails?.last_name}
+                                                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUserDetails({ ...userDetails, last_name: e.target.value } as User)}
+                                                            className="ml-2"
+                                                        />
+                                                    </Field>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <div>
+                                                        <Label>First Name </Label>
+                                                        <Label className="border border-gray-400 w-full p-2 py-3 rounded-md m-2">{userDetails?.first_name}</Label>
+                                                    </div>
+                                                    <div>
+                                                        <Label>Last Name </Label>
+                                                        <Label className="border border-gray-400 w-full p-2 py-3 rounded-md m-2">{userDetails?.last_name}</Label>
+                                                    </div>
+                                                </>
+
+                                            )}
+
+                                            {errorMessage && <p className="text-red-600">{errorMessage}</p>}
+                                            <Button onClick={() => { setEditing(!editing); if (editing) { saveChanges() } }} className="w-1/4 ml-auto bg-buttonColor text-foreground hover:bg-buttonHover">{editing ? 'Save Changes' : 'Edit Details'}</Button>
+                                        </div>
+                                    }
+                                    {profileOption === "goals" &&
+                                        <div className="flex flex-col gap-4 w-1/2">
                                             <div>
-                                                <Label>Last Name </Label>
-                                                <Label className="border border-gray-400 w-full p-2 py-3 rounded-md m-2">{userDetails?.last_name}</Label>
+                                                <Label>Your Goals</Label>
+                                                {userDetails?.user_goals && userDetails.user_goals.length > 0 ? (
+                                                    <div className="space-y-2 mt-2">
+                                                        {userDetails.user_goals.map((goal, index) => (
+                                                            <div key={index} className="border border-gray-400 p-3 rounded-md">
+                                                                <p className="font-medium">{goal}</p>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                ) : (
+                                                    <p className="text-muted-foreground mt-2">No goals set yet</p>
+                                                )}
                                             </div>
-                                        </>
-
-                                    )}
-
-                                    {errorMessage && <p className="text-red-600">{errorMessage}</p>}
-                                    <Button onClick={() => { setEditing(!editing); if (editing) { saveChanges() } }} className="w-1/4 ml-auto bg-buttonColor text-foreground hover:bg-buttonHover">{editing ? 'Save Changes' : 'Edit Details'}</Button>
+                                        </div>
+                                    }
                                 </div>
                             </div>
                         </CardContent>

@@ -68,7 +68,7 @@ export async function fetchUserDetails(userId: string) {
     const supabase = await createClient();
     const { data: userDetails, error } = await supabase
         .from('users')
-        .select('first_name, last_name, email')
+        .select('first_name, last_name, email, user_goals')
         .eq('id', userId)
         .maybeSingle();
 
