@@ -15,13 +15,18 @@ export function EditStatus({ params }: { params: Promise<{ id: number }> }) {
     // check user is authenticated to be on this page
     useEffect(() => {
         async function checkAgent() {
-            const user = await validateUser();
-            if (!user) {
-                router.push("/public/home");
-                return;
-            }
-            const agent = await isEstateAgent();
-            if (!agent) {
+            try {
+                const user = await validateUser();
+                if (!user) {
+                    router.push("/public/home");
+                    return;
+                }
+                const agent = await isEstateAgent();
+                if (!agent) {
+                    router.push("/public/home");
+                }
+            } catch (error) {
+                console.error("Error validating estate agent access:", error);
                 router.push("/public/home");
             }
         }

@@ -19,13 +19,18 @@ export default function SellerPortalPage() {
 
     useEffect(() => {
         async function checkEstateAgent() {
-            const user = await validateUser();
-            if (!user) {
-                router.push("/public/home");
-                return;
-            }
-            const seller = await isSeller(user.user.id);
-            if (!seller) {
+            try {
+                const user = await validateUser();
+                if (!user) {
+                    router.push("/public/home");
+                    return;
+                }
+                const seller = await isSeller(user.user.id);
+                if (!seller) {
+                    router.push("/public/home");
+                }
+            } catch (error) {
+                console.error("Error validating seller access:", error);
                 router.push("/public/home");
             }
         }

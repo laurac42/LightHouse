@@ -9,25 +9,30 @@ const supabaseAdmin = createClient(
 );
 
 export async function POST(req: Request) {
-    const { email, selectedLocationId, grantedBy } = await req.json();
-    const origin = new URL(req.url).origin;
-    // check if user is an admin
-    if (!grantedBy || !(await isAdminById(grantedBy))) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    const { error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
-        redirectTo: `${origin}/auth/accept-invite`,
-        data: {
-            invited: true,
-            role: "agent",
-            location_id: selectedLocationId,
-            granted_by: grantedBy,
-        },
-    });
+    try {
+        const { email, selectedLocationId, grantedBy } = await req.json();
+        const origin = new URL(req.url).origin;
+        // check if user is an admin
+        if (!grantedBy || !(await isAdminById(grantedBy))) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+        const { error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
+            redirectTo: `${origin}/auth/accept-invite`,
+            data: {
+                invited: true,
+                role: "agent",
+                location_id: selectedLocationId,
+                granted_by: grantedBy,
+            },
+        });
 
-    if (error) {
-        return NextResponse.json({ error: error.message }, { status: 400 });
-    }
+        if (error) {
+            return NextResponse.json({ error: error.message }, { status: 400 });
+        }
 
-    return NextResponse.json({ message: "Invitation sent" });
+        return NextResponse.json({ message: "Invitation sent" });
+    } catch (error) {
+        console.error("Error processing agent invite:", error);
+        return NextResponse.json({ error: "Failed to process invite" }, { status: 500 });
+    }
 }
