@@ -79,12 +79,30 @@ export async function fetchUserDetails(userId: string) {
 }
 
 /**
+ * Fetch user preferences from the buyer profiles table for a given user ID
+ * @param userId 
+ * @returns 
+ */
+export async function fetchUserPreferences(userId: string) {
+    const supabase = await createClient();
+    const { data: userPreferences, error } = await supabase
+        .from("buyer_profiles")
+        .select("*")
+        .eq("id", userId)
+        .maybeSingle();
+    
+    if (error) {
+        throw error;
+    }
+    return userPreferences;
+}
+
+/**
  * Update a user's details (name) by their id
  * @param user user to update details of
  */
 export async function updateUserDetails(user: User) {
     const supabase = await createClient();
-    console.log("user to update: ", user)
     const {error} = await supabase
     .from("users")
     .update({ first_name: user.first_name, last_name: user.last_name, user_goals: user.user_goals })

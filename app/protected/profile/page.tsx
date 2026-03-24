@@ -1,25 +1,29 @@
 "use client";
-import { validateUser, fetchUserDetails } from "@/lib/auth/user";
+import { validateUser, fetchUserDetails, fetchUserPreferences, updateUserDetails } from "@/lib/auth/user";
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation";
-import type { User } from "@/types/user";
+import type { User, UserPreferences } from "@/types/user";
 import Navbar from "@/components/navbar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { FieldLabel, Field, FieldDescription, FieldSet, FieldLegend, FieldGroup } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
-import { updateUserDetails } from "@/lib/auth/user";
 import { isAdmin, isEstateAgent } from "@/lib/auth/role";
 import { Checkbox } from "@/components/ui/checkbox";
+import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupButton } from "@/components/ui/input-group";
+import { Badge } from "@/components/ui/badge";
 
 export default function ProfilePage() {
     const router = useRouter();
     const [userDetails, setUserDetails] = useState<User>();
+    const [userPreferences, setUserPreferences] = useState<UserPreferences | null>(null);
     const [editing, setEditing] = useState(false);
-    const [errorMessage, setErrorMessage] = useState<string>("")
-    const [profileOption, setProfileOption] = useState<string>("profile")
+    const [errorMessage, setErrorMessage] = useState<string>("");
+    const [successMessage, setSuccessMessage] = useState<string>("");
+    const [profileOption, setProfileOption] = useState<string>("profile");
     const [isAdminOrAgent, setIsAdminOrAgent] = useState<boolean>(false);
+    const [inputLocation, setInputLocation] = useState<string>("");
 
     useEffect(() => {
         async function checkUser() {
@@ -53,6 +57,12 @@ export default function ProfilePage() {
                 if (details) {
                     setUserDetails({ ...userDetails, email: details.email, first_name: details.first_name, last_name: details.last_name, user_goals: details.user_goals } as User);
                 }
+                if (details?.user_goals?.includes('buying')) {
+                    fetchUserPreferences(userDetails.id).then((preferences) => {
+                        setUserPreferences(preferences);
+                        console.log("preferences set")
+                    });
+                }
             } catch (error) {
                 console.error("Failed to fetch user details:", error);
             }
@@ -72,9 +82,11 @@ export default function ProfilePage() {
     async function saveChanges() {
         try {
             setErrorMessage("");
+            setSuccessMessage("");
             if (userDetails) {
                 await updateUserDetails(userDetails);
             }
+            setSuccessMessage("User details successfully updated");
         } catch (error) {
             setErrorMessage("Unable to update details: " + error);
         }
@@ -95,18 +107,18 @@ export default function ProfilePage() {
                         <CardContent>
                             <div className="flex flex-row gap-8">
                                 <div className="flex flex-col">
-                                    <Button onClick={() => setProfileOption("profile")} variant={"ghost"} className={`rounded-none border-b-2 px-3 ${profileOption === "profile"
+                                    <Button onClick={() => { setProfileOption("profile"); setErrorMessage(""); setSuccessMessage(""); }} variant={"ghost"} className={`rounded-none border-b-2 px-3 ${profileOption === "profile"
                                         ? "border-buttonColor text-foreground hover:bg-buttonColor/70"
                                         : "border-transparent text-muted-foreground hover:text-foreground hover:bg-buttonColor/70"
                                         }`}>Profile</Button>
                                     {/** Agents and admin should not have goals or buyer preferences */}
                                     {!isAdminOrAgent &&
                                         <>
-                                            <Button onClick={() => setProfileOption("goals")} variant={"ghost"} className={`rounded-none border-b-2 px-3 ${profileOption === "goals"
+                                            <Button onClick={() => { setProfileOption("goals"); setErrorMessage(""); setSuccessMessage(""); }} variant={"ghost"} className={`rounded-none border-b-2 px-3 ${profileOption === "goals"
                                                 ? "border-buttonColor text-foreground hover:bg-buttonColor/70"
                                                 : "border-transparent text-muted-foreground hover:text-foreground hover:bg-buttonColor/70"
                                                 }`}>Goals</Button>
-                                            <Button onClick={() => setProfileOption("preferences")} variant={"ghost"} className={`rounded-none border-b-2 px-3 ${profileOption === "preferences"
+                                            <Button onClick={() => { setProfileOption("preferences"); setErrorMessage(""); setSuccessMessage(""); }} variant={"ghost"} className={`rounded-none border-b-2 px-3 ${profileOption === "preferences"
                                                 ? "border-buttonColor text-foreground hover:bg-buttonColor/70"
                                                 : "border-transparent text-muted-foreground hover:text-foreground hover:bg-buttonColor/70"
                                                 }`}>Preferences</Button>
@@ -114,22 +126,24 @@ export default function ProfilePage() {
                                     }
                                 </div>
                                 <div className="flex flex-row gap-12 w-full">
-                                    <div className="flex flex-col items-center">
-                                        <div className="w-48 h-48 flex rounded-full bg-navBar border border-highlight text-highlight text-5xl flex items-center justify-center mb-4 ">
-                                            {getInitials()}
+                                    {profileOption !== "preferences" &&
+                                        <div className="flex flex-col items-center">
+                                            <div className="w-48 h-48 flex rounded-full bg-navBar border border-highlight text-highlight text-5xl flex items-center justify-center mb-4 ">
+                                                {getInitials()}
+                                            </div>
+                                            <Label className="text-center text-lg mb-8">{userDetails?.first_name} {userDetails?.last_name}</Label>
                                         </div>
-                                        <Label className="text-center text-lg">{userDetails?.first_name} {userDetails?.last_name}</Label>
-                                    </div>
+                                    }
                                     {profileOption === "profile" &&
                                         <div className="flex flex-col gap-4 w-1/2">
                                             <div>
-                                                <Label>Email Address</Label>
-                                                <Label className="border border-gray-400 w-full p-2 py-3 rounded-md m-2">{userDetails?.email}</Label>
+                                                <Label className="text-sm text-foreground/80">Email Address</Label>
+                                                <Label className="text-md w-full p-2 py-1 rounded-md m-2">{userDetails?.email}</Label>
                                             </div>
                                             {editing ? (
                                                 <>
                                                     <Field>
-                                                        <FieldLabel>First Name</FieldLabel>
+                                                        <FieldLabel className="text-sm text-foreground/80">First Name</FieldLabel>
                                                         <Input
                                                             value={userDetails?.first_name}
                                                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUserDetails({ ...userDetails, first_name: e.target.value } as User)}
@@ -137,7 +151,7 @@ export default function ProfilePage() {
                                                         />
                                                     </Field>
                                                     <Field>
-                                                        <FieldLabel>Last Name</FieldLabel>
+                                                        <FieldLabel className="text-sm text-foreground/80">Last Name</FieldLabel>
                                                         <Input
                                                             value={userDetails?.last_name}
                                                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUserDetails({ ...userDetails, last_name: e.target.value } as User)}
@@ -148,19 +162,20 @@ export default function ProfilePage() {
                                             ) : (
                                                 <>
                                                     <div>
-                                                        <Label>First Name </Label>
-                                                        <Label className="border border-gray-400 w-full p-2 py-3 rounded-md m-2">{userDetails?.first_name}</Label>
+                                                        <Label className="text-sm text-foreground/80">First Name </Label>
+                                                        <Label className="text-md w-full p-2 py-1 rounded-md m-2">{userDetails?.first_name}</Label>
                                                     </div>
                                                     <div>
-                                                        <Label>Last Name </Label>
-                                                        <Label className="border border-gray-400 w-full p-2 py-3 rounded-md m-2">{userDetails?.last_name}</Label>
+                                                        <Label className="text-sm text-foreground/80">Last Name </Label>
+                                                        <Label className="text-md w-full p-2 py-1 rounded-md m-2">{userDetails?.last_name}</Label>
                                                     </div>
                                                 </>
 
                                             )}
 
                                             {errorMessage && <p className="text-red-600">{errorMessage}</p>}
-                                            <Button onClick={() => { setEditing(!editing); if (editing) { saveChanges() } }} className="w-1/3 ml-auto bg-buttonColor text-foreground hover:bg-buttonHover">{editing ? 'Save Changes' : 'Edit Details'}</Button>
+                                            {successMessage && <p className="text-green-600">{successMessage}</p>}
+                                            <Button onClick={() => { setEditing(!editing); if (editing) { saveChanges() } else { setErrorMessage(""); setSuccessMessage(""); } }} className="w-1/3 ml-auto bg-buttonColor text-foreground hover:bg-buttonHover">{editing ? 'Save Changes' : 'Edit Details'}</Button>
                                         </div>
                                     }
                                     {profileOption === "goals" &&
@@ -210,8 +225,203 @@ export default function ProfilePage() {
                                                     </Field>
                                                 </FieldGroup>
                                             </FieldSet>
+
+                                            {errorMessage && <p className="text-red-600">{errorMessage}</p>}
+                                            {successMessage && <p className="text-green-600">{successMessage}</p>}
                                             <Button onClick={() => { setEditing(!editing); if (editing) { saveChanges() } }} className="w-1/3 mt-8 bg-buttonColor text-foreground hover:bg-buttonHover">Save Changes</Button>
                                         </div>
+                                    }
+                                    {profileOption === "preferences" &&
+                                        <>
+                                            {userDetails?.user_goals.includes('buying') ? (
+                                                <div className="flex flex-col gap-4 w-full ml-8">
+                                                    <div className="flex flex-row justify-between items-center">
+                                                        <h2 className="text-2xl">Buyer Preferences</h2>
+                                                        <Button onClick={() => { setEditing(!editing); if (editing) { saveChanges() } else { setErrorMessage(""); setSuccessMessage(""); } }} className="w-1/4 ml-auto bg-buttonColor text-foreground hover:bg-buttonHover">{editing ? 'Save Changes' : 'Edit Details'}</Button>
+                                                    </div>
+                                                    <p>Set your property preferences to help us find you your perfect home.</p>
+                                                    <div>
+                                                        <Label className="text-sm text-foreground/80">Budget</Label>
+                                                        <Label className="text-md w-full p-2 py-1 rounded-md m-2">{'£ ' + userPreferences?.budget?.toLocaleString() || 'No budget set'}</Label>
+                                                    </div>
+                                                    <div>
+                                                        <Label className="text-sm text-foreground/80">Family Size</Label>
+                                                        <Label className="text-md w-full p-2 py-1 rounded-md m-2">{userPreferences?.family_size || 'No family size set'}</Label>
+                                                    </div>
+                                                    <div>
+                                                        <Label className="text-sm text-foreground/80">Preferred Number of Bedrooms</Label>
+                                                        <Label className="text-md w-full p-2 py-1 rounded-md m-2">{userPreferences?.preferred_num_bedrooms || 'No number of bedrooms set'}</Label>
+                                                    </div>
+
+                                                    <div className="flex flex-col gap-2">
+                                                        <FieldSet>
+                                                            <FieldLegend variant="label" className="text-sm text-foreground/80">
+                                                                What property types are you interested in?
+                                                            </FieldLegend>
+                                                            <FieldGroup className="grid grid-cols-2 gap-3">
+                                                                <Field orientation="horizontal">
+                                                                    <Checkbox className="border-foreground text-foreground data-[state=checked]:text-white data-[state=checked]:border-foreground data-[state=checked]:bg-highlight data-[disabled]:opacity-100" id="detached-checkbox" name="detached-checkbox" checked={userPreferences?.preferred_property_types?.includes('detached')}
+                                                                        onCheckedChange={(checked) => {
+                                                                            const updatedPreferences = checked
+                                                                                ? [...(userPreferences?.preferred_property_types || []), "detached"]
+                                                                                : (userPreferences?.preferred_property_types || []).filter(type => type !== "detached");
+                                                                            setUserPreferences({ ...userPreferences, preferred_property_types: updatedPreferences } as UserPreferences);
+                                                                        }}
+                                                                        disabled={!editing}
+                                                                    />
+                                                                    <FieldLabel htmlFor="detached-checkbox" className="font-normal peer-disabled:opacity-100">
+                                                                        Detached
+                                                                    </FieldLabel>
+                                                                </Field>
+                                                                <Field orientation="horizontal">
+                                                                    <Checkbox className="border-foreground text-foreground data-[state=checked]:text-white data-[state=checked]:border-foreground data-[state=checked]:bg-highlight data-[disabled]:opacity-100" id="semi-detached-checkbox" name="semi-detached-checkbox" checked={userPreferences?.preferred_property_types?.includes('semi-detached')}
+                                                                        onCheckedChange={(checked) => {
+                                                                            const updatedPreferences = checked
+                                                                                ? [...(userPreferences?.preferred_property_types || []), "semi-detached"]
+                                                                                : (userPreferences?.preferred_property_types || []).filter(type => type !== "semi-detached");
+                                                                            setUserPreferences({ ...userPreferences, preferred_property_types: updatedPreferences } as UserPreferences);
+                                                                        }}
+                                                                        disabled={!editing}
+                                                                    />
+                                                                    <FieldLabel htmlFor="semi-detached-checkbox" className="font-normal peer-disabled:opacity-100">
+                                                                        Semi-detached
+                                                                    </FieldLabel>
+                                                                </Field>
+                                                                <Field orientation="horizontal">
+                                                                    <Checkbox className="border-foreground text-foreground data-[state=checked]:text-white data-[state=checked]:border-foreground data-[state=checked]:bg-highlight data-[disabled]:opacity-100" id="terraced-checkbox" name="terraced-checkbox" checked={userPreferences?.preferred_property_types?.includes('terraced')}
+                                                                        onCheckedChange={(checked) => {
+                                                                            const updatedPreferences = checked
+                                                                                ? [...(userPreferences?.preferred_property_types || []), "terraced"]
+                                                                                : (userPreferences?.preferred_property_types || []).filter(type => type !== "terraced");
+                                                                            setUserPreferences({ ...userPreferences, preferred_property_types: updatedPreferences } as UserPreferences);
+                                                                        }}
+                                                                        disabled={!editing}
+                                                                    />
+                                                                    <FieldLabel htmlFor="terraced-checkbox" className="font-normal peer-disabled:opacity-100">
+                                                                        Terraced
+                                                                    </FieldLabel>
+                                                                </Field>
+                                                                <Field orientation="horizontal">
+                                                                    <Checkbox className="border-foreground text-foreground data-[state=checked]:text-white data-[state=checked]:border-foreground data-[state=checked]:bg-highlight data-[disabled]:opacity-100" id="flat-checkbox" name="flat-checkbox" checked={userPreferences?.preferred_property_types?.includes('flat')}
+                                                                        onCheckedChange={(checked) => {
+                                                                            const updatedPreferences = checked
+                                                                                ? [...(userPreferences?.preferred_property_types || []), "flat"]
+                                                                                : (userPreferences?.preferred_property_types || []).filter(type => type !== "flat");
+                                                                            setUserPreferences({ ...userPreferences, preferred_property_types: updatedPreferences } as UserPreferences);
+                                                                        }}
+                                                                        disabled={!editing}
+                                                                    />
+                                                                    <FieldLabel htmlFor="flat-checkbox" className="font-normal peer-disabled:opacity-100">
+                                                                        Flat
+                                                                    </FieldLabel>
+                                                                </Field>
+                                                                <Field orientation="horizontal">
+                                                                    <Checkbox className="border-foreground text-foreground data-[state=checked]:text-white data-[state=checked]:border-foreground data-[state=checked]:bg-highlight data-[disabled]:opacity-100" id="bungalow-checkbox" name="bungalow-checkbox" checked={userPreferences?.preferred_property_types?.includes('bungalow')}
+                                                                        onCheckedChange={(checked) => {
+                                                                            const updatedPreferences = checked
+                                                                                ? [...(userPreferences?.preferred_property_types || []), "bungalow"]
+                                                                                : (userPreferences?.preferred_property_types || []).filter(type => type !== "bungalow");
+                                                                            setUserPreferences({ ...userPreferences, preferred_property_types: updatedPreferences } as UserPreferences);
+                                                                        }}
+                                                                        disabled={!editing}
+                                                                    />
+                                                                    <FieldLabel htmlFor="bungalow-checkbox" className="font-normal peer-disabled:opacity-100">
+                                                                        Bungalow
+                                                                    </FieldLabel>
+                                                                </Field>
+                                                                <Field orientation="horizontal">
+                                                                    <Checkbox className="border-foreground text-foreground data-[state=checked]:text-white data-[state=checked]:border-foreground data-[state=checked]:bg-highlight data-[disabled]:opacity-100" id="land-checkbox" name="land-checkbox" checked={userPreferences?.preferred_property_types?.includes('land')}
+                                                                        onCheckedChange={(checked) => {
+                                                                            const updatedPreferences = checked
+                                                                                ? [...(userPreferences?.preferred_property_types || []), "land"]
+                                                                                : (userPreferences?.preferred_property_types || []).filter(type => type !== "land");
+                                                                            setUserPreferences({ ...userPreferences, preferred_property_types: updatedPreferences } as UserPreferences);
+                                                                        }}
+                                                                        disabled={!editing}
+                                                                    />
+                                                                    <FieldLabel htmlFor="land-checkbox" className="font-normal peer-disabled:opacity-100">
+                                                                        Land
+                                                                    </FieldLabel>
+                                                                </Field>
+                                                                <Field orientation="horizontal">
+                                                                    <Checkbox className="border-foreground text-foreground data-[state=checked]:text-white data-[state=checked]:border-foreground data-[state=checked]:bg-highlight data-[disabled]:opacity-100" id="commercial-checkbox" name="commercial-checkbox" checked={userPreferences?.preferred_property_types?.includes('commercial')}
+                                                                        onCheckedChange={(checked) => {
+                                                                            const updatedPreferences = checked
+                                                                                ? [...(userPreferences?.preferred_property_types || []), "commercial"]
+                                                                                : (userPreferences?.preferred_property_types || []).filter(type => type !== "commercial");
+                                                                            setUserPreferences({ ...userPreferences, preferred_property_types: updatedPreferences } as UserPreferences);
+                                                                        }}
+                                                                        disabled={!editing}
+                                                                    />
+                                                                    <FieldLabel htmlFor="commercial-checkbox" className="font-normal peer-disabled:opacity-100">
+                                                                        Commercial Property
+                                                                    </FieldLabel>
+                                                                </Field>
+                                                            </FieldGroup>
+                                                        </FieldSet>
+                                                    </div>
+                                                    <div className="flex flex-col gap-2">
+                                                        {editing ?
+                                                            <FieldGroup>
+                                                                <Field>
+                                                                    <FieldLabel htmlFor="locations-input">Are there any specific locations you're interested in?</FieldLabel>
+                                                                    <InputGroup>
+                                                                        <InputGroupInput
+                                                                            id="locations-input"
+                                                                            placeholder="Enter a location..."
+                                                                            value={inputLocation}
+                                                                            onChange={(e) => setInputLocation(e.target.value)}
+                                                                        />
+                                                                        <InputGroupAddon align="inline-end">
+                                                                            <InputGroupButton
+                                                                                size="xs"
+                                                                                className="bg-buttonColor hover:bg-buttonHover text-foreground ml-auto"
+                                                                                onClick={() => {
+                                                                                    if (inputLocation.trim() !== "") {
+                                                                                        setUserPreferences({ ...userPreferences, preferred_locations: [...(userPreferences?.preferred_locations || []), inputLocation.trim()] } as UserPreferences);
+                                                                                        setInputLocation("");
+                                                                                    }
+                                                                                }}
+                                                                            >
+                                                                                Add +
+                                                                            </InputGroupButton>
+                                                                        </InputGroupAddon>
+                                                                    </InputGroup>
+                                                                </Field>
+                                                            </FieldGroup> : (
+
+                                                                <Label className="text-sm text-foreground/80 mt-4">Preferred Locations</Label>
+                                                            )}
+                                                        {(userPreferences?.preferred_locations ?? []).length > 0 ?
+                                                            (<div className="flex flex-wrap gap-2">
+                                                                {(userPreferences?.preferred_locations ?? []).map((location, index) => (
+                                                                    <Badge key={index} variant="outline" className="bg-midBlue text-foreground border-foreground">
+                                                                        {location}
+                                                                        <Button variant="ghost" size="sm" className="ml-2 h-4 w-4 p-0" onClick={() => {
+                                                                            if (userPreferences) {
+                                                                                setUserPreferences({ ...userPreferences, preferred_locations: (userPreferences.preferred_locations || []).filter((_, i) => i !== index) });
+                                                                            }
+                                                                        }}>
+                                                                            X
+                                                                        </Button>
+                                                                    </Badge>
+                                                                ))}
+                                                            </div>) : (
+                                                                <Label className="text-md w-full p-2 py-1 rounded-md m-2">No preferred locations set </Label>
+                                                            )}
+
+                                                    </div>
+                                                </div>
+
+                                            ) : (
+                                                <div className="flex flex-col gap-4 w-1/2">
+                                                    <h2 className="text-xl ">Buyer Preferences</h2>
+                                                    <p>Select 'Buying' as a goal to set buyer preferences.</p>
+                                                </div>
+                                            )}
+
+                                        </>
+
                                     }
                                 </div>
                             </div>
