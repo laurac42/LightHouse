@@ -87,7 +87,7 @@ export async function updateUserDetails(user: User) {
     console.log("user to update: ", user)
     const {error} = await supabase
     .from("users")
-    .update({ first_name: user.first_name, last_name: user.last_name })
+    .update({ first_name: user.first_name, last_name: user.last_name, user_goals: user.user_goals })
     .eq('id', user.id);
 
     if (error) {

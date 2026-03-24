@@ -73,7 +73,7 @@ export async function isSeller(userId: string) {
         .eq('role', 'seller')
         .maybeSingle();
 
-    if (error || !isSeller) {
+    if (error) {
         throw error;
     }
     return isSeller ? true : false;

@@ -7,10 +7,11 @@ import Navbar from "@/components/navbar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { FieldLabel, Field, FieldDescription } from "@/components/ui/field";
+import { FieldLabel, Field, FieldDescription, FieldSet, FieldLegend, FieldGroup } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { updateUserDetails } from "@/lib/auth/user";
 import { isAdmin, isEstateAgent } from "@/lib/auth/role";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export default function ProfilePage() {
     const router = useRouter();
@@ -32,10 +33,13 @@ export default function ProfilePage() {
 
                 const admin = await isAdmin();
                 const agent = await isEstateAgent();
+                if (admin || agent) {
+                    setIsAdminOrAgent(true);
+                }
             } catch (error) {
                 console.error("Error fetching user");
             }
-            
+
         }
         checkUser();
     }, [router]);
@@ -47,7 +51,7 @@ export default function ProfilePage() {
             try {
                 const details = await fetchUserDetails(userDetails.id);
                 if (details) {
-                    setUserDetails({ ...userDetails, email: details.email, first_name: details.first_name, last_name: details.last_name } as User);
+                    setUserDetails({ ...userDetails, email: details.email, first_name: details.first_name, last_name: details.last_name, user_goals: details.user_goals } as User);
                 }
             } catch (error) {
                 console.error("Failed to fetch user details:", error);
@@ -96,16 +100,20 @@ export default function ProfilePage() {
                                         : "border-transparent text-muted-foreground hover:text-foreground hover:bg-buttonColor/70"
                                         }`}>Profile</Button>
                                     {/** Agents and admin should not have goals or buyer preferences */}
-                                    <Button onClick={() => setProfileOption("goals")} variant={"ghost"} className={`rounded-none border-b-2 px-3 ${profileOption === "goals"
-                                        ? "border-buttonColor text-foreground hover:bg-buttonColor/70"
-                                        : "border-transparent text-muted-foreground hover:text-foreground hover:bg-buttonColor/70"
-                                        }`}>Goals</Button>
-                                    <Button onClick={() => setProfileOption("preferences")} variant={"ghost"} className={`rounded-none border-b-2 px-3 ${profileOption === "preferences"
-                                        ? "border-buttonColor text-foreground hover:bg-buttonColor/70"
-                                        : "border-transparent text-muted-foreground hover:text-foreground hover:bg-buttonColor/70"
-                                        }`}>Preferences</Button>
+                                    {!isAdminOrAgent &&
+                                        <>
+                                            <Button onClick={() => setProfileOption("goals")} variant={"ghost"} className={`rounded-none border-b-2 px-3 ${profileOption === "goals"
+                                                ? "border-buttonColor text-foreground hover:bg-buttonColor/70"
+                                                : "border-transparent text-muted-foreground hover:text-foreground hover:bg-buttonColor/70"
+                                                }`}>Goals</Button>
+                                            <Button onClick={() => setProfileOption("preferences")} variant={"ghost"} className={`rounded-none border-b-2 px-3 ${profileOption === "preferences"
+                                                ? "border-buttonColor text-foreground hover:bg-buttonColor/70"
+                                                : "border-transparent text-muted-foreground hover:text-foreground hover:bg-buttonColor/70"
+                                                }`}>Preferences</Button>
+                                        </>
+                                    }
                                 </div>
-                                <div className="flex flex-row gap-8 w-full">
+                                <div className="flex flex-row gap-12 w-full">
                                     <div className="flex flex-col items-center">
                                         <div className="w-48 h-48 flex rounded-full bg-navBar border border-highlight text-highlight text-5xl flex items-center justify-center mb-4 ">
                                             {getInitials()}
@@ -152,25 +160,57 @@ export default function ProfilePage() {
                                             )}
 
                                             {errorMessage && <p className="text-red-600">{errorMessage}</p>}
-                                            <Button onClick={() => { setEditing(!editing); if (editing) { saveChanges() } }} className="w-1/4 ml-auto bg-buttonColor text-foreground hover:bg-buttonHover">{editing ? 'Save Changes' : 'Edit Details'}</Button>
+                                            <Button onClick={() => { setEditing(!editing); if (editing) { saveChanges() } }} className="w-1/3 ml-auto bg-buttonColor text-foreground hover:bg-buttonHover">{editing ? 'Save Changes' : 'Edit Details'}</Button>
                                         </div>
                                     }
                                     {profileOption === "goals" &&
                                         <div className="flex flex-col gap-4 w-1/2">
-                                            <div>
-                                                <Label>Your Goals</Label>
-                                                {userDetails?.user_goals && userDetails.user_goals.length > 0 ? (
-                                                    <div className="space-y-2 mt-2">
-                                                        {userDetails.user_goals.map((goal, index) => (
-                                                            <div key={index} className="border border-gray-400 p-3 rounded-md">
-                                                                <p className="font-medium">{goal}</p>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                ) : (
-                                                    <p className="text-muted-foreground mt-2">No goals set yet</p>
-                                                )}
-                                            </div>
+                                            <FieldSet>
+                                                <FieldLegend variant="label">
+                                                    What are you using LightHouse for?
+                                                </FieldLegend>
+                                                <FieldGroup className="gap-3">
+                                                    <Field orientation="horizontal">
+                                                        <Checkbox className="border-foreground text-foreground data-[state=checked]:text-white data-[state=checked]:border-foreground data-[state=checked]:bg-highlight" id="buying-checkbox" name="buying-checkbox" checked={userDetails?.user_goals.includes("buying")}
+                                                            onCheckedChange={(checked) => {
+                                                                const updatedGoals = checked
+                                                                    ? [...(userDetails?.user_goals || []), "buying"]
+                                                                    : (userDetails?.user_goals || []).filter(goal => goal !== "buying");
+                                                                setUserDetails({ ...userDetails, user_goals: updatedGoals } as User);
+                                                            }}
+                                                        />
+                                                        <FieldLabel htmlFor="buying-checkbox" className="font-normal">
+                                                            Buying
+                                                        </FieldLabel>
+                                                    </Field>
+                                                    <Field orientation="horizontal">
+                                                        <Checkbox className="border-foreground text-foreground data-[state=checked]:text-white data-[state=checked]:border-foreground data-[state=checked]:bg-highlight" id="selling-checkbox" name="selling-checkbox" checked={userDetails?.user_goals.includes("selling")}
+                                                            onCheckedChange={(checked) => {
+                                                                const updatedGoals = checked
+                                                                    ? [...(userDetails?.user_goals || []), "selling"]
+                                                                    : (userDetails?.user_goals || []).filter(goal => goal !== "selling");
+                                                                setUserDetails({ ...userDetails, user_goals: updatedGoals } as User);
+                                                            }} />
+                                                        <FieldLabel htmlFor="selling-checkbox" className="font-normal">
+                                                            Selling
+                                                        </FieldLabel>
+                                                    </Field>
+                                                    <Field orientation="horizontal">
+                                                        <Checkbox className="border-foreground text-foreground data-[state=checked]:text-white data-[state=checked]:border-foreground data-[state=checked]:bg-highlight" id="browsing-checkbox" name="browsing-checkbox" checked={userDetails?.user_goals.includes("browsing")}
+                                                            onCheckedChange={(checked) => {
+                                                                const updatedGoals = checked
+                                                                    ? [...(userDetails?.user_goals || []), "browsing"]
+                                                                    : (userDetails?.user_goals || []).filter(goal => goal !== "browsing");
+                                                                setUserDetails({ ...userDetails, user_goals: updatedGoals } as User);
+                                                            }}
+                                                        />
+                                                        <FieldLabel htmlFor="browsing-checkbox" className="font-normal">
+                                                            Just Browsing
+                                                        </FieldLabel>
+                                                    </Field>
+                                                </FieldGroup>
+                                            </FieldSet>
+                                            <Button onClick={() => { setEditing(!editing); if (editing) { saveChanges() } }} className="w-1/3 mt-8 bg-buttonColor text-foreground hover:bg-buttonHover">Save Changes</Button>
                                         </div>
                                     }
                                 </div>
