@@ -130,11 +130,10 @@ export default function ProfilePage() {
                                             setSuccessMessage("");
                                         }}
                                         variant={"ghost"}
-                                        className={`rounded-none border-b-2 px-3 ${
-                                            profileOption === "profile"
+                                        className={`rounded-none border-b-2 px-3 ${profileOption === "profile"
                                                 ? "border-buttonColor text-foreground hover:bg-buttonColor/70"
                                                 : "border-transparent text-muted-foreground hover:text-foreground hover:bg-buttonColor/70"
-                                        }`}
+                                            }`}
                                     >
                                         Profile
                                     </Button>
@@ -147,11 +146,10 @@ export default function ProfilePage() {
                                                     setSuccessMessage("");
                                                 }}
                                                 variant={"ghost"}
-                                                className={`rounded-none border-b-2 px-3 ${
-                                                    profileOption === "goals"
+                                                className={`rounded-none border-b-2 px-3 ${profileOption === "goals"
                                                         ? "border-buttonColor text-foreground hover:bg-buttonColor/70"
                                                         : "border-transparent text-muted-foreground hover:text-foreground hover:bg-buttonColor/70"
-                                                }`}
+                                                    }`}
                                             >
                                                 Goals
                                             </Button>
@@ -162,11 +160,10 @@ export default function ProfilePage() {
                                                     setSuccessMessage("");
                                                 }}
                                                 variant={"ghost"}
-                                                className={`rounded-none border-b-2 px-3 ${
-                                                    profileOption === "preferences"
+                                                className={`rounded-none border-b-2 px-3 ${profileOption === "preferences"
                                                         ? "border-buttonColor text-foreground hover:bg-buttonColor/70"
                                                         : "border-transparent text-muted-foreground hover:text-foreground hover:bg-buttonColor/70"
-                                                }`}
+                                                    }`}
                                             >
                                                 Preferences
                                             </Button>
@@ -174,119 +171,123 @@ export default function ProfilePage() {
                                     )}
                                 </div>
 
-                                <div className="flex flex-col md:flex-row gap-6 md:gap-12 w-full items-center md:items-stretch">
-                                    {profileOption !== "preferences" && (
-                                        <div className="flex flex-col items-center ml-12">
-                                            <div className="w-32 h-32 md:w-48 md:h-48 flex rounded-full bg-navBar border border-highlight text-highlight text-5xl items-center justify-center mb-4">
-                                                {getInitials()}
+                                <div>
+                                    <div className="flex flex-col md:flex-row gap-6 md:gap-12 w-full items-center md:items-stretch">
+                                        {profileOption !== "preferences" && (
+                                            <div className="flex flex-col items-center md:ml-12">
+                                                <div className="w-32 h-32 md:w-48 md:h-48 flex rounded-full bg-navBar border border-highlight text-highlight text-5xl items-center justify-center mb-4">
+                                                    {getInitials()}
+                                                </div>
+                                                <Label className="text-center text-lg mb-8">
+                                                    {userDetails?.first_name} {userDetails?.last_name}
+                                                </Label>
                                             </div>
-                                            <Label className="text-center text-lg mb-8">
-                                                {userDetails?.first_name} {userDetails?.last_name}
-                                            </Label>
-                                        </div>
-                                    )}
+                                        )}
 
-                                    {profileOption === "profile" && (
-                                        <div className="flex flex-col gap-4 md:w-1/2">
-                                            <div>
-                                                <Label className="text-sm text-foreground/80">Email Address</Label>
-                                                <Label className="text-md w-full p-2 py-1 rounded-md m-2">{userDetails?.email}</Label>
+                                        {profileOption === "profile" && (
+                                            <div className="flex flex-col gap-4 md:w-1/2">
+                                                <div>
+                                                    <Label className="text-sm text-foreground/80">Email Address</Label>
+                                                    <Label className="text-md w-full p-2 py-1 rounded-md m-2">{userDetails?.email}</Label>
+                                                </div>
+
+                                                {editing ? (
+                                                    <>
+                                                        <Field>
+                                                            <FieldLabel className="text-sm text-foreground/80">First Name</FieldLabel>
+                                                            <Input
+                                                                value={userDetails?.first_name}
+                                                                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                                                                    setUserDetails({ ...userDetails, first_name: e.target.value } as User)
+                                                                }
+                                                                className="ml-2"
+                                                            />
+                                                        </Field>
+                                                        <Field>
+                                                            <FieldLabel className="text-sm text-foreground/80">Last Name</FieldLabel>
+                                                            <Input
+                                                                value={userDetails?.last_name}
+                                                                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                                                                    setUserDetails({ ...userDetails, last_name: e.target.value } as User)
+                                                                }
+                                                                className="ml-2"
+                                                            />
+                                                        </Field>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <div>
+                                                            <Label className="text-sm text-foreground/80">First Name</Label>
+                                                            <Label className="text-md w-full p-2 py-1 rounded-md m-2">{userDetails?.first_name}</Label>
+                                                        </div>
+                                                        <div>
+                                                            <Label className="text-sm text-foreground/80">Last Name</Label>
+                                                            <Label className="text-md w-full p-2 py-1 rounded-md m-2">{userDetails?.last_name}</Label>
+                                                        </div>
+                                                    </>
+                                                )}
+
+                                                {errorMessage && <p className="text-red-600">{errorMessage}</p>}
+                                                {successMessage && <p className="text-green-600">{successMessage}</p>}
+
+                                                <Button
+                                                    onClick={() => {
+                                                        setEditing(!editing);
+                                                        if (editing) {
+                                                            saveChanges();
+                                                        } else {
+                                                            setErrorMessage("");
+                                                            setSuccessMessage("");
+                                                        }
+                                                    }}
+                                                    className="w-full sm:w-1/2 md:w-1/3 ml-auto bg-buttonColor text-foreground hover:bg-buttonHover"
+                                                >
+                                                    {editing ? "Save Changes" : "Edit Details"}
+                                                </Button>
+
                                             </div>
+                                        )}
 
-                                            {editing ? (
-                                                <>
-                                                    <Field>
-                                                        <FieldLabel className="text-sm text-foreground/80">First Name</FieldLabel>
-                                                        <Input
-                                                            value={userDetails?.first_name}
-                                                            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                                                setUserDetails({ ...userDetails, first_name: e.target.value } as User)
-                                                            }
-                                                            className="ml-2"
-                                                        />
-                                                    </Field>
-                                                    <Field>
-                                                        <FieldLabel className="text-sm text-foreground/80">Last Name</FieldLabel>
-                                                        <Input
-                                                            value={userDetails?.last_name}
-                                                            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                                                setUserDetails({ ...userDetails, last_name: e.target.value } as User)
-                                                            }
-                                                            className="ml-2"
-                                                        />
-                                                    </Field>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <div>
-                                                        <Label className="text-sm text-foreground/80">First Name</Label>
-                                                        <Label className="text-md w-full p-2 py-1 rounded-md m-2">{userDetails?.first_name}</Label>
-                                                    </div>
-                                                    <div>
-                                                        <Label className="text-sm text-foreground/80">Last Name</Label>
-                                                        <Label className="text-md w-full p-2 py-1 rounded-md m-2">{userDetails?.last_name}</Label>
-                                                    </div>
-                                                </>
-                                            )}
+                                        {profileOption === "goals" && (
+                                            <EditProfileGoals
+                                                userDetails={userDetails}
+                                                setUserDetails={setUserDetails}
+                                                errorMessage={errorMessage}
+                                                successMessage={successMessage}
+                                                editing={editing}
+                                                setEditing={setEditing}
+                                                saveChanges={saveChanges}
+                                            />
+                                        )}
 
-                                            {errorMessage && <p className="text-red-600">{errorMessage}</p>}
-                                            {successMessage && <p className="text-green-600">{successMessage}</p>}
-
-                                            <Button
-                                                onClick={() => {
+                                        {profileOption === "preferences" && (
+                                            <EditProfilePreferences
+                                                userDetails={userDetails}
+                                                userPreferences={userPreferences}
+                                                setUserPreferences={setUserPreferences}
+                                                inputLocation={inputLocation}
+                                                setInputLocation={setInputLocation}
+                                                editing={editing}
+                                                onToggleEdit={() => {
                                                     setEditing(!editing);
                                                     if (editing) {
-                                                        saveChanges();
+                                                        savePreferences();
                                                     } else {
                                                         setErrorMessage("");
                                                         setSuccessMessage("");
                                                     }
                                                 }}
-                                                className="w-full sm:w-1/2 md:w-1/3 ml-auto bg-buttonColor text-foreground hover:bg-buttonHover"
-                                            >
-                                                {editing ? "Save Changes" : "Edit Details"}
-                                            </Button>
-
-                                            <div className="bg-red-100 border border-red-600 rounded-md my-12 p-4 mx-auto w-1/2 flex flex-col items-center">
-                                                <h1 className="text-lg font-bold mb-4">Danger Zone</h1>
-                                                <p className="text-sm mb-3">Warning!! This action will permanently delete your profile</p>
-                                                <Button onClick={() => setConfirm(true)} className="bg-red-600 hover:bg-red-700">
-                                                    Delete Profile
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {profileOption === "goals" && (
-                                        <EditProfileGoals
-                                            userDetails={userDetails}
-                                            setUserDetails={setUserDetails}
-                                            errorMessage={errorMessage}
-                                            successMessage={successMessage}
-                                            editing={editing}
-                                            setEditing={setEditing}
-                                            saveChanges={saveChanges}
-                                        />
-                                    )}
-
-                                    {profileOption === "preferences" && (
-                                        <EditProfilePreferences
-                                            userDetails={userDetails}
-                                            userPreferences={userPreferences}
-                                            setUserPreferences={setUserPreferences}
-                                            inputLocation={inputLocation}
-                                            setInputLocation={setInputLocation}
-                                            editing={editing}
-                                            onToggleEdit={() => {
-                                                setEditing(!editing);
-                                                if (editing) {
-                                                    savePreferences();
-                                                } else {
-                                                    setErrorMessage("");
-                                                    setSuccessMessage("");
-                                                }
-                                            }}
-                                        />
+                                            />
+                                        )}
+                                    </div>
+                                    {profileOption === "profile" && (
+                                    <div className="bg-red-100 border border-red-600 rounded-md my-12 p-4 mx-auto  flex flex-col items-center">
+                                        <h1 className="text-lg font-bold mb-4">Danger Zone</h1>
+                                        <p className="text-sm mb-3">Warning!! This action will permanently delete your profile</p>
+                                        <Button onClick={() => setConfirm(true)} className="bg-red-600 hover:bg-red-700">
+                                            Delete Profile
+                                        </Button>
+                                    </div>
                                     )}
                                 </div>
                             </div>

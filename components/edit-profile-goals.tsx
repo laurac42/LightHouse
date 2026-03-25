@@ -92,7 +92,7 @@ export default function EditProfileGoals({
                         saveChanges();
                     }
                 }}
-                className="w-full sm:w-1/2 md:w-1/3 mt-8 bg-buttonColor text-foreground hover:bg-buttonHover"
+                className="w-full sm:w-1/2 mt-8 bg-buttonColor text-foreground hover:bg-buttonHover"
             >
                 Save Changes
             </Button>
