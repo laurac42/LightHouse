@@ -14,7 +14,7 @@ import ImageCarousel from "./image-carousel";
 import type { AgencyLocationDetails } from "@/types/agency";
 import { uppercaseWords } from "@/lib/data/property-utils";
 import { Button } from "./ui/button";
-import { saveFavourite } from "@/lib/data/favourites";
+import { removeFavourite, saveFavourite } from "@/lib/data/favourites";
 import { validateUser } from "@/lib/auth/user";
 import { toast } from "sonner";
 
@@ -37,21 +37,30 @@ export default function PropertyCard({ property, images, page, editable = false,
 
     // handle saving favourite
     async function handleSaveFavourite() {
-        // check user is logged in first
-        const user = await validateUser();
+        try {
+            // check user is logged in first
+            const user = await validateUser();
+            if (!user) {
+                toast.error("You must be logged in to save favourites.", { position: "top-right" });
+                return;
+            }
 
-        if (property.isFavourite) {
-            toast.error("Property is already in favourites.", { position: "top-right" });
-            return;
+            // remove from favourites if already favourited
+            if (isFavourite) {
+                await removeFavourite(property.id, user.user.id);
+                toast.success("Property removed from favourites!", { position: "top-right" });
+                // set property as not favourited so that UI reflects change immediately without needing to refetch data
+                setIsFavourite(false);
+            } else {
+                await saveFavourite(property.id, user.user.id);
+                toast.success("Property saved to favourites!", { position: "top-right" });
+                // set property as favourited so that UI reflects change immediately without needing to refetch data
+                setIsFavourite(true);
+            }
+        } catch (error) {
+            console.error("Error saving favourite: ", error);
+            toast.error("An error occurred while saving favourite.", { position: "top-right" });
         }
-        if (!user) {
-            toast.error("You must be logged in to save favourites.", { position: "top-right" });
-            return;
-        }
-        await saveFavourite(property.id, user.user.id);
-        toast.success("Property saved to favourites!", { position: "top-right" });
-        // set property as favourited so that UI reflects change immediately without needing to refetch data
-        setIsFavourite(true);
     }
 
     return (
