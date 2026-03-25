@@ -40,6 +40,8 @@ function floorPlanImageExists(images: string[]) {
     return images.some(imageUrl => imageUrl.toLowerCase().includes('floorplan'));
 }
 
+
+// Pages can either be "property-details", "properties", or "manage" - this determines the size of the carousel and whether the floor plan button is shown
 export default function ImageCarousel({ images, property, page, isModalOpen }: { images: string[]; property: Property; page: string; isModalOpen?: ((isModalOpen: boolean) => void) | null }) {
     const [api, setApi] = useState<CarouselApi>()
     const [current, setCurrent] = useState(0)
@@ -184,8 +186,8 @@ export default function ImageCarousel({ images, property, page, isModalOpen }: {
                             </>
                         )}
 
-                        {page === "properties" && property.status == "under offer" &&
-                            <p className="absolute left-2 top-2 text-sm inline-flex gap-1 items-center bg-buttonColor rounded-md p-1">
+                        {(page === "properties" || page === "property-details") && property.status == "under offer" &&
+                            <p className="absolute left-2 top-2 text-sm inline-flex gap-1 items-center bg-yellow rounded-md p-1">
                                 Under Offer
                             </p>}
                     </>

@@ -1,11 +1,12 @@
 import { Database } from "@/types/supabase";
 import styles from '../app/public/properties/page.module.css';
-import { Home, Bed, Bath, Grid2X2, Landmark, Lightbulb, BookOpenText, StickyNote } from "lucide-react";
+import { Home, Bed, Bath, Grid2X2, Landmark, Lightbulb, BookOpenText, StickyNote, Heart } from "lucide-react";
 import { useEffect, useState } from "react";
 import { loadSellerAddedInfo } from "@/lib/data/property-utils";
 import { updateSellerAddedInfo } from "@/lib/data/edit-property";
 
 import SellerDetails from "./seller-details";
+import { Button } from "./ui/button";
 
 type Property = Database["public"]["Tables"]["properties"]["Row"];
 
@@ -32,7 +33,11 @@ export default function PropertyDetails({ params, page = "view" }: { params: { i
         <>
             {property && (
                 <div className="px-2 lg:px-4 py-4 col-start-1 col-span-2">
-                    <h1 className="text-3xl font-bold mb-4">{property.title}</h1>
+                    <div className="flex flex-row justify-between gap-2 mb-4">
+                        <h1 className="text-3xl font-bold mb-4">{property.title}</h1>
+                        <Button onClick={() => { }} variant={"link"} className="ml-2 mt-1 p-0 text-sm text-muted-foreground"><Heart className="size-10" /></Button>
+
+                    </div>
                     <hr />
                     <div className="grid grid-cols-2 lg:grid-cols-3 md:px-8 px-1 py-1 lg:py-2 text-md gap-2 lg:gap-4">
                         <div className="inline-flex items-center gap-1 font-bold">
@@ -73,7 +78,7 @@ export default function PropertyDetails({ params, page = "view" }: { params: { i
                         <p>{property.description}</p>
                     </div>
                     {((sellerDetails) || (page === "edit")) && (
-                        <SellerDetails property={property} reason={reason} description={sellerDetails} page={page} />  
+                        <SellerDetails property={property} reason={reason} description={sellerDetails} page={page} />
                     )}
                 </div>
             )}

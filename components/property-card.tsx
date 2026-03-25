@@ -6,7 +6,7 @@ import {
     CardTitle,
 } from "@/components/ui/card";;
 import { Database } from "@/types/supabase";
-import { Home, Bed, Bath, Grid2X2, Lightbulb, Landmark, Mail, Phone, Pencil } from "lucide-react";
+import { Home, Bed, Bath, Grid2X2, Lightbulb, Landmark, Mail, Phone, Pencil, Heart } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getAgencyDetails } from "@/lib/data/property-utils";
 import Link from 'next/link';
@@ -17,6 +17,9 @@ import { Button } from "./ui/button";
 
 type Property = Database["public"]["Tables"]["properties"]["Row"];
 
+// pages are:
+// properties - for listing properties on the main page
+// manage - for managing properties in the dashboard
 export default function PropertyCard({ property, images, page, editable = false, seller = false }: { property: Property; images: string[]; page: string; editable?: boolean; seller?: boolean }) {
     const [agencyDetails, setAgencyDetails] = useState<AgencyLocationDetails | null>(null);
 
@@ -43,19 +46,14 @@ export default function PropertyCard({ property, images, page, editable = false,
                     </div>
                     <div className="flex-1 px-4">
                         {page === "properties" && (
+                            <div className="flex gap-2 justify-between">
                             <Link href={`properties/${property.id}`}>
                                 <CardHeader className="p-1 pt-2">
-                                    {property.status === "under offer" ? (
-                                        <CardTitle className="text-xl flex flex-row justify-between">
-                                            <div>{property.title}</div>
-                                            <div className="text-buttonHover text-underline">Under Offer</div>
-                                        </CardTitle>
-                                    ) : (
-
-                                        <CardTitle className="text-xl">{property.title}</CardTitle>
-                                    )}
+                                    <CardTitle className="text-xl">{property.title}</CardTitle>
                                 </CardHeader>
                             </Link>
+                            <Button onClick={() => {}} variant={"link"} className="ml-2 mt-1 p-0 text-sm text-muted-foreground"><Heart className="size-6"/></Button>
+                            </div>
                         )}
                         {page === "manage" && (
                             <div className="flex gap-2">
