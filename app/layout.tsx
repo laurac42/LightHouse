@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Cabin, Fuggles } from "next/font/google";
 import { ThemeProvider } from "next-themes";
+import { Toaster } from "@/components/ui/sonner"
 import "./globals.css";
 
 const defaultUrl = process.env.VERCEL_URL
@@ -36,11 +37,18 @@ export default function RootLayout({
       <body className={`${cabin.variable} ${fuggles.variable} antialiased`}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme="light"
           enableSystem
           disableTransitionOnChange
         >
           {children}
+          <Toaster
+            toastOptions={{
+              style: {
+                background: 'white',
+              },
+            }}
+          />
         </ThemeProvider>
       </body>
     </html>

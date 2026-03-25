@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      buyer_favourites: {
+        Row: {
+          buyer_id: string
+          created_at: string
+          property_id: number
+        }
+        Insert: {
+          buyer_id: string
+          created_at?: string
+          property_id: number
+        }
+        Update: {
+          buyer_id?: string
+          created_at?: string
+          property_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "buyer_favourites_buyer_id_fkey"
+            columns: ["buyer_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "buyer_favourites_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       buyer_profiles: {
         Row: {
           budget: number | null
@@ -358,6 +391,42 @@ export type Database = {
           id: string
           last_name: string
         }[]
+      }
+      fetch_users_favourite_properties: {
+        Args: never
+        Returns: {
+          added_at: string
+          address_line_1: string
+          address_line_2: string | null
+          agency_location_id: string | null
+          agent_id: string | null
+          city: string
+          council_tax_band: string | null
+          description: string
+          epc_rating: string | null
+          features: string[] | null
+          has_garage: boolean | null
+          id: number
+          image_url: string | null
+          is_new_build: boolean
+          last_updated_at: string | null
+          num_bathrooms: number | null
+          num_bedrooms: number | null
+          post_code: string
+          price: number
+          price_type: string | null
+          property_type: string | null
+          seller_id: string | null
+          square_feet: number | null
+          status: string
+          title: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "properties"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       fetchagentdetailsbyagencyid: {
         Args: { p_agency_id: string }

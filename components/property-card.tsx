@@ -6,7 +6,7 @@ import {
     CardTitle,
 } from "@/components/ui/card";;
 import { Database } from "@/types/supabase";
-import { Home, Bed, Bath, Grid2X2, Lightbulb, Landmark, Mail, Phone, Pencil } from "lucide-react";
+import { Home, Bed, Bath, Grid2X2, Lightbulb, Landmark, Mail, Phone, Pencil, Heart } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getAgencyDetails } from "@/lib/data/property-utils";
 import Link from 'next/link';
@@ -14,11 +14,19 @@ import ImageCarousel from "./image-carousel";
 import type { AgencyLocationDetails } from "@/types/agency";
 import { uppercaseWords } from "@/lib/data/property-utils";
 import { Button } from "./ui/button";
+import { removeFavourite, saveFavourite } from "@/lib/data/favourites";
+import { validateUser } from "@/lib/auth/user";
+import { toast } from "sonner";
 
-type Property = Database["public"]["Tables"]["properties"]["Row"];
+type Property = Database["public"]["Tables"]["properties"]["Row"] & { isFavourite?: boolean };
 
+// pages are:
+// properties - for listing properties on the main page
+// manage - for managing properties in the dashboard
+// favourites - for listing properties in the user's favourites page
 export default function PropertyCard({ property, images, page, editable = false, seller = false }: { property: Property; images: string[]; page: string; editable?: boolean; seller?: boolean }) {
     const [agencyDetails, setAgencyDetails] = useState<AgencyLocationDetails | null>(null);
+    const [isFavourite, setIsFavourite] = useState(property.isFavourite || false);
 
     useEffect(() => {
         if (property.agency_location_id) {
@@ -27,6 +35,34 @@ export default function PropertyCard({ property, images, page, editable = false,
             });
         }
     }, []);
+
+    // handle saving favourite
+    async function handleSaveFavourite() {
+        try {
+            // check user is logged in first
+            const user = await validateUser();
+            if (!user) {
+                toast.error("You must be logged in to save favourites.", { position: "top-right" });
+                return;
+            }
+
+            // remove from favourites if already favourited
+            if (isFavourite) {
+                await removeFavourite(property.id, user.user.id);
+                toast.success("Property removed from favourites!", { position: "top-right" });
+                // set property as not favourited so that UI reflects change immediately without needing to refetch data
+                setIsFavourite(false);
+            } else {
+                await saveFavourite(property.id, user.user.id);
+                toast.success("Property saved to favourites!", { position: "top-right" });
+                // set property as favourited so that UI reflects change immediately without needing to refetch data
+                setIsFavourite(true);
+            }
+        } catch (error) {
+            console.error("Error saving favourite: ", error);
+            toast.error("An error occurred while saving favourite.", { position: "top-right" });
+        }
+    }
 
     return (
         <Card key={property.id} className={page === "manage" ? "bg-white/90 border-none mb-6 lg:h-60" : "bg-white/90 border-none mb-6"}>
@@ -42,20 +78,15 @@ export default function PropertyCard({ property, images, page, editable = false,
                         </div>
                     </div>
                     <div className="flex-1 px-4">
-                        {page === "properties" && (
-                            <Link href={`properties/${property.id}`}>
-                                <CardHeader className="p-1 pt-2">
-                                    {property.status === "under offer" ? (
-                                        <CardTitle className="text-xl flex flex-row justify-between">
-                                            <div>{property.title}</div>
-                                            <div className="text-buttonHover text-underline">Under Offer</div>
-                                        </CardTitle>
-                                    ) : (
-
+                        {(page === "properties"  || page === "favourites") && (
+                            <div className="flex gap-2 justify-between">
+                                <Link href={page === "properties" ? `properties/${property.id}` : `favourites/${property.id}`}>
+                                    <CardHeader className="p-1 pt-2">
                                         <CardTitle className="text-xl">{property.title}</CardTitle>
-                                    )}
-                                </CardHeader>
-                            </Link>
+                                    </CardHeader>
+                                </Link>
+                                <Button onClick={handleSaveFavourite} variant={"link"} className="ml-2 mt-1 p-0 text-sm text-muted-foreground"><Heart className={`size-6 ${isFavourite ? 'fill-current text-red-500' : ''}`} /></Button>
+                            </div>
                         )}
                         {page === "manage" && (
                             <div className="flex gap-2">
@@ -65,8 +96,8 @@ export default function PropertyCard({ property, images, page, editable = false,
                             </div>
                         )}
                         <div>
-                            {page === "properties" ? (
-                                <Link href={`properties/${property.id}`}>
+                            {(page === "properties"  || page === "favourites") ? (
+                                <Link href={page === "properties" ? `properties/${property.id}` : `favourites/${property.id}`}>
                                     <div className="grid grid-cols-2 lg:grid-cols-3 md:px-8 px-1 py-1 lg:py-2 text-md gap-2 lg:gap-4">
                                         <div className="inline-flex items-center gap-1 font-bold">
                                             <Home size={16} />
@@ -117,7 +148,7 @@ export default function PropertyCard({ property, images, page, editable = false,
                                 </div>
                             )}
                         </div>
-                        <div className={page === "properties" ? "text-sm text-muted-foreground max-h-[100px] mx-1 my-4 overflow-hidden text-ellipsis line-clamp-4 lg:line-clamp-5" : "text-sm text-muted-foreground max-h-[100px] mx-1 my-1 overflow-hidden text-ellipsis line-clamp-2 lg:line-clamp-3"}>
+                        <div className={page === "properties" || page === "favourites" ? "text-sm text-muted-foreground max-h-[100px] mx-1 my-4 overflow-hidden text-ellipsis line-clamp-4 lg:line-clamp-5" : "text-sm text-muted-foreground max-h-[100px] mx-1 my-1 overflow-hidden text-ellipsis line-clamp-2 lg:line-clamp-3"}>
                             {property.description}
                         </div>
                         {agencyDetails && page !== "manage" && (

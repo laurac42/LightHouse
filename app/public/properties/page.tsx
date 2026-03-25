@@ -8,9 +8,11 @@ import { Database } from "@/types/supabase";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import PropertyCard from "@/components/property-card";
 import { getImagesFromStorage } from "@/lib/data/images";
+import { validateUser } from "@/lib/auth/user";
+import { fetchFavourites } from "@/lib/data/favourites";
 
 
-type Property = Database["public"]["Tables"]["properties"]["Row"] & { images: string[] };
+type Property = Database["public"]["Tables"]["properties"]["Row"] & { images: string[] , isFavourite?: boolean};
 const PAGE_SIZE = 10; // number of properties to display per page
 
 export default function PropertiesPage() {
@@ -66,7 +68,22 @@ export default function PropertiesPage() {
                 if (!imageUrls) continue;
                 propertiesList.push({ ...property, images: imageUrls });
             }
-            setProperties(propertiesList);
+
+            const user = await validateUser();
+            const favouriteIds = user
+                ? await fetchFavourites(
+                    propertiesList.map((property) => property.id),
+                    user.user.id,
+                )
+                : [];
+
+            const favouriteIdsSet = new Set(favouriteIds);
+            const propertiesWithFavourites = propertiesList.map((property) => ({
+                ...property,
+                isFavourite: favouriteIdsSet.has(property.id),
+            }));
+
+            setProperties(propertiesWithFavourites);
             setLoading(false);
         } catch (error) {
             console.error("Error fetching properties: ", error);
@@ -76,7 +93,6 @@ export default function PropertiesPage() {
     useEffect(() => {
         fetchProperties();
     }, [fetchProperties]);
-
 
     return (
         <div className="bg-background min-h-screen w-full">

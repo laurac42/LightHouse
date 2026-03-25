@@ -7,15 +7,17 @@ import { getImagesFromStorage } from "@/lib/data/images";
 import ImageCarousel from "@/components/image-carousel";
 import Navbar from "@/components/navbar";
 import Link from "next/link";
-import { MoveLeft} from "lucide-react";
+import { MoveLeft } from "lucide-react";
 import { AgencyLocationDetails } from "@/types/agency";
 import AgencyCard from "@/components/agency-card";
 import PropertyDetails from "@/components/property-details";
+import { fetchFavourites } from "@/lib/data/favourites";
+import { validateUser } from "@/lib/auth/user";
 
-type Property = Database["public"]["Tables"]["properties"]["Row"];
+type Property = Database["public"]["Tables"]["properties"]["Row"] & { isFavourite?: boolean };
 
 // Component to fetch and display property details, images and agency details for a given property ID
-function PropertyDetailsPage({ params }: { params: Promise<{ id: number }> }) {
+export function PropertyDetailsPage({ params }: { params: Promise<{ id: number }> }) {
     const { id } = use(params);
     const [property, setProperty] = useState<Property | null>(null);
     const [images, setImages] = useState<string[]>([]);
@@ -27,14 +29,8 @@ function PropertyDetailsPage({ params }: { params: Promise<{ id: number }> }) {
 
     // Set the height of the bar for spacing when it becomes fixed and add scroll listener to toggle fixed position
     useEffect(() => {
-        const nav = document.getElementById("navbar");
-        const bar = barRef.current;
-
         const onScroll = () => {
-            if (bar && nav) {
-                const navBottom = nav.getBoundingClientRect().bottom;
-                setIsFixed(navBottom <= 0);
-            };
+            setIsFixed(window.scrollY > 80);
         };
         window.addEventListener("scroll", onScroll, { passive: true });
         return () => window.removeEventListener("scroll", onScroll);
@@ -42,12 +38,23 @@ function PropertyDetailsPage({ params }: { params: Promise<{ id: number }> }) {
 
     useEffect(() => {
         const fetchProperty = async () => {
-            const propertyData = await fetchPropertyDetails(id);
-            setProperty(propertyData);
-            if (propertyData) {
-                getImagesFromStorage(propertyData.id).then((imageUrls) => {
-                    setImages(imageUrls);
-                });
+            try {
+                const propertyData = await fetchPropertyDetails(id);
+                setProperty(propertyData);
+                if (propertyData) {
+                    getImagesFromStorage(propertyData.id).then((imageUrls) => {
+                        setImages(imageUrls);
+                    });
+
+                    const user = await validateUser();
+                    fetchFavourites([propertyData.id], user?.user.id || "").then((favouriteIds) => {
+                        if (favouriteIds.includes(propertyData.id)) {
+                            setProperty((prev) => prev ? { ...prev, isFavourite: true } : prev);
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error("Error fetching property details:", error);
             }
         };
         fetchProperty();
@@ -65,7 +72,7 @@ function PropertyDetailsPage({ params }: { params: Promise<{ id: number }> }) {
     return (
         <div>
             {/** Agency card scrolls until the navbar disappears, then is fixed */}
-            <div ref={barRef} className={`col-span-1 border-none lg:top-0 lg:right-4 w-1/3 pl-8 lg:py-2 ${isFixed ? 'lg:fixed lg:pt-8' : 'lg:absolute lg:pt-28'}`} style={{ zIndex: 1000, height: barHeight } as CSSProperties}>
+            <div ref={barRef} className={`col-span-1 border-none lg:top-0 lg:right-4 w-1/3 pl-8 lg:py-2 ${isFixed ? 'lg:fixed lg:top-[80px]' : 'lg:absolute lg:pt-28'}`} style={{ zIndex: 50, height: barHeight } as CSSProperties}>
                 {!isImageModalOpen && agencyDetails && (
                     <AgencyCard agencyDetails={agencyDetails} />
                 )}
@@ -84,7 +91,7 @@ function PropertyDetailsPage({ params }: { params: Promise<{ id: number }> }) {
                         </div>
                     ) : null}
                 </div>
-                {property && <PropertyDetails params={{ id, property }} page="view"/>}
+                {property && <PropertyDetails params={{ id, property }} page="view" />}
             </div>
         </div>
     );
