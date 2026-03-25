@@ -14,6 +14,9 @@ import ImageCarousel from "./image-carousel";
 import type { AgencyLocationDetails } from "@/types/agency";
 import { uppercaseWords } from "@/lib/data/property-utils";
 import { Button } from "./ui/button";
+import { saveFavourite } from "@/lib/data/favourites";
+import { validateUser } from "@/lib/auth/user";
+import { toast } from "sonner";
 
 type Property = Database["public"]["Tables"]["properties"]["Row"];
 
@@ -31,6 +34,19 @@ export default function PropertyCard({ property, images, page, editable = false,
         }
     }, []);
 
+    // handle saving favourite
+    async function handleSaveFavourite() {
+        // check user is logged in first
+        const user = await validateUser();
+
+        if (!user) {
+            toast.error("You must be logged in to save favourites.", { position: "top-right" });
+            return;
+        }
+        await saveFavourite(property.id, user.user.id);
+        toast.success("Property saved to favourites!", { position: "top-right" });
+    }
+
     return (
         <Card key={property.id} className={page === "manage" ? "bg-white/90 border-none mb-6 lg:h-60" : "bg-white/90 border-none mb-6"}>
             <CardContent className="p-0">
@@ -47,12 +63,12 @@ export default function PropertyCard({ property, images, page, editable = false,
                     <div className="flex-1 px-4">
                         {page === "properties" && (
                             <div className="flex gap-2 justify-between">
-                            <Link href={`properties/${property.id}`}>
-                                <CardHeader className="p-1 pt-2">
-                                    <CardTitle className="text-xl">{property.title}</CardTitle>
-                                </CardHeader>
-                            </Link>
-                            <Button onClick={() => {}} variant={"link"} className="ml-2 mt-1 p-0 text-sm text-muted-foreground"><Heart className="size-6"/></Button>
+                                <Link href={`properties/${property.id}`}>
+                                    <CardHeader className="p-1 pt-2">
+                                        <CardTitle className="text-xl">{property.title}</CardTitle>
+                                    </CardHeader>
+                                </Link>
+                                <Button onClick={handleSaveFavourite} variant={"link"} className="ml-2 mt-1 p-0 text-sm text-muted-foreground"><Heart className="size-6" /></Button>
                             </div>
                         )}
                         {page === "manage" && (

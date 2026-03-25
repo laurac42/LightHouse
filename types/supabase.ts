@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      buyer_favourites: {
+        Row: {
+          buyer_id: string
+          created_at: string
+          property_id: number
+        }
+        Insert: {
+          buyer_id: string
+          created_at?: string
+          property_id: number
+        }
+        Update: {
+          buyer_id?: string
+          created_at?: string
+          property_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "buyer_favourites_buyer_id_fkey"
+            columns: ["buyer_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "buyer_favourites_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       buyer_profiles: {
         Row: {
           budget: number | null
