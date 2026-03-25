@@ -18,13 +18,14 @@ import { saveFavourite } from "@/lib/data/favourites";
 import { validateUser } from "@/lib/auth/user";
 import { toast } from "sonner";
 
-type Property = Database["public"]["Tables"]["properties"]["Row"];
+type Property = Database["public"]["Tables"]["properties"]["Row"] & { isFavourite?: boolean };
 
 // pages are:
 // properties - for listing properties on the main page
 // manage - for managing properties in the dashboard
 export default function PropertyCard({ property, images, page, editable = false, seller = false }: { property: Property; images: string[]; page: string; editable?: boolean; seller?: boolean }) {
     const [agencyDetails, setAgencyDetails] = useState<AgencyLocationDetails | null>(null);
+    const [isFavourite, setIsFavourite] = useState(property.isFavourite || false);
 
     useEffect(() => {
         if (property.agency_location_id) {
@@ -39,12 +40,18 @@ export default function PropertyCard({ property, images, page, editable = false,
         // check user is logged in first
         const user = await validateUser();
 
+        if (property.isFavourite) {
+            toast.error("Property is already in favourites.", { position: "top-right" });
+            return;
+        }
         if (!user) {
             toast.error("You must be logged in to save favourites.", { position: "top-right" });
             return;
         }
         await saveFavourite(property.id, user.user.id);
         toast.success("Property saved to favourites!", { position: "top-right" });
+        // set property as favourited so that UI reflects change immediately without needing to refetch data
+        setIsFavourite(true);
     }
 
     return (
@@ -68,7 +75,7 @@ export default function PropertyCard({ property, images, page, editable = false,
                                         <CardTitle className="text-xl">{property.title}</CardTitle>
                                     </CardHeader>
                                 </Link>
-                                <Button onClick={handleSaveFavourite} variant={"link"} className="ml-2 mt-1 p-0 text-sm text-muted-foreground"><Heart className="size-6" /></Button>
+                                <Button onClick={handleSaveFavourite} variant={"link"} className="ml-2 mt-1 p-0 text-sm text-muted-foreground"><Heart className={`size-6 ${isFavourite ? 'fill-current text-red-500' : ''}`} /></Button>
                             </div>
                         )}
                         {page === "manage" && (

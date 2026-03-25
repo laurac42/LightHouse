@@ -8,9 +8,10 @@ import { Database } from "@/types/supabase";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import PropertyCard from "@/components/property-card";
 import { getImagesFromStorage } from "@/lib/data/images";
+import { validateUser } from "@/lib/auth/user";
 
 
-type Property = Database["public"]["Tables"]["properties"]["Row"] & { images: string[] };
+type Property = Database["public"]["Tables"]["properties"]["Row"] & { images: string[] , isFavourite?: boolean};
 const PAGE_SIZE = 10; // number of properties to display per page
 
 export default function PropertiesPage() {
@@ -66,6 +67,10 @@ export default function PropertiesPage() {
                 if (!imageUrls) continue;
                 propertiesList.push({ ...property, images: imageUrls });
             }
+
+            // fetch whether the current user has favourited the property
+            fetchFavouritesForProperties(propertiesList);
+
             setProperties(propertiesList);
             setLoading(false);
         } catch (error) {
@@ -77,6 +82,45 @@ export default function PropertiesPage() {
         fetchProperties();
     }, [fetchProperties]);
 
+    // fetch whether the current user has favourited the property
+    // if the user is not authenticated, this will be skipped and no favourites will be marked as saved
+    async function fetchFavouritesForProperties(propertiesList: Property[]) {
+        try {
+            const supabase = await createClient();
+            const user = await validateUser();
+            if (!user) return;
+
+            const favouriteStatuses = await Promise.all(
+                propertiesList.map(async (property) => {
+                    const { data: favourite, error } = await supabase
+                        .from("buyer_favourites")
+                        .select("*")
+                        .eq("buyer_id", user.user.id)
+                        .eq("property_id", property.id)
+                        .maybeSingle();
+
+                    if (error) {
+                        console.error(`Error fetching favourite status for property ${property.id}: `, error);
+                        return { propertyId: property.id, isFavourite: false };
+                    }
+                    return { propertyId: property.id, isFavourite: !!favourite };
+                }
+            ));
+
+            // update properties with favourite status
+            setProperties((prevProperties) =>
+                prevProperties.map((property) => {
+                    const favouriteStatus = favouriteStatuses.find((status) => status.propertyId === property.id);
+                    return { ...property, isFavourite: favouriteStatus ? favouriteStatus.isFavourite : false };
+                })
+            );
+
+
+        } catch (error) {
+            console.error("Error initialising user: ", error);
+        }
+
+    }
 
     return (
         <div className="bg-background min-h-screen w-full">
