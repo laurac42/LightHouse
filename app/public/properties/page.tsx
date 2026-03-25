@@ -9,6 +9,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import PropertyCard from "@/components/property-card";
 import { getImagesFromStorage } from "@/lib/data/images";
 import { validateUser } from "@/lib/auth/user";
+import { fetchFavourites } from "@/lib/data/favourites";
 
 
 type Property = Database["public"]["Tables"]["properties"]["Row"] & { images: string[] , isFavourite?: boolean};
@@ -68,10 +69,21 @@ export default function PropertiesPage() {
                 propertiesList.push({ ...property, images: imageUrls });
             }
 
-            // fetch whether the current user has favourited the property
-            fetchFavouritesForProperties(propertiesList);
+            const user = await validateUser();
+            const favouriteIds = user
+                ? await fetchFavourites(
+                    propertiesList.map((property) => property.id),
+                    user.user.id,
+                )
+                : [];
 
-            setProperties(propertiesList);
+            const favouriteIdsSet = new Set(favouriteIds);
+            const propertiesWithFavourites = propertiesList.map((property) => ({
+                ...property,
+                isFavourite: favouriteIdsSet.has(property.id),
+            }));
+
+            setProperties(propertiesWithFavourites);
             setLoading(false);
         } catch (error) {
             console.error("Error fetching properties: ", error);
@@ -81,46 +93,6 @@ export default function PropertiesPage() {
     useEffect(() => {
         fetchProperties();
     }, [fetchProperties]);
-
-    // fetch whether the current user has favourited the property
-    // if the user is not authenticated, this will be skipped and no favourites will be marked as saved
-    async function fetchFavouritesForProperties(propertiesList: Property[]) {
-        try {
-            const supabase = await createClient();
-            const user = await validateUser();
-            if (!user) return;
-
-            const favouriteStatuses = await Promise.all(
-                propertiesList.map(async (property) => {
-                    const { data: favourite, error } = await supabase
-                        .from("buyer_favourites")
-                        .select("*")
-                        .eq("buyer_id", user.user.id)
-                        .eq("property_id", property.id)
-                        .maybeSingle();
-
-                    if (error) {
-                        console.error(`Error fetching favourite status for property ${property.id}: `, error);
-                        return { propertyId: property.id, isFavourite: false };
-                    }
-                    return { propertyId: property.id, isFavourite: !!favourite };
-                }
-            ));
-
-            // update properties with favourite status
-            setProperties((prevProperties) =>
-                prevProperties.map((property) => {
-                    const favouriteStatus = favouriteStatuses.find((status) => status.propertyId === property.id);
-                    return { ...property, isFavourite: favouriteStatus ? favouriteStatus.isFavourite : false };
-                })
-            );
-
-
-        } catch (error) {
-            console.error("Error initialising user: ", error);
-        }
-
-    }
 
     return (
         <div className="bg-background min-h-screen w-full">

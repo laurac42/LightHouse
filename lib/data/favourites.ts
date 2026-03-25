@@ -1,6 +1,32 @@
 import { createClient } from "../supabase/client";
 
 /**
+ * Fetch property IDs favourited by a user from a list of properties.
+ * @param propertyIds Property IDs to check
+ * @param userId Id of the user
+ * @returns A list of favourited property IDs
+ */
+export async function fetchFavourites(propertyIds: number[], userId: string): Promise<number[]> {
+    if (propertyIds.length === 0) {
+        return [];
+    }
+
+    const supabase = await createClient();
+
+    const { data, error } = await supabase
+        .from("buyer_favourites")
+        .select("property_id")
+        .eq("buyer_id", userId)
+        .in("property_id", propertyIds);
+
+    if (error) {
+        throw error;
+    }
+
+    return (data ?? []).map((favourite) => favourite.property_id);
+}
+
+/**
  * Save a property to the user's favourites in the database.
  * @param propertyId Id of the property to be saved as a favourite
  * @param userId Id of the user saving the favourite

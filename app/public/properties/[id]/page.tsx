@@ -7,12 +7,14 @@ import { getImagesFromStorage } from "@/lib/data/images";
 import ImageCarousel from "@/components/image-carousel";
 import Navbar from "@/components/navbar";
 import Link from "next/link";
-import { MoveLeft} from "lucide-react";
+import { MoveLeft } from "lucide-react";
 import { AgencyLocationDetails } from "@/types/agency";
 import AgencyCard from "@/components/agency-card";
 import PropertyDetails from "@/components/property-details";
+import { fetchFavourites } from "@/lib/data/favourites";
+import { validateUser } from "@/lib/auth/user";
 
-type Property = Database["public"]["Tables"]["properties"]["Row"];
+type Property = Database["public"]["Tables"]["properties"]["Row"] & { isFavourite?: boolean };
 
 // Component to fetch and display property details, images and agency details for a given property ID
 function PropertyDetailsPage({ params }: { params: Promise<{ id: number }> }) {
@@ -42,12 +44,25 @@ function PropertyDetailsPage({ params }: { params: Promise<{ id: number }> }) {
 
     useEffect(() => {
         const fetchProperty = async () => {
-            const propertyData = await fetchPropertyDetails(id);
-            setProperty(propertyData);
-            if (propertyData) {
-                getImagesFromStorage(propertyData.id).then((imageUrls) => {
-                    setImages(imageUrls);
-                });
+            try {
+
+
+                const propertyData = await fetchPropertyDetails(id);
+                setProperty(propertyData);
+                if (propertyData) {
+                    getImagesFromStorage(propertyData.id).then((imageUrls) => {
+                        setImages(imageUrls);
+                    });
+
+                    const user = await validateUser();
+                    fetchFavourites([propertyData.id], user?.user.id || "").then((favouriteIds) => {
+                        if (favouriteIds.includes(propertyData.id)) {
+                            setProperty((prev) => prev ? { ...prev, isFavourite: true } : prev);
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error("Error fetching property details:", error);
             }
         };
         fetchProperty();
@@ -84,7 +99,7 @@ function PropertyDetailsPage({ params }: { params: Promise<{ id: number }> }) {
                         </div>
                     ) : null}
                 </div>
-                {property && <PropertyDetails params={{ id, property }} page="view"/>}
+                {property && <PropertyDetails params={{ id, property }} page="view" />}
             </div>
         </div>
     );
