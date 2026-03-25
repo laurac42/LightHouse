@@ -11,7 +11,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from 'next/link';
 import { validateUser } from '@/lib/auth/user';
 import { isAdmin, isEstateAgent, isSeller } from '@/lib/auth/role';
@@ -72,122 +72,125 @@ export default function Navbar() {
     };
 
     return (
-        <nav id="navbar" className="w-full bg-navBar">
-            <div className="shadow-sm shadow-highlight mx-auto px-4 py-3 flex items-center justify-between">
-                <div className="md:hidden text-2xl text-foreground cursor-pointer">
-                    <Menu onClick={() => setIsMenuOpen(!isMenuOpen)} />
-                </div>
-                {/* Mobile Menu Overlay */}
-                {isMenuOpen && (
-                    <div className="fixed inset-0 bg-black/50 md:hidden z-40" onClick={() => setIsMenuOpen(false)} />
-                )}
-                {/* Mobile Menu Drawer */}
-                {isMenuOpen && (
-                    <div className="fixed top-0 left-0 h-screen w-1/2 bg-navBar md:hidden flex flex-col space-y-4 p-6 z-50 shadow-lg overflow-y-auto">
-                        <div className="flex flex-row items-center mb-6 gap-4">
-                            <div className="flex flex-row items-center">
-                                <p className="text-4xl font-extrabold font-fuggles">L</p>
-                                <p className="text-lg font-bold">ightHouse</p>
+        <>
+            <nav id="navbar" className="w-full bg-navBar fixed z-[100]">
+                <div className="shadow-sm shadow-highlight mx-auto px-4 py-3 flex items-center justify-between">
+                    <div className="md:hidden text-2xl text-foreground cursor-pointer">
+                        <Menu onClick={() => setIsMenuOpen(!isMenuOpen)} />
+                    </div>
+                    {/* Mobile Menu Overlay */}
+                    {isMenuOpen && (
+                        <div className="fixed inset-0 bg-black/50 md:hidden z-[100]" onClick={() => setIsMenuOpen(false)} />
+                    )}
+                    {/* Mobile Menu Drawer */}
+                    {isMenuOpen && (
+                        <div className="fixed top-0 left-0 h-screen w-1/2 bg-navBar md:hidden flex flex-col space-y-4 p-6 z-[100] shadow-lg overflow-y-auto">
+                            <div className="flex flex-row items-center mb-6 gap-4">
+                                <div className="flex flex-row items-center">
+                                    <p className="text-4xl font-extrabold font-fuggles">L</p>
+                                    <p className="text-lg font-bold">ightHouse</p>
+                                </div>
+                                <X onClick={() => setIsMenuOpen(false)} />
                             </div>
-                            <X onClick={() => setIsMenuOpen(false)} />
+                            <a href="#" className="text-foreground text-lg">Home</a>
+                            <a href="#" className="text-foreground text-lg">Buy</a>
+                            <a href="#" className="text-foreground text-lg">Sell</a>
+                            <a href="#" className="text-foreground text-lg">Estate Agents</a>
+                            {isLoggedIn && userIsAdmin && (
+                                <a href="/admin/portal" className="text-foreground text-lg">Admin Portal</a>
+                            )}
+                            {isLoggedIn && userIsEstateAgent && (
+                                <a href="/estate-agent/portal" className="text-foreground text-lg">Estate Agent Portal</a>
+                            )}
+                            {isLoggedIn && userIsSeller && (
+                                <a href="/seller/portal" className="text-foreground text-lg">Seller Portal</a>
+                            )}
                         </div>
-                        <a href="#" className="text-foreground text-lg">Home</a>
-                        <a href="#" className="text-foreground text-lg">Buy</a>
-                        <a href="#" className="text-foreground text-lg">Sell</a>
-                        <a href="#" className="text-foreground text-lg">Estate Agents</a>
-                        {isLoggedIn && userIsAdmin && (
-                            <a href="/admin/portal" className="text-foreground text-lg">Admin Portal</a>
+                    )}
+                    <div className="pl-4 flex flex-row items-center">
+                        <img src="/images/logo.png" alt="LightHouse Logo" className="w-11 h-11"></img>
+                        <p className="text-4xl font-extrabold font-fuggles">L</p>
+                        <p className="text-lg font-bold">ightHouse</p>
+                    </div>
+                    <div className="flex flex-row gap-6">
+                        <a href="/" className="hidden md:flex text-foreground hover:text-foregroundHover hover:underline">Buy</a>
+                        <a href="/" className="hidden md:flex text-foreground hover:text-foregroundHover hover:underline">Sell</a>
+                        <a href="/" className="hidden md:flex text-foreground hover:text-foregroundHover hover:underline">Estate Agents</a>
+                    </div>
+                    {/* Desktop action buttons */}
+                    <div className="hidden md:flex items-center gap-2 ">
+                        {(isLoggedIn && userIsAdmin) && (
+                            <Link href="/admin/portal">
+                                <Button type="button" className="w-full text-md text-foreground bg-buttonColor hover:bg-buttonHover shadow-md">Admin Portal</Button>
+                            </Link>
                         )}
-                        {isLoggedIn && userIsEstateAgent && (
-                            <a href="/estate-agent/portal" className="text-foreground text-lg">Estate Agent Portal</a>
+                        {(isLoggedIn && userIsEstateAgent) && (
+                            <Link href="/estate-agent/portal">
+                                <Button type="button" className="w-full text-md text-foreground bg-buttonColor hover:bg-buttonHover shadow-md">Estate Agent Portal</Button>
+                            </Link>
                         )}
-                        {isLoggedIn && userIsSeller && (
-                            <a href="/seller/portal" className="text-foreground text-lg">Seller Portal</a>
+                        {(isLoggedIn && userIsSeller) && (
+                            <Link href="/seller/portal">
+                                <Button type="button" className="w-full text-md text-foreground bg-buttonColor hover:bg-buttonHover shadow-md">Seller Portal</Button>
+                            </Link>
+                        )}
+
+                        {isLoggedIn ? (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button className="text-md bg-buttonColor hover:bg-buttonHover shadow-md text-foreground ">Profile<UserRound className="w-4 h-4 ml-2" /></Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent className="z-[200]">
+                                    <DropdownMenuGroup>
+                                        <DropdownMenuLabel><Link href="/protected/profile">My Account</Link></DropdownMenuLabel>
+                                        <DropdownMenuItem>Favourites</DropdownMenuItem>
+                                    </DropdownMenuGroup>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuGroup>
+                                        <DropdownMenuItem onClick={logout}>
+                                            Logout <LogOut className="w-4 h-4 ml-2" />
+                                        </DropdownMenuItem>
+                                    </DropdownMenuGroup>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        ) : (
+                            <Link href="/auth/login">
+                                <Button type="button" className="w-full text-md text-foreground bg-buttonColor hover:bg-buttonHover shadow-md">Sign In<UserRound className="w-4 h-4 ml-2" /></Button>
+                            </Link>
                         )}
                     </div>
-                )}
-                <div className="pl-4 flex flex-row items-center">
-                    <img src="/images/logo.png" alt="LightHouse Logo" className="w-11 h-11"></img>
-                    <p className="text-4xl font-extrabold font-fuggles">L</p>
-                    <p className="text-lg font-bold">ightHouse</p>
-                </div>
-                <div className="flex flex-row gap-6">
-                    <a href="/" className="hidden md:flex text-foreground hover:text-foregroundHover hover:underline">Buy</a>
-                    <a href="/" className="hidden md:flex text-foreground hover:text-foregroundHover hover:underline">Sell</a>
-                    <a href="/" className="hidden md:flex text-foreground hover:text-foregroundHover hover:underline">Estate Agents</a>
-                </div>
-                {/* Desktop action buttons */}
-                <div className="hidden md:flex items-center gap-2">
-                    {(isLoggedIn && userIsAdmin) && (
-                        <Link href="/admin/portal">
-                            <Button type="button" className="w-full text-md text-foreground bg-buttonColor hover:bg-buttonHover shadow-md">Admin Portal</Button>
-                        </Link>
-                    )}
-                    {(isLoggedIn && userIsEstateAgent) && (
-                        <Link href="/estate-agent/portal">
-                            <Button type="button" className="w-full text-md text-foreground bg-buttonColor hover:bg-buttonHover shadow-md">Estate Agent Portal</Button>
-                        </Link>
-                    )}
-                    {(isLoggedIn && userIsSeller) && (
-                        <Link href="/seller/portal">
-                            <Button type="button" className="w-full text-md text-foreground bg-buttonColor hover:bg-buttonHover shadow-md">Seller Portal</Button>
-                        </Link>
-                    )}
+                    {/* Mobile action buttons */}
+                    <div className="md:hidden flex items-center gap-2">
+                        {isLoggedIn ? (
+                            <Link href="/" className='text-2xl'>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button className="text-4xl bg-navBar border-none rounded-full text-foreground" variant="link"><UserRound className="size-8" /></Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent className="z-[200]">
+                                        <DropdownMenuGroup>
+                                            <DropdownMenuLabel><Link href="/protected/profile">My Account</Link></DropdownMenuLabel>
+                                            <DropdownMenuItem>Favourites</DropdownMenuItem>
+                                        </DropdownMenuGroup>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuGroup>
+                                            <DropdownMenuItem onClick={logout}>
+                                                Logout <LogOut className="w-4 h-4 ml-2" />
+                                            </DropdownMenuItem>
+                                        </DropdownMenuGroup>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </Link>
+                        ) : (
+                            <Link href="/auth/login" className='text-2xl'>
+                                <UserRound />
+                            </Link>
+                        )}
+                    </div>
 
-                    {isLoggedIn ? (
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button className="text-md bg-buttonColor hover:bg-buttonHover shadow-md text-foreground">Profile<UserRound className="w-4 h-4 ml-2" /></Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                                <DropdownMenuGroup>
-                                    <DropdownMenuLabel><Link href="/protected/profile">My Account</Link></DropdownMenuLabel>
-                                    <DropdownMenuItem>Favourites</DropdownMenuItem>
-                                </DropdownMenuGroup>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuGroup>
-                                    <DropdownMenuItem onClick={logout}>
-                                        Logout <LogOut className="w-4 h-4 ml-2" />
-                                    </DropdownMenuItem>
-                                </DropdownMenuGroup>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    ) : (
-                        <Link href="/auth/login">
-                            <Button type="button" className="w-full text-md text-foreground bg-buttonColor hover:bg-buttonHover shadow-md">Sign In<UserRound className="w-4 h-4 ml-2" /></Button>
-                        </Link>
-                    )}
                 </div>
-                {/* Mobile action buttons */}
-                <div className="md:hidden flex items-center gap-2">
-                    {isLoggedIn ? (
-                        <Link href="/" className='text-2xl'>
-                            <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button className="text-4xl bg-navBar border-none rounded-full text-foreground" variant="link"><UserRound className="size-8" /></Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                                <DropdownMenuGroup>
-                                    <DropdownMenuLabel><Link href="/protected/profile">My Account</Link></DropdownMenuLabel>
-                                    <DropdownMenuItem>Favourites</DropdownMenuItem>
-                                </DropdownMenuGroup>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuGroup>
-                                    <DropdownMenuItem onClick={logout}>
-                                        Logout <LogOut className="w-4 h-4 ml-2" />
-                                    </DropdownMenuItem>
-                                </DropdownMenuGroup>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                        </Link>
-                    ) : (
-                        <Link href="/auth/login" className='text-2xl'>
-                            <UserRound />
-                        </Link>
-                    )}
-                </div>
-
-            </div>
-        </nav>
+            </nav>
+            <div className="h-[60px]"></div> {/* empty div to prevent content being hidden behind fixed navbar, since the navbar is outside of the normal document flow */}
+        </>
     );
 }

@@ -220,7 +220,7 @@ export default function ImageCarousel({ images, property, page, isModalOpen }: {
                             handleClose();
                         }
                         }
-                        style={{ zIndex: 1000 }}
+                        style={{ zIndex: 50 }}
                     >
                         <XCircleIcon size={32} className="absolute top-6 right-6 text-white"
                             onClick={(e) => {

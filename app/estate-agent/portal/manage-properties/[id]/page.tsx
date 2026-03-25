@@ -54,14 +54,8 @@ function PropertyDetailsPage({ params }: { params: Promise<{ id: number }> }) {
 
     // Set the height of the bar for spacing when it becomes fixed and add scroll listener to toggle fixed position
     useEffect(() => {
-        const nav = document.getElementById("navbar");
-        const bar = barRef.current;
-
         const onScroll = () => {
-            if (bar && nav) {
-                const navBottom = nav.getBoundingClientRect().bottom;
-                setIsFixed(navBottom <= 0);
-            };
+            setIsFixed(window.scrollY > 80);
         };
         window.addEventListener("scroll", onScroll, { passive: true });
         return () => window.removeEventListener("scroll", onScroll);
@@ -92,7 +86,7 @@ function PropertyDetailsPage({ params }: { params: Promise<{ id: number }> }) {
     return (
         <div>
             {/** Agency card scrolls until the navbar disappears, then is fixed */}
-            <div ref={barRef} className={`col-span-1 border-none lg:top-0 lg:right-4 w-1/3 pl-8 lg:py-2 ${isFixed ? 'lg:fixed lg:pt-8' : 'lg:absolute lg:pt-28'}`} style={{ zIndex: 1000, height: barHeight } as CSSProperties}>
+            <div ref={barRef} className={`col-span-1 border-none lg:top-0 lg:right-4 w-1/3 pl-8 lg:py-2 ${isFixed ? 'lg:fixed lg:pt-8' : 'lg:absolute lg:pt-28'}`} style={{ zIndex: 50, height: barHeight } as CSSProperties}>
                 {!isImageModalOpen && agencyDetails && (
                     <AgencyCard agencyDetails={agencyDetails} />
                 )}
@@ -111,7 +105,7 @@ function PropertyDetailsPage({ params }: { params: Promise<{ id: number }> }) {
                         </div>
                     ) : null}
                 </div>
-                {property && <PropertyDetails params={{ id, property }} page="view"/>}
+                {property && <PropertyDetails params={{ id, property }} page="view" />}
             </div>
         </div>
     );

@@ -6,7 +6,7 @@ import { Mail, Phone } from "lucide-react";
 
 export default function AgencyCard({ agencyDetails }: { agencyDetails: AgencyLocationDetails }) {
     return (
-        <Card className="bg-highlight rounded-none lg:rounded-md shadow-md border-none lg:mb-6 fixed w-full bottom-0 z-40 left-0 lg:relative lg:w-auto lg:mb-0">
+        <Card className="bg-highlight rounded-none lg:rounded-md shadow-md border-none lg:mb-6 fixed w-full bottom-0 z-50 left-0 lg:relative lg:w-auto lg:mb-0">
             <CardContent className="lg:p-4 p-2">
                 <p className="hidden lg:block pl-2 text-md text-white/80">Marketed by</p>
                 <div className="flex flex-row items-center lg:contents">
