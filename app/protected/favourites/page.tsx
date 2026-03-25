@@ -83,7 +83,7 @@ export default function FavouritesPage() {
                             ) : (
                                 <div>
                                     {favouriteProperties.map((property) => (
-                                        <PropertyCard key={property.id} property={property} images={property.images} page="properties" />
+                                        <PropertyCard key={property.id} property={property} images={property.images} page="favourites" />
                                     ))}
                                 </div>
                             )}

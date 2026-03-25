@@ -17,7 +17,7 @@ import { validateUser } from "@/lib/auth/user";
 type Property = Database["public"]["Tables"]["properties"]["Row"] & { isFavourite?: boolean };
 
 // Component to fetch and display property details, images and agency details for a given property ID
-function PropertyDetailsPage({ params }: { params: Promise<{ id: number }> }) {
+export function PropertyDetailsPage({ params }: { params: Promise<{ id: number }> }) {
     const { id } = use(params);
     const [property, setProperty] = useState<Property | null>(null);
     const [images, setImages] = useState<string[]>([]);

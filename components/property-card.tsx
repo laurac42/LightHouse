@@ -23,6 +23,7 @@ type Property = Database["public"]["Tables"]["properties"]["Row"] & { isFavourit
 // pages are:
 // properties - for listing properties on the main page
 // manage - for managing properties in the dashboard
+// favourites - for listing properties in the user's favourites page
 export default function PropertyCard({ property, images, page, editable = false, seller = false }: { property: Property; images: string[]; page: string; editable?: boolean; seller?: boolean }) {
     const [agencyDetails, setAgencyDetails] = useState<AgencyLocationDetails | null>(null);
     const [isFavourite, setIsFavourite] = useState(property.isFavourite || false);
@@ -77,9 +78,9 @@ export default function PropertyCard({ property, images, page, editable = false,
                         </div>
                     </div>
                     <div className="flex-1 px-4">
-                        {page === "properties" && (
+                        {(page === "properties"  || page === "favourites") && (
                             <div className="flex gap-2 justify-between">
-                                <Link href={`properties/${property.id}`}>
+                                <Link href={page === "properties" ? `properties/${property.id}` : `favourites/${property.id}`}>
                                     <CardHeader className="p-1 pt-2">
                                         <CardTitle className="text-xl">{property.title}</CardTitle>
                                     </CardHeader>
@@ -95,8 +96,8 @@ export default function PropertyCard({ property, images, page, editable = false,
                             </div>
                         )}
                         <div>
-                            {page === "properties" ? (
-                                <Link href={`properties/${property.id}`}>
+                            {(page === "properties"  || page === "favourites") ? (
+                                <Link href={page === "properties" ? `properties/${property.id}` : `favourites/${property.id}`}>
                                     <div className="grid grid-cols-2 lg:grid-cols-3 md:px-8 px-1 py-1 lg:py-2 text-md gap-2 lg:gap-4">
                                         <div className="inline-flex items-center gap-1 font-bold">
                                             <Home size={16} />
@@ -147,7 +148,7 @@ export default function PropertyCard({ property, images, page, editable = false,
                                 </div>
                             )}
                         </div>
-                        <div className={page === "properties" ? "text-sm text-muted-foreground max-h-[100px] mx-1 my-4 overflow-hidden text-ellipsis line-clamp-4 lg:line-clamp-5" : "text-sm text-muted-foreground max-h-[100px] mx-1 my-1 overflow-hidden text-ellipsis line-clamp-2 lg:line-clamp-3"}>
+                        <div className={page === "properties" || page === "favourites" ? "text-sm text-muted-foreground max-h-[100px] mx-1 my-4 overflow-hidden text-ellipsis line-clamp-4 lg:line-clamp-5" : "text-sm text-muted-foreground max-h-[100px] mx-1 my-1 overflow-hidden text-ellipsis line-clamp-2 lg:line-clamp-3"}>
                             {property.description}
                         </div>
                         {agencyDetails && page !== "manage" && (
