@@ -1,22 +1,14 @@
 'use client';
 
-import { UserRound, Menu, X, LogOut } from "lucide-react";
+import { UserRound, Menu, X, LogOut, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button"
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuGroup,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { useEffect, useState, useRef } from "react";
 import Link from 'next/link';
 import { validateUser } from '@/lib/auth/user';
 import { isAdmin, isEstateAgent, isSeller } from '@/lib/auth/role';
 import { createClient } from "@/lib/supabase/client";
 import { useRouter, usePathname } from "next/navigation";
+import NavbarDropdown from "./navbar-dropdown";
 
 export default function Navbar() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -24,9 +16,6 @@ export default function Navbar() {
     const [userIsAdmin, setUserIsAdmin] = useState(false);
     const [userIsEstateAgent, setUserIsEstateAgent] = useState(false);
     const [userIsSeller, setUserIsSeller] = useState(false);
-
-    const router = useRouter();
-    const pathname = usePathname();
 
     useEffect(() => {
 
@@ -56,20 +45,6 @@ export default function Navbar() {
         }
         checkAuthStatus();
     }, []);
-
-    // log the user out and redirect if necessary (if they were on a protected page)
-    const logout = async () => {
-        const supabase = createClient();
-        await supabase.auth.signOut();
-
-        if (!pathname.startsWith("/public")) {
-            router.push("/auth/login");
-        } else {
-            // refresh the page to update the UI for logged out state
-            await new Promise((resolve) => setTimeout(resolve, 100)); // slight delay to ensure signOut has completed
-            window.location.reload();
-        }
-    };
 
     return (
         <>
@@ -136,23 +111,7 @@ export default function Navbar() {
                         )}
 
                         {isLoggedIn ? (
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button className="text-md bg-buttonColor hover:bg-buttonHover shadow-md text-foreground ">Profile<UserRound className="w-4 h-4 ml-2" /></Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent className="z-[200]">
-                                    <DropdownMenuGroup>
-                                        <DropdownMenuLabel><Link href="/protected/profile">My Account</Link></DropdownMenuLabel>
-                                        <DropdownMenuItem>Favourites</DropdownMenuItem>
-                                    </DropdownMenuGroup>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuGroup>
-                                        <DropdownMenuItem onClick={logout}>
-                                            Logout <LogOut className="w-4 h-4 ml-2" />
-                                        </DropdownMenuItem>
-                                    </DropdownMenuGroup>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
+                            <NavbarDropdown />
                         ) : (
                             <Link href="/auth/login">
                                 <Button type="button" className="w-full text-md text-foreground bg-buttonColor hover:bg-buttonHover shadow-md">Sign In<UserRound className="w-4 h-4 ml-2" /></Button>
@@ -163,23 +122,7 @@ export default function Navbar() {
                     <div className="md:hidden flex items-center gap-2">
                         {isLoggedIn ? (
                             <Link href="/" className='text-2xl'>
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button className="text-4xl bg-navBar border-none rounded-full text-foreground" variant="link"><UserRound className="size-8" /></Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent className="z-[200]">
-                                        <DropdownMenuGroup>
-                                            <DropdownMenuLabel><Link href="/protected/profile">My Account</Link></DropdownMenuLabel>
-                                            <DropdownMenuItem>Favourites</DropdownMenuItem>
-                                        </DropdownMenuGroup>
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuGroup>
-                                            <DropdownMenuItem onClick={logout}>
-                                                Logout <LogOut className="w-4 h-4 ml-2" />
-                                            </DropdownMenuItem>
-                                        </DropdownMenuGroup>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
+                                <NavbarDropdown />
                             </Link>
                         ) : (
                             <Link href="/auth/login" className='text-2xl'>
