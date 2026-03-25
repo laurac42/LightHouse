@@ -392,6 +392,42 @@ export type Database = {
           last_name: string
         }[]
       }
+      fetch_users_favourite_properties: {
+        Args: never
+        Returns: {
+          added_at: string
+          address_line_1: string
+          address_line_2: string | null
+          agency_location_id: string | null
+          agent_id: string | null
+          city: string
+          council_tax_band: string | null
+          description: string
+          epc_rating: string | null
+          features: string[] | null
+          has_garage: boolean | null
+          id: number
+          image_url: string | null
+          is_new_build: boolean
+          last_updated_at: string | null
+          num_bathrooms: number | null
+          num_bedrooms: number | null
+          post_code: string
+          price: number
+          price_type: string | null
+          property_type: string | null
+          seller_id: string | null
+          square_feet: number | null
+          status: string
+          title: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "properties"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       fetchagentdetailsbyagencyid: {
         Args: { p_agency_id: string }
         Returns: {
