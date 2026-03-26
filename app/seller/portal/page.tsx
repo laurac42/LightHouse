@@ -10,7 +10,7 @@ import {
 import PortalMenu from "@/components/portal-menu";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { validateUser } from "@/lib/auth/user";
+import { createClient } from "@/lib/supabase/client";
 import { isSeller } from "@/lib/auth/role";
 
 export default function SellerPortalPage() {
@@ -20,12 +20,11 @@ export default function SellerPortalPage() {
     useEffect(() => {
         async function checkEstateAgent() {
             try {
-                const user = await validateUser();
-                if (!user) {
-                    router.push("/public/home");
-                    return;
-                }
-                const seller = await isSeller(user.user.id);
+                const supabase = createClient();
+                const { data } = await supabase.auth.getClaims();
+                const user = data?.claims;
+                const seller = await isSeller(user?.metadata?.sub);
+                
                 if (!seller) {
                     router.push("/public/home");
                 }

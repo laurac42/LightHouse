@@ -12,6 +12,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { validateUser } from "@/lib/auth/user";
 import { isSeller } from "@/lib/auth/role";
+import { createClient } from "@/lib/supabase/client";
 import { fetchPropertiesBySellerID } from "@/lib/data/property-utils";
 import { Database } from "@/types/supabase";
 import { getImagesFromStorage } from "@/lib/data/images";
@@ -49,13 +50,11 @@ export default function SellerPropertiesPage() {
     useEffect(() => {
         async function checkSeller() {
             try {
-                const user = await validateUser();
-                if (!user) {
-                    router.push("/public/home");
-                    return;
-                }
+                const supabase = createClient();
+                const { data } = await supabase.auth.getClaims();
+                const user = data?.claims;
                 setUser(user);
-                const seller = await isSeller(user.user.id);
+                const seller = await isSeller(user?.metadata?.sub);
                 if (!seller) {
                     router.push("/public/home");
                 }
@@ -82,7 +81,7 @@ export default function SellerPropertiesPage() {
             // scroll to top
             window.scrollTo({ top: 0 });
 
-            const result = await fetchPropertiesBySellerID(user.user.id, page, PAGE_SIZE, selectedStatus || undefined);
+            const result = await fetchPropertiesBySellerID(user?.metadata?.sub, page, PAGE_SIZE, selectedStatus || undefined);
 
             if (!result) {
                 setErrorMessage("Unable to fetch properties");

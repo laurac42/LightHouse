@@ -33,7 +33,7 @@ export default function ManageEstateAgentsPage() {
   const [selectedAgencyId, setSelectedAgencyId] = useState<string>("");
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [user, setUser] = useState<any>(null);
+  const [userId, setUserId] = useState<string>("");
   const [agencies, setAgencies] = useState<{ id: string; name: string | null }[]>([]);
   const [loadingAgencies, setLoadingAgencies] = useState(true);
   const [loadingLocations, setLoadingLocations] = useState(true);
@@ -45,13 +45,10 @@ export default function ManageEstateAgentsPage() {
   useEffect(() => {
     async function checkAdmin() {
       try {
-        const user = await validateUser();
-        if (!user) {
-          router.push("/public/home");
-          return;
-        }
-        setUser(user);
-        console.log("user: ", user)
+        const supabase = createClient();
+        const { data } = await supabase.auth.getClaims();
+        const user = data?.claims;
+        setUserId(user?.user_metadata?.sub || "");
         const admin = await isAdmin();
         if (!admin) {
           router.push("/public/home");
@@ -75,7 +72,7 @@ export default function ManageEstateAgentsPage() {
 
         const data = await loadAgencyLocations(selectedAgencyId);
         setAgencyLocations(data);
-        
+
       } catch (error) {
         console.error("Error fetching agency locations:", error);
         setErrorMessage("Failed to fetch agency locations.");
@@ -137,7 +134,7 @@ export default function ManageEstateAgentsPage() {
       const { data, error } = await supabase.rpc("upgrade_user_to_agent", {
         p_user_id: id,
         p_location_id: selectedLocationId,
-        p_admin_id: user.user.id
+        p_admin_id: userId,
       });
       if (error) {
         throw error;
@@ -186,7 +183,7 @@ export default function ManageEstateAgentsPage() {
         body: JSON.stringify({
           email,
           selectedLocationId,
-          grantedBy: user.user.id,
+          grantedBy: userId,
         }),
       });
 
@@ -245,7 +242,7 @@ export default function ManageEstateAgentsPage() {
                         {loadingAgencies ? (
                           <p>Loading companies...</p>
                         ) : (
-                          <Select onValueChange={(value) => {setSelectedAgencyId(value); setSelectedLocationId("")}} required>
+                          <Select onValueChange={(value) => { setSelectedAgencyId(value); setSelectedLocationId("") }} required>
                             <SelectTrigger className="border border-foreground">
                               <SelectValue placeholder="Select Company" />
                             </SelectTrigger>

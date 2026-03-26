@@ -4,7 +4,7 @@ import Navbar from "@/components/navbar";
 import Link from "next/link";
 import { MoveLeft } from "lucide-react";
 import { EditStatusForm } from "@/components/edit-status-form";
-import { validateUser } from "@/lib/auth/user";
+import { createClient } from "@/lib/supabase/client";
 import { isAdmin } from "@/lib/auth/role";
 import { useRouter } from "next/navigation";
 
@@ -16,11 +16,6 @@ export function EditStatus({ params }: { params: Promise<{ id: number }> }) {
     useEffect(() => {
         async function checkAdmin() {
             try {
-                const user = await validateUser();
-                if (!user) {
-                    router.push("/public/home");
-                    return;
-                }
                 const admin = await isAdmin();
                 if (!admin) {
                     router.push("/public/home");
@@ -38,7 +33,7 @@ export function EditStatus({ params }: { params: Promise<{ id: number }> }) {
 
         <div className="flex min-h-svh w-full justify-center p-6 md:p-10">
             <div className="w-full max-w-5xl">
-                <EditStatusForm propertyId={id}/>
+                <EditStatusForm propertyId={id} />
             </div>
         </div>
     );

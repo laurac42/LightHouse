@@ -15,6 +15,7 @@ import { isAdmin, isEstateAgent } from "@/lib/auth/role";
 import ConfirmDeletion from "@/components/dialogs/confirm-deletion";
 import EditProfileGoals from "@/components/edit-profile-goals";
 import EditProfilePreferences from "@/components/edit-profile-preferences";
+import { createClient } from "@/lib/supabase/client";
 
 export default function ProfilePage() {
     const router = useRouter();
@@ -31,12 +32,10 @@ export default function ProfilePage() {
     useEffect(() => {
         async function checkUser() {
             try {
-                const user = await validateUser();
-                if (!user || !user.user.id) {
-                    router.push("/public/home");
-                    return;
-                }
-                setUserDetails({ ...userDetails, id: user.user.id } as User);
+                const supabase = createClient();
+                const { data } = await supabase.auth.getClaims();
+                const user = data?.claims;
+                setUserDetails({ ...userDetails, id: user?.user_metadata?.sub } as User);
 
                 const admin = await isAdmin();
                 const agent = await isEstateAgent();
@@ -132,8 +131,8 @@ export default function ProfilePage() {
                                         }}
                                         variant={"ghost"}
                                         className={`rounded-none border-b-2 px-3 ${profileOption === "profile"
-                                                ? "border-buttonColor text-foreground hover:bg-buttonColor/70"
-                                                : "border-transparent text-muted-foreground hover:text-foreground hover:bg-buttonColor/70"
+                                            ? "border-buttonColor text-foreground hover:bg-buttonColor/70"
+                                            : "border-transparent text-muted-foreground hover:text-foreground hover:bg-buttonColor/70"
                                             }`}
                                     >
                                         Profile
@@ -148,8 +147,8 @@ export default function ProfilePage() {
                                                 }}
                                                 variant={"ghost"}
                                                 className={`rounded-none border-b-2 px-3 ${profileOption === "goals"
-                                                        ? "border-buttonColor text-foreground hover:bg-buttonColor/70"
-                                                        : "border-transparent text-muted-foreground hover:text-foreground hover:bg-buttonColor/70"
+                                                    ? "border-buttonColor text-foreground hover:bg-buttonColor/70"
+                                                    : "border-transparent text-muted-foreground hover:text-foreground hover:bg-buttonColor/70"
                                                     }`}
                                             >
                                                 Goals
@@ -162,8 +161,8 @@ export default function ProfilePage() {
                                                 }}
                                                 variant={"ghost"}
                                                 className={`rounded-none border-b-2 px-3 ${profileOption === "preferences"
-                                                        ? "border-buttonColor text-foreground hover:bg-buttonColor/70"
-                                                        : "border-transparent text-muted-foreground hover:text-foreground hover:bg-buttonColor/70"
+                                                    ? "border-buttonColor text-foreground hover:bg-buttonColor/70"
+                                                    : "border-transparent text-muted-foreground hover:text-foreground hover:bg-buttonColor/70"
                                                     }`}
                                             >
                                                 Preferences
@@ -282,13 +281,13 @@ export default function ProfilePage() {
                                         )}
                                     </div>
                                     {profileOption === "profile" && (
-                                    <div className="bg-red-100 border border-red-600 rounded-md my-12 p-4 mx-auto  flex flex-col items-center">
-                                        <h1 className="text-lg font-bold mb-4">Danger Zone</h1>
-                                        <p className="text-sm mb-3">Warning!! This action will permanently delete your profile</p>
-                                        <Button onClick={() => setConfirm(true)} className="bg-red-600 hover:bg-red-700">
-                                            Delete Profile
-                                        </Button>
-                                    </div>
+                                        <div className="bg-red-100 border border-red-600 rounded-md my-12 p-4 mx-auto  flex flex-col items-center">
+                                            <h1 className="text-lg font-bold mb-4">Danger Zone</h1>
+                                            <p className="text-sm mb-3">Warning!! This action will permanently delete your profile</p>
+                                            <Button onClick={() => setConfirm(true)} className="bg-red-600 hover:bg-red-700">
+                                                Delete Profile
+                                            </Button>
+                                        </div>
                                     )}
                                 </div>
                             </div>
