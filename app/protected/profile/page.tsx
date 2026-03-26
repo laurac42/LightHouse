@@ -1,6 +1,7 @@
 "use client";
 
-import { validateUser, fetchUserDetails, fetchUserPreferences, updateUserDetails, updateUserPreferences } from "@/lib/auth/user";
+import { validateUser, fetchUserDetails, updateUserDetails } from "@/lib/auth/user";
+import { fetchUserPreferences, updateUserPreferences } from "@/lib/data/buyer-profile";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { User, UserPreferences } from "@/types/user";
