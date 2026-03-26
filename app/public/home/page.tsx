@@ -11,9 +11,21 @@ import { useState } from "react";
 import { Search } from "lucide-react";
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";            
 
 export default function Page() {
     const [location, setLocation] = useState<string>("");
+    const router = useRouter();
+
+    async function handleSearch() {
+        if (!location.trim()) {
+            toast.error("Please enter a location to search.", {position: "top-right"});
+            return;
+        }
+        router.push(`/public/properties?location=${encodeURIComponent(location.trim())}`);
+    }
+
     return (
         <div className="bg-[url(/images/background.jpg)] bg-cover bg-top min-h-screen w-full">
             <Navbar />
@@ -36,19 +48,19 @@ export default function Page() {
                                 <div className="flex flex-col gap-2 pb-4">
                                     <Label htmlFor="location" className="text-md">Search for properties in your desired location</Label>
                                     <InputGroup className="border border-foreground flex h-full">
-                                        
-                                            <InputGroupInput
-                                                placeholder="e.g. Dundee, Monifieth ..."
-                                                value={location}
-                                                onChange={(e) => setLocation(e.target.value)}
-                                                className="flex-1 border-none"
-                                            />
-                                            <InputGroupAddon>
-                                                <Search />
-                                            </InputGroupAddon>
-                                            <InputGroupButton onClick={() => {window.location.href = '/public/properties'}} size="sm" className="hidden md:flex bg-buttonColor hover:bg-buttonHover text-md text-foreground font-bold md:w-32 h-full">Search</InputGroupButton>
+
+                                        <InputGroupInput
+                                            placeholder="e.g. Dundee, Monifieth ..."
+                                            value={location}
+                                            onChange={(e) => setLocation(e.target.value)}
+                                            className="flex-1 border-none"
+                                        />
+                                        <InputGroupAddon>
+                                            <Search />
+                                        </InputGroupAddon>
+                                        <InputGroupButton onClick={handleSearch} size="sm" className="hidden md:flex bg-buttonColor hover:bg-buttonHover text-md text-foreground font-bold md:w-32 h-full">Search</InputGroupButton>
                                     </InputGroup>
-                                    <Button onClick={() => {window.location.href = '/public/properties'}} size="sm" className="flex md:hidden bg-buttonColor hover:bg-buttonHover text-foreground text-md font-bold w-full h-10">Search</Button>
+                                    <Button onClick={handleSearch} size="sm" className="flex md:hidden bg-buttonColor hover:bg-buttonHover text-foreground text-md font-bold w-full h-10">Search</Button>
                                 </div>
                             </CardContent>
                         </Card>

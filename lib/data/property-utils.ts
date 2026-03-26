@@ -215,3 +215,23 @@ export async function loadSellerAddedInfo(propertyId: number) {
     console.log("Seller added info: ", data);
     return data;
 }
+
+/**
+ * Fetch properties for a given search results page, one page at a time
+ * @param page Page number to fetch properties for - default is 1
+ * @param page_size size of the page to fetch - default is 10
+ * @returns Promise resolving to an object containing the properties and total count of properties matching the search criteria, or null on error
+ */
+export async function fetchPropertiesForPage(page: number = 1, page_size: number = 10) {
+    const supabase = await createClient();
+    const { data, error, count } = await supabase
+        .from("properties")
+        .select("*", { count: "exact" })
+        .or(`status.eq."under offer",status.eq."active"`)
+        .range((page - 1) * page_size, page * page_size - 1);
+    
+    if (error) {
+        throw error;
+    }
+    return { data, count };
+}

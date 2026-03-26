@@ -10,9 +10,10 @@ import PropertyCard from "@/components/property-card";
 import { getImagesFromStorage } from "@/lib/data/images";
 import { validateUser } from "@/lib/auth/user";
 import { fetchFavourites } from "@/lib/data/favourites";
+import { fetchPropertiesForPage } from "@/lib/data/property-utils";
 
 
-type Property = Database["public"]["Tables"]["properties"]["Row"] & { images: string[] , isFavourite?: boolean};
+type Property = Database["public"]["Tables"]["properties"]["Row"] & { images: string[], isFavourite?: boolean };
 const PAGE_SIZE = 10; // number of properties to display per page
 
 export default function PropertiesPage() {
@@ -24,6 +25,7 @@ export default function PropertiesPage() {
     const [totalProperties, setTotalProperties] = useState(0);
     const [loading, setLoading] = useState(true);
     const [isMobile, setIsMobile] = useState(false);
+    const [userId, setUserId] = useState("");
 
     const updateMedia = useCallback(() => {
         setIsMobile(window.innerWidth < 768);
@@ -34,6 +36,21 @@ export default function PropertiesPage() {
         return () => window.removeEventListener("resize", updateMedia);
     }, [updateMedia]);
 
+    // determine whether the user is logged in or not
+    useEffect(() => {
+        const checkUser = async () => {
+            try {
+                const user = await validateUser();
+                if (user) {
+                    setUserId(user.user.id);
+                }
+            } catch (error) {
+                console.error("Error validating user: ", error);
+            }
+        }
+        checkUser();
+    }, []);
+
     /**
      * Fetch properties and property images for a given search results page
      * @param page Page number to fetch properties for - default is 1
@@ -41,21 +58,51 @@ export default function PropertiesPage() {
     const fetchProperties = useCallback(async (page: number = 1) => {
         try {
             // scroll to top
+            setLoading(true);
             window.scrollTo({ top: 0 });
 
-            const supabase = await createClient();
-            const { data, error, count } = await supabase
-                .from("properties")
-                .select("*", { count: "exact" })
-                .or(`status.eq."under offer",status.eq."active"`)
-                .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
-
+            if (userId) {
+                fetchBuyerPreferences();
+            }
+            const { data, count } = await fetchPropertiesForPage(page, PAGE_SIZE);
             setTotalProperties(count || 0);
 
             setTotalPages(Math.ceil((count || 0) / PAGE_SIZE));
             setCurrentPage(page);
 
-            // fetch images simultaneously for all properties
+            if (!data || data.length === 0) {
+                setProperties([]);
+                setLoading(false);
+                return;
+            }
+            const propertiesWithImages = await fetchPropertyImages(data as Property[]);
+
+            if (!propertiesWithImages) {
+                setProperties([]);
+                setLoading(false);
+                return;
+            }
+            const propertiesWithFavourites = await fetchFavouritesForProperties(propertiesWithImages) as Property[];
+
+            setProperties(propertiesWithFavourites);
+            setLoading(false);
+        } catch (error) {
+            console.error("Error fetching properties: ", error);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchProperties();
+    }, [fetchProperties]);
+
+    // fetch buyer preferences for a given buyer
+    async function fetchBuyerPreferences() {
+
+    }
+
+    async function fetchPropertyImages(data: Property[]) {
+        try {
+        // fetch images simultaneously for all properties
             const entries = await Promise.all(
                 (data ?? []).map(async (property) => {
                     const imageUrls = await getImagesFromStorage(property.id);
@@ -68,12 +115,19 @@ export default function PropertiesPage() {
                 if (!imageUrls) continue;
                 propertiesList.push({ ...property, images: imageUrls });
             }
+            return propertiesList;
+        } catch (error) {
+            console.error("Error fetching property images: ", error);
+        }
+    }
 
-            const user = await validateUser();
-            const favouriteIds = user
+    // fetch the user's favourite properties and mark them as favourites in the properties list
+    async function fetchFavouritesForProperties(propertiesList: Property[]) {
+        try {
+            const favouriteIds = userId
                 ? await fetchFavourites(
                     propertiesList.map((property) => property.id),
-                    user.user.id,
+                    userId,
                 )
                 : [];
 
@@ -82,17 +136,11 @@ export default function PropertiesPage() {
                 ...property,
                 isFavourite: favouriteIdsSet.has(property.id),
             }));
-
-            setProperties(propertiesWithFavourites);
-            setLoading(false);
+            return propertiesWithFavourites;
         } catch (error) {
-            console.error("Error fetching properties: ", error);
+            console.error("Error fetching favourites: ", error);
         }
-    }, []);
-
-    useEffect(() => {
-        fetchProperties();
-    }, [fetchProperties]);
+    }
 
     return (
         <div className="bg-background min-h-screen w-full">
