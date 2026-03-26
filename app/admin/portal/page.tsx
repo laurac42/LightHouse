@@ -10,7 +10,7 @@ import {
 import PortalMenu from "@/components/portal-menu";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { validateUser } from "@/lib/auth/user";
+import { createClient } from "@/lib/supabase/client";
 import { isAdmin } from "@/lib/auth/role";
 
 export default function AdminPortalPage() {
@@ -20,11 +20,6 @@ export default function AdminPortalPage() {
     useEffect(() => {
         async function checkAdmin() {
             try {
-                const user = await validateUser();
-                if (!user) {
-                    router.push("/public/home");
-                    return;
-                }
                 const admin = await isAdmin();
                 if (!admin) {
                     router.push("/public/home");

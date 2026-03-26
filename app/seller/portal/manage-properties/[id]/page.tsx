@@ -12,7 +12,7 @@ import { AgencyLocationDetails } from "@/types/agency";
 import AgencyCard from "@/components/agency-card";
 import PropertyDetails from "@/components/property-details";
 import { useRouter } from "next/navigation";
-import { validateUser } from "@/lib/auth/user";
+import { createClient } from "@/lib/supabase/client";
 import { isSeller } from "@/lib/auth/role";
 
 type Property = Database["public"]["Tables"]["properties"]["Row"];
@@ -34,12 +34,10 @@ function PropertyDetailsPage({ params }: { params: Promise<{ id: number }> }) {
     useEffect(() => {
         async function checkSeller() {
             try {
-                const user = await validateUser();
-                if (!user) {
-                    router.push("/public/home");
-                    return;
-                }
-                const seller = await isSeller(user.user.id);
+                const supabase = createClient();
+                const { data } = await supabase.auth.getClaims();
+                const user = data?.claims;
+                const seller = await isSeller(user?.user_metadata?.sub);
                 if (!seller) {
                     router.push("/public/home");
                 }

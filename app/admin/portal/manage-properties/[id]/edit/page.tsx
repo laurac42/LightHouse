@@ -4,7 +4,7 @@ import Navbar from "@/components/navbar";
 import Link from "next/link";
 import { MoveLeft } from "lucide-react";
 import EditPropertyForm from "@/components/edit-property-form";
-import { validateUser } from "@/lib/auth/user";
+import { createClient } from "@/lib/supabase/client";
 import { isAdmin } from "@/lib/auth/role";
 import { useRouter } from "next/navigation";
 
@@ -16,11 +16,6 @@ export function EditProperty({ params }: { params: Promise<{ id: number }> }) {
     useEffect(() => {
         async function checkAdmin() {
             try {
-                const user = await validateUser();
-                if (!user) {
-                    router.push("/public/home");
-                    return;
-                }
                 const admin = await isAdmin();
                 if (!admin) {
                     router.push("/public/home");
@@ -38,7 +33,7 @@ export function EditProperty({ params }: { params: Promise<{ id: number }> }) {
 
         <div className="flex min-h-svh w-full justify-center p-6 md:p-10">
             <div className="w-full max-w-5xl">
-                <EditPropertyForm propertyId={id} role="admin"/>
+                <EditPropertyForm propertyId={id} role="admin" />
             </div>
         </div>
     );

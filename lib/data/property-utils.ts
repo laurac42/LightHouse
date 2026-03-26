@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/client";
 import { Database } from "@/types/supabase";
+import type { UserPreferences } from "@/types/user";
 
 type Property = Database["public"]["Tables"]["properties"]["Row"];
 
@@ -10,7 +11,7 @@ type Property = Database["public"]["Tables"]["properties"]["Row"];
  */
 export async function fetchPropertyDetails(id: number): Promise<Property | null> {
     try {
-        const supabase = await createClient();
+        const supabase = createClient();
         const { data, error } = await supabase
             .from("properties")
             .select("*")
@@ -34,7 +35,7 @@ export async function fetchPropertyDetails(id: number): Promise<Property | null>
  */
 export async function getAgencyDetails(agencyId: string) {
     try {
-        const supabase = await createClient();
+        const supabase = createClient();
         const { data, error } = await supabase.rpc('getagencylocationdetails', { p_id: agencyId });
 
         if (error || !data) { throw error || new Error("No data returned from RPC"); }
@@ -56,7 +57,7 @@ export async function getAgencyDetails(agencyId: string) {
  */
 export async function fetchPropertiesByLocationID(locationId: string, page: number = 1, page_size: number = 10, status?: string) {
     try {
-        const supabase = await createClient();
+        const supabase = createClient();
         let query = supabase
             .from("properties")
             .select("*", { count: "exact" })
@@ -72,7 +73,6 @@ export async function fetchPropertiesByLocationID(locationId: string, page: numb
         if (!data || error) {
             throw error ? error : new Error("No properties available at the given Estate Agency Location.");
         }
-        console.log(count)
         return { count, data };
     } catch (error) {
         console.error("Error fetching properties by location ID", error);
@@ -90,7 +90,7 @@ export async function fetchPropertiesByLocationID(locationId: string, page: numb
  */
 export async function fetchPropertiesByAgentID(agentId: string, page: number = 1, page_size: number = 10, status?: string) {
     try {
-        const supabase = await createClient();
+        const supabase = createClient();
         let query = supabase
             .from("properties")
             .select("*", { count: "exact" })
@@ -123,7 +123,7 @@ export async function fetchPropertiesByAgentID(agentId: string, page: number = 1
  */
 export async function fetchPropertiesBySellerID(sellerId: string, page: number = 1, page_size: number = 10, status?: string) {
     try {
-        const supabase = await createClient();
+        const supabase = createClient();
         let query = supabase
             .from("properties")
             .select("*", { count: "exact" })
@@ -154,7 +154,7 @@ export async function fetchPropertiesBySellerID(sellerId: string, page: number =
  */
 export async function doesPropertyBelongToAgent(propertyId: number, agentId: string) {
     try {
-        const supabase = await createClient();
+        const supabase = createClient();
         const { data, error } = await supabase
             .from("properties")
             .select("id")
@@ -188,7 +188,7 @@ export function uppercaseWords(str: string) {
  * @returns The status of the given property
  */
 export async function fetchPropertyStatus(propertyId: number) {
-    const supabase = await createClient();
+    const supabase = createClient();
     const { data, error } = await supabase.from("properties")
         .select("status")
         .eq("id", propertyId)
@@ -201,8 +201,13 @@ export async function fetchPropertyStatus(propertyId: number) {
     return data;
 }
 
+/**
+ * Load seller added information for a given property ID, such as the seller's reason for selling and any additional comments they have added about the property
+ * @param propertyId Id of the property to load seller added information for
+ * @returns Seller added information for the given property ID, or null if not found
+ */
 export async function loadSellerAddedInfo(propertyId: number) {
-    const supabase = await createClient();
+    const supabase = createClient();
     const { data, error } = await supabase
         .from("property_seller_info")
         .select("*")
@@ -212,6 +217,66 @@ export async function loadSellerAddedInfo(propertyId: number) {
     if (error) {
         throw error;
     }
-    console.log("Seller added info: ", data);
     return data;
+}
+
+/**
+ * Fetch properties for a given search results page, one page at a time
+ * @param page Page number to fetch properties for - default is 1
+ * @param page_size size of the page to fetch - default is 10
+ * @param preferences Optional user preferences to use for filtering the properties
+ * @returns Promise resolving to an object containing the properties and total count of properties matching the search criteria, or null on error
+ */
+export async function fetchPropertiesForPage(page: number = 1, page_size: number = 10, preferences?: UserPreferences | null) {
+    if (preferences) {
+        return await fetchRankedPropertiesWithPreferences(page, page_size, preferences);
+
+    } else {
+        return await fetchRankedPropertiesWithoutPreferences(page, page_size);
+    }
+}
+
+/**
+ * Fetch properties for a given search results page, ranked according to user preferences
+ * @param page page number to fetch properties for - default is 1
+ * @param page_size size of the page to fetch - default is 10
+ * @param preferences User preferences to use for ranking the properties
+ * @returns Promise resolving to an object containing the ranked properties and total count of properties matching the search criteria, or null on error
+ */
+async function fetchRankedPropertiesWithPreferences(page: number, page_size: number, preferences: UserPreferences) {
+    const supabase = createClient();
+    const { data, error } = await supabase
+        .rpc("fetch_ranked_properties", {
+            p_preferred_num_bedrooms: preferences?.preferred_num_bedrooms ?? undefined,
+            p_budget: preferences?.budget ?? undefined,
+            p_preferred_property_types: preferences.preferred_property_types ?? undefined,
+            page: page,
+            page_size: page_size
+        });
+    if (error) {
+        throw error;
+    }
+    const total_count = data?.[0]?.total_count ?? 0;
+    const properties = data?.map(({ total_count, ...property }) => property) ?? [];
+
+    return { data: properties, count: total_count };
+}
+
+/**
+ * Fetch properties for a given search results page without using user preferences for ranking 
+ * @param page page number to fetch properties for - default is 1
+ * @param page_size size of the page to fetch - default is 10
+ * @returns Promise resolving to an object containing the properties and total count of properties matching the search criteria, or null on error
+ */
+async function fetchRankedPropertiesWithoutPreferences(page: number, page_size: number) {
+    const supabase = await createClient();
+    const { data, error, count } = await supabase
+        .from("properties")
+        .select("*", { count: "exact" })
+        .or(`status.eq."under offer",status.eq."active"`)
+        .range((page - 1) * page_size, page * page_size - 1);
+    if (error) {
+        throw error;
+    }
+    return { data, count };
 }

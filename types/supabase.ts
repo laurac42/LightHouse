@@ -392,6 +392,44 @@ export type Database = {
           last_name: string
         }[]
       }
+      fetch_ranked_properties: {
+        Args: {
+          p_budget?: number
+          p_preferred_num_bedrooms?: number
+          p_preferred_property_types?: string[]
+          page?: number
+          page_size?: number
+        }
+        Returns: {
+          added_at: string
+          address_line_1: string
+          address_line_2: string
+          agency_location_id: string
+          agent_id: string
+          city: string
+          council_tax_band: string
+          description: string
+          epc_rating: string
+          features: string[]
+          has_garage: boolean
+          id: number
+          image_url: string
+          is_new_build: boolean
+          last_updated_at: string
+          num_bathrooms: number
+          num_bedrooms: number
+          post_code: string
+          price: number
+          price_type: string
+          property_type: string
+          seller_id: string
+          square_feet: number
+          status: string
+          title: string
+          total_count: number
+          weighted_score: number
+        }[]
+      }
       fetch_users_favourite_properties: {
         Args: never
         Returns: {
@@ -435,6 +473,48 @@ export type Database = {
           id: string
           last_name: string
         }[]
+      }
+      fetchrankedproperties: {
+        Args: {
+          budget?: number
+          page?: number
+          page_size?: number
+          preferred_num_bedrooms?: number
+          preferred_property_types?: string[]
+        }
+        Returns: {
+          added_at: string
+          address_line_1: string
+          address_line_2: string | null
+          agency_location_id: string | null
+          agent_id: string | null
+          city: string
+          council_tax_band: string | null
+          description: string
+          epc_rating: string | null
+          features: string[] | null
+          has_garage: boolean | null
+          id: number
+          image_url: string | null
+          is_new_build: boolean
+          last_updated_at: string | null
+          num_bathrooms: number | null
+          num_bedrooms: number | null
+          post_code: string
+          price: number
+          price_type: string | null
+          property_type: string | null
+          seller_id: string | null
+          square_feet: number | null
+          status: string
+          title: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "properties"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       get_users_granted_by_agent: {
         Args: never

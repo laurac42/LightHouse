@@ -49,19 +49,6 @@ export default function FavouritesPage() {
 
 
     useEffect(() => {
-        async function checkUser() {
-            try {
-                const user = await validateUser();
-                if (!user || !user.user.id) {
-                    router.push("/public/home");
-                    return;
-                }
-            } catch (error) {
-                console.error("Error validating user:", error);
-                router.push("/public/home");
-            }
-        }
-        checkUser();
         fetchProperties();
     }, []);
 

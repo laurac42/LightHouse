@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 import { validateUser } from "@/lib/auth/user";
 import { isAdmin } from "@/lib/auth/role";
 import AddPropertyForm from "@/components/add-property-form";
+import { createClient } from "@/lib/supabase/client";
 
 export default function AdminPortalPage() {
     const router = useRouter();
@@ -21,17 +22,15 @@ export default function AdminPortalPage() {
     useEffect(() => {
         async function checkAdmin() {
             try {
-                const user = await validateUser();
-                if (!user) {
-                    router.push("/public/home");
-                    return;
-                }
+                const supabase = createClient();
+                const { data } = await supabase.auth.getClaims();
+                const user = data?.claims;
                 const admin = await isAdmin();
                 if (!admin) {
                     router.push("/public/home");
                     return;
                 }
-                setUser(user.user.id);
+                setUser(user?.user_metadata?.sub || null);
             } catch (error) {
                 console.error("Error validating admin access:", error);
                 router.push("/public/home");

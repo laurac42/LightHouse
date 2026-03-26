@@ -49,8 +49,7 @@ export async function uploadImageToStorage(propertyId: number, file: File, filen
 export async function deleteImageFromStorage(propertyId: number, filename: string, sellerImage = false) {
     const supabase = await createClient();
     const path = sellerImage ? `properties/${propertyId}/seller/${filename}` : `properties/${propertyId}/${filename}`;
-    
-    console.log("Deleting image at path: ", path);  
+      
     const { error } = await supabase.storage
         .from("lighthouse-bucket")
         .remove([path]);

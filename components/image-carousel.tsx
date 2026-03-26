@@ -225,11 +225,9 @@ export default function ImageCarousel({ images, property, page, isModalOpen }: {
                         <XCircleIcon size={32} className="absolute top-6 right-6 text-white"
                             onClick={(e) => {
                                 e.stopPropagation();
-                                console.log("clicked close icon")
                                 setSelectedImageIndex(null);
                                 handleClose();
-                                console.log("clicked close icon, setting selectedImageIndex to null and closing modal")
-                            }} />
+                               }} />
                         <div className="w-full max-w-[90vw]">
                             <Carousel
                                 key={selectedImageIndex}

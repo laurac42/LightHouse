@@ -10,9 +10,8 @@ import {
 import PortalMenu from "@/components/portal-menu";
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { validateUser } from "@/lib/auth/user";
-import { isAdmin, getAgentsLocationId } from "@/lib/auth/role"
-import { doesPropertyBelongToAgent, fetchPropertiesByLocationID, fetchPropertiesByAgentID } from "@/lib/data/property-utils";
+import { isAdmin } from "@/lib/auth/role"
+import { fetchPropertiesByLocationID } from "@/lib/data/property-utils";
 import { Database } from "@/types/supabase";
 import { getImagesFromStorage } from "@/lib/data/images";
 import { ChevronRight, ChevronLeft } from "lucide-react";
@@ -20,7 +19,7 @@ import { Button } from "@/components/ui/button";
 import PropertyCard from "@/components/property-card";
 import { loadAllAgencies, loadAgencyLocations } from "@/lib/data/agency-utils";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Field, FieldLabel, FieldDescription } from "@/components/ui/field";
+import { createClient } from "@/lib/supabase/client";
 
 type Property = Database["public"]["Tables"]["properties"]["Row"];
 type PropertyWithImages = Property & { images: string[] };
@@ -57,11 +56,6 @@ export default function AdminPropertiesPage() {
     useEffect(() => {
         async function checkAdmin() {
             try {
-                const user = await validateUser();
-                if (!user) {
-                    router.push("/public/home");
-                    return;
-                }
                 const admin = await isAdmin();
                 if (!admin) {
                     router.push("/public/home");
@@ -127,15 +121,12 @@ export default function AdminPropertiesPage() {
 
             const result = await fetchPropertiesByLocationID(selectedLocationId, page, PAGE_SIZE, selectedStatus || undefined);
 
-            console.log("Fetched properties for agency ", selectedAgencyId, ": ", result);
-
             if (!result) {
                 setErrorMessage("Unable to fetch properties");
                 return;
             }
             const { count, data } = result;
 
-            console.log(count);
             setTotalProperties(count || 0);
 
             setTotalPages(Math.ceil((count || 0) / PAGE_SIZE));

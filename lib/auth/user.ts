@@ -79,27 +79,6 @@ export async function fetchUserDetails(userId: string) {
 }
 
 /**
- * Fetch user preferences from the buyer profiles table for a given user ID
- * @param userId id of the user to fetch preferences for
- * @returns user preferences such as budget, property type and preferred locations
- * @throws error if there is an issue fetching the user preferences from the database
- * @remarks This function assumes that the user preferences are stored in a table called "buyer_profiles" and that the user ID is used as the primary key for that table. If the database schema changes, this function may need to be updated accordingly.
- */
-export async function fetchUserPreferences(userId: string) {
-    const supabase = await createClient();
-    const { data: userPreferences, error } = await supabase
-        .from("buyer_profiles")
-        .select("*")
-        .eq("id", userId)
-        .maybeSingle();
-
-    if (error) {
-        throw error;
-    }
-    return userPreferences;
-}
-
-/**
  * Update a user's details (name) by their id
  * @param user user to update details of
  */
@@ -109,18 +88,6 @@ export async function updateUserDetails(user: User) {
         .from("users")
         .update({ first_name: user.first_name, last_name: user.last_name, user_goals: user.user_goals })
         .eq('id', user.id);
-
-    if (error) {
-        throw error;
-    }
-}
-
-export async function updateUserPreferences(preferences: UserPreferences) {
-    const supabase = await createClient();
-    const { error } = await supabase
-        .from("buyer_profiles")
-        .update({ budget: preferences.budget, family_size: preferences.family_size, preferred_num_bedrooms: preferences.preferred_num_bedrooms, preferred_locations: preferences.preferred_locations, preferred_property_types: preferences.preferred_property_types, })
-        .eq('id', preferences.id);
 
     if (error) {
         throw error;
