@@ -121,15 +121,12 @@ export default function AdminPropertiesPage() {
 
             const result = await fetchPropertiesByLocationID(selectedLocationId, page, PAGE_SIZE, selectedStatus || undefined);
 
-            console.log("Fetched properties for agency ", selectedAgencyId, ": ", result);
-
             if (!result) {
                 setErrorMessage("Unable to fetch properties");
                 return;
             }
             const { count, data } = result;
 
-            console.log(count);
             setTotalProperties(count || 0);
 
             setTotalPages(Math.ceil((count || 0) / PAGE_SIZE));

@@ -48,6 +48,5 @@ export async function loadAgentsByLocation(locationId: string) {
     if (error) {
         throw error;
     }
-    console.log("Agents for location ", locationId, ": ", data);    
     return data;
 }

@@ -48,7 +48,6 @@ export function removeBulletsAndHeadings(description: string | null) {
     // if a p tag is removed, add a new line character to preserve spacing between paragraphs
     const paragraphsRemoved = description.replace(/<\/p> *?/g, '\n\n');
     const allRemoved =  paragraphsRemoved.replace(/<p> *?|<h1>[\s\S]*<\/h1>|<ul>[\s\S]*?<\/ul>|<li>[\s\S]*?<\/li>/g, '');
-    console.log("Description with bullets and headings removed: ", allRemoved);
     return allRemoved;
 }
 

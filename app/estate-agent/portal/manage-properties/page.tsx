@@ -118,8 +118,7 @@ export default function EstateAgentPropertiesPage() {
                 return;
             }
             const { count, data } = result;
-
-            console.log(count);
+            
             setTotalProperties(count || 0);
 
             setTotalPages(Math.ceil((count || 0) / PAGE_SIZE));

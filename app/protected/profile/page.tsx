@@ -66,7 +66,6 @@ export default function ProfilePage() {
                 if (details?.user_goals?.includes("buying")) {
                     fetchUserPreferences(userDetails.id).then((preferences) => {
                         setUserPreferences(preferences);
-                        console.log("preferences set");
                     });
                 }
             } catch (error) {

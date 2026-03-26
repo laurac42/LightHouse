@@ -19,7 +19,6 @@ export async function fetchUserPreferences(userId: string) {
     if (error) {
         throw error;
     }
-    console.log("budget: ", userPreferences?.budget);
     return userPreferences;
 }
 

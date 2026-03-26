@@ -73,7 +73,6 @@ export async function fetchPropertiesByLocationID(locationId: string, page: numb
         if (!data || error) {
             throw error ? error : new Error("No properties available at the given Estate Agency Location.");
         }
-        console.log(count)
         return { count, data };
     } catch (error) {
         console.error("Error fetching properties by location ID", error);
@@ -230,11 +229,9 @@ export async function loadSellerAddedInfo(propertyId: number) {
  */
 export async function fetchPropertiesForPage(page: number = 1, page_size: number = 10, preferences?: UserPreferences | null) {
     if (preferences) {
-        console.log("fetching ranked properties with preferences: ", preferences);
         return await fetchRankedPropertiesWithPreferences(page, page_size, preferences);
 
     } else {
-        console.log("fetching ranked properties without preferences");
         return await fetchRankedPropertiesWithoutPreferences(page, page_size);
     }
 }
