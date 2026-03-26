@@ -401,8 +401,33 @@ export type Database = {
           page_size?: number
         }
         Returns: {
-          property: Database["public"]["Tables"]["properties"]["Row"]
+          added_at: string
+          address_line_1: string
+          address_line_2: string
+          agency_location_id: string
+          agent_id: string
+          city: string
+          council_tax_band: string
+          description: string
+          epc_rating: string
+          features: string[]
+          has_garage: boolean
+          id: number
+          image_url: string
+          is_new_build: boolean
+          last_updated_at: string
+          num_bathrooms: number
+          num_bedrooms: number
+          post_code: string
+          price: number
+          price_type: string
+          property_type: string
+          seller_id: string
+          square_feet: number
+          status: string
+          title: string
           total_count: number
+          weighted_score: number
         }[]
       }
       fetch_users_favourite_properties: {
