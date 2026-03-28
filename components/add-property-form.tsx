@@ -140,7 +140,7 @@ export default function AddPropertyForm({ role, id }: { role: "admin" | "estate-
 
             setSuccessMessage("Property added successfully.");
         } catch (error) {
-            setErrorMessage("An error occurred while adding the property. Please try again.");
+            setErrorMessage("An error occurred while adding the property: " + (error instanceof Error ? error.message : ""));
         } finally {
             setLoading(false);
         }
@@ -174,7 +174,7 @@ export default function AddPropertyForm({ role, id }: { role: "admin" | "estate-
             await addProperty({ ...propertyData, status: "draft" }, idToUse, stagedImages, sellerId);
             setSuccessMessage("Draft saved successfully.");
         } catch (error) {
-            setErrorMessage("An error occurred while saving the draft. Please try again.");
+            setErrorMessage("An error occurred while saving the draft. Please try again: " + (error instanceof Error ? error.message : ""));
         } finally {
             setLoading(false);
         }
@@ -199,7 +199,7 @@ export default function AddPropertyForm({ role, id }: { role: "admin" | "estate-
             const sellerId = await getIdByEmail(sellerEmail);
             return sellerId.id;
         } catch (error) {
-            setErrorMessage("Unable to validate seller email. Please try again.");
+            setErrorMessage("Unable to validate seller email. Please try again: " + (error instanceof Error ? error.message : ""));
             setLoading(false);
             return null;
         }

@@ -4,6 +4,7 @@ config({ path: "../.env.local" }); // load environment variables from .env file
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "../types/supabase.ts";
 import { GoogleGenAI } from "@google/genai";
+import { getLatitudeLongitudeFromPostcode } from "../lib/data/location.ts";
 import type { AddressLatandLong } from "../types/address.ts";
 
 const ai = new GoogleGenAI({
@@ -14,35 +15,6 @@ const supabase = createClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
-
-const myHeaders = new Headers();
-myHeaders.append("Accept", "application/json");
-
-const requestOptions: RequestInit = {
-    method: "GET",
-    headers: myHeaders,
-    redirect: "follow"
-};
-
-
-/**
- * Use postcodes.io API to get latitude and longitude from a postcode
- * @param postcode postcode to get latitude and longitude from
- * @returns An object containing the latitude and longitude of the postcode
- */
-export function getLatitudeLongitudeFromAddress(postcode: string) {
-    const encodedPostcode = encodeURIComponent(postcode);
-    return fetch(`https://api.postcodes.io/postcodes/${encodedPostcode}`, requestOptions)
-        .then((response) => response.json())
-        .then((result) => {
-            console.log(result);
-            return { latitude: result.result.latitude, longitude: result.result.longitude } as { latitude: number, longitude: number };
-        })
-        .catch((error) => {
-            console.error(error);
-            return null;
-        });
-}
 
 /**
  * Get the postcodes of all properties in the database that have a null latitude and longitude
@@ -102,7 +74,7 @@ async function processPropertyCoordinates(property: AddressLatandLong) {
         console.log(`Property with ID ${property.id} has no postcode.`);
         return;
     }
-    let result = await getLatitudeLongitudeFromAddress(property.post_code);
+    let result = await getLatitudeLongitudeFromPostcode(property.post_code);
     let numAttempts = 0;
     while (!result && numAttempts < 5) {
         console.log(`Failed to get coordinates for property with ID ${property.id}.`);
@@ -113,7 +85,7 @@ async function processPropertyCoordinates(property: AddressLatandLong) {
             numAttempts++;
             continue;
         }
-        const newResult = await getLatitudeLongitudeFromAddress(regeneratedPostcode);
+        const newResult = await getLatitudeLongitudeFromPostcode(regeneratedPostcode);
         if (!newResult) {
             numAttempts++;
             continue;

@@ -4,7 +4,8 @@ import { config } from "dotenv";
 config({ path: "../.env.local" }); // load environment variables from .env file
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "../types/supabase.ts";
-import { getLatitudeLongitudeFromAddress, regeneratePostcode } from "./latitude_longitude_address.ts";
+import {getLatitudeLongitudeFromPostcode} from "../lib/data/location.ts";
+import { regeneratePostcode } from "./latitude_longitude_address.ts";
 import type { AddressLatandLong } from "../types/address.ts";
 
 interface Property {
@@ -303,7 +304,7 @@ async function getCoordinatesForProperty(property: Property) {
             longitude: property.longitude,
         };
 
-        let coordinates = await getLatitudeLongitudeFromAddress(addressData.post_code);
+        let coordinates = await getLatitudeLongitudeFromPostcode(addressData.post_code);
         let numAttempts = 0;
         while (!coordinates && numAttempts < 5) {
             console.log(`Failed to get coordinates for postcode ${addressData.post_code}. Regenerating postcode and trying again...`);
@@ -312,7 +313,7 @@ async function getCoordinatesForProperty(property: Property) {
                 console.log(`Failed to regenerate postcode for postcode ${addressData.post_code}.`);
                 continue;
             }
-            coordinates = await getLatitudeLongitudeFromAddress(new_postcode);
+            coordinates = await getLatitudeLongitudeFromPostcode(new_postcode);
             numAttempts++;
         }
         return coordinates;
