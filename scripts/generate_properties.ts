@@ -4,14 +4,19 @@ import { config } from "dotenv";
 config({ path: "../.env.local" }); // load environment variables from .env file
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "../types/supabase.ts";
+import { getLatitudeLongitudeFromAddress, regeneratePostcode } from "./latitude_longitude_address.ts";
+import type { AddressLatandLong } from "../types/address.ts";
 
 interface Property {
     title: string;
     price: number;
     description: string;
+    features: string[];
     date_added: string;
     address_line_1: string;
     address_line_2?: string;
+    latitude: number | null;
+    longitude: number | null;
     city: string;
     post_code: string;
     num_bedrooms: number;
@@ -76,7 +81,7 @@ async function generatePropertyListing(): Promise<Property[] | null> {
             contents: `Generate me 10 property listings as JSON format, using the following random properties as a guide: ${JSON.stringify(randomProperties)}.
             Each property must be highly unique and different from the others, with a variety of features, locations, and price points.
             No property may have the same address.
-            The description should be in HTML format, with the 'Key features' as a <h1> heading followed by bullet points at the start of the description formatted as an unordered list, then a <h1> title 'Description', and then the rest of the description in paragraphs. The rest of the description shoudl be multiple paragraphs formatted with <p> tags, not a single block of text.
+            The description should be multiple paragraphs, not a single block of text, and should be long enough to contain detailed information about the property.
             Each description must feel like it was written by a different person, with a different writing style and focus on different aspects of the property.
             Each property must have the provided number of bedrooms and be the provided property type and depending on the value of "isNewBuild, be a new build"}.
             Then select the following fields (these must be realistic for the given property type and number of bedrooms):            
@@ -84,18 +89,19 @@ async function generatePropertyListing(): Promise<Property[] | null> {
             - council_tax_band: a valid band (A-H) based on the price and features of the property
             - epc_rating: a valid rating (A-G) based on the features of the property. Remember that new builds are more likely to have higher EPC ratings.
             - square_feet: a realistic square footage for the number of bedrooms and bathrooms
-            - is_new_build: a boolean indicating whether the property is a new build
             Then based on this, generate a detailed description of the property, including details about the interior and exterior, and any unique features of the property. The description should be consistent with the randomly generated features.
-            Please also start the description with a set of bullet points, highlighting key features of the property such as number of bedrooms, bathrooms, and any unique features
+            Please also provide a list of key features of the property such as number of bedrooms, bathrooms, and any unique features. These should be formatted as a list of strings, and you must provide at least 5 key features for each property.
+             The description and key features should be consistent with the randomly generated features and the other details of the property.
+             The title should be a concise summary of the property, including the number of bedrooms, property type and location (but not the postcode).
             The property is located in Tayside or Fife, Scotland.
-            The postcode must be a valid postcode in Tayside or Fife, and the address must be consistent with the postcode.
+            The postcode must be a currently valid postcode (it must be currently in use and not terminated) in Tayside or Fife, and the address must be consistent with the postcode.
             Avoid overusing the word Willow in the address. 
             The date_added should be a random date within the last 6 months (this means only dates from October 2025 onwards). 
             The price should be a realistic price for a property in Tayside or Fife with the given features and should be a number, with no currency or commas. 
             The title should include the address, number of bedrooms, and property type, but not the postcode, new-build status, or additional descriptive details.
             If the property type is terraced, detached or semi-detached, 'house' or 'property' should be included in the title, but if the property is a flat or bungalow, the title should not include 'house'. 
             En-suites and WCs are also counted as bathrooms, and should be included in the num_bathrooms field.
-            The JSON must include the following fields: title, price, description, date_added, address_line_1, address_line_2 (this can be optional), city, post_code, num_bedrooms, num_bathrooms, property_type, square_feet, council_tax_band, epc_rating, price_type (e.g. offers over, fixed price), has_garage (boolean), is_new_build (boolean).`,
+            The JSON must include the following fields: title, price, description, features, date_added, address_line_1, address_line_2 (this can be optional), city, post_code, num_bedrooms, num_bathrooms, property_type, square_feet, council_tax_band, epc_rating, price_type (e.g. offers over, fixed price), has_garage (boolean), is_new_build (boolean).`,
         });
         if (response.text) {
             // remove backticks and backticks json
@@ -142,8 +148,6 @@ async function generatePropertyImages(description: string, propertyId: number) {
     }
 }
 
-generatePropertyImages("<h1>Key features</h1><ul><li>4 Bedrooms</li><li>2 Bathrooms (1 En-suite)</li><li>Modern Riverside Flat</li><li>Stunning Views</li><li>Allocated Parking</li></ul><h1>Description</h1><p>Experience contemporary urban living at its finest in this impressive 4-bedroom riverside flat, located in the vibrant waterfront district of Dundee. This stylish apartment offers panoramic views of the River Tay and beyond, creating a truly captivating backdrop to your everyday life. The open-plan living, dining, and kitchen area is the heart of the home, designed for modern entertaining and comfortable relaxation.</p><p>Four generously sized bedrooms provide flexible accommodation, with the master suite featuring a private en-suite bathroom. A further family bathroom serves the remaining rooms. The property benefits from secure allocated parking, lift access, and is within easy reach of Dundee's cultural attractions, shops, and transport links. This is an exceptional opportunity for those seeking a sophisticated city lifestyle.</p>", 43);
-
 /**a
  * Uploads generated property image to supabase storage
  * The images are stored in a folder named after the property ID, and the filename is the index of the image
@@ -180,11 +184,14 @@ async function uploadPropertyToSupabase(property: Property, agencyLocations: { l
             title: property.title,
             price: property.price,
             description: property.description,
+            features: property.features,
             added_at: property.date_added,
             address_line_1: property.address_line_1,
             address_line_2: property.address_line_2,
             city: property.city,
             post_code: property.post_code,
+            latitude: property.latitude,
+            longitude: property.longitude,
             num_bedrooms: property.num_bedrooms,
             num_bathrooms: property.num_bathrooms,
             property_type: property.property_type,
@@ -284,6 +291,37 @@ async function loadAllAgencyLocations(): Promise<{ location_id: string }[]> {
     }
 }
 
+async function getCoordinatesForProperty(property: Property) {
+    try {
+        const addressData: AddressLatandLong = {
+            id: 0,
+            address_line_1: property.address_line_1,
+            address_line_2: property.address_line_2,
+            city: property.city,
+            post_code: property.post_code,
+            latitude: property.latitude,
+            longitude: property.longitude,
+        };
+
+        let coordinates = await getLatitudeLongitudeFromAddress(addressData.post_code);
+        let numAttempts = 0;
+        while (!coordinates && numAttempts < 5) {
+            console.log(`Failed to get coordinates for postcode ${addressData.post_code}. Regenerating postcode and trying again...`);
+            const new_postcode = await regeneratePostcode(addressData);
+            if (!new_postcode) {
+                console.log(`Failed to regenerate postcode for postcode ${addressData.post_code}.`);
+                continue;
+            }
+            coordinates = await getLatitudeLongitudeFromAddress(new_postcode);
+            numAttempts++;
+        }
+        return coordinates;
+    } catch (error) {
+        console.error("Error getting coordinates for postcode: ", error);
+        return null;
+    }
+}
+
 /**
  * Generates a full property listing for a single property, including the property details, images, and floor plan, and uploads all of this information to the Supabase database and storage.
  */
@@ -294,6 +332,11 @@ async function generateFullPropertyListing() {
         const agencyLocations = await loadAllAgencyLocations();
         for (const property of properties || []) {
             if (property && agencyLocations.length > 0) {
+                const coordinates = await getCoordinatesForProperty(property);
+                if (coordinates) {
+                    property.latitude = coordinates.latitude;
+                    property.longitude = coordinates.longitude;
+                }
                 const propertyId = await uploadPropertyToSupabase(property, agencyLocations);
 
                 console.log("Generating listing for property: ", propertyId);
@@ -314,10 +357,10 @@ async function generateFullPropertyListing() {
  * Main function to generate multiple property listings
  */
 async function main() {
-    const numPropertiesToGenerate = 5;
+    const numPropertiesToGenerate = 1; // this is multiplied by 10 in the generatePropertyListing function, so running this with 5 will generate 50 properties in total
     for (let i = 0; i < numPropertiesToGenerate; i++) {
         await generateFullPropertyListing();
     }
 }
 
-//main();
+main();

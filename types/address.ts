@@ -4,3 +4,13 @@ export type Address = {
     city: string;
     post_code: string;
 }
+
+export type AddressLatandLong = {
+    id: number;
+    address_line_1: string;
+    address_line_2?: string | null;
+    city: string;
+    post_code: string;
+    latitude: number | null;
+    longitude: number | null;
+}

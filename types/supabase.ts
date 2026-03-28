@@ -194,6 +194,8 @@ export type Database = {
           image_url: string | null
           is_new_build: boolean
           last_updated_at: string | null
+          latitude: number | null
+          longitude: number | null
           num_bathrooms: number | null
           num_bedrooms: number | null
           post_code: string
@@ -221,6 +223,8 @@ export type Database = {
           image_url?: string | null
           is_new_build?: boolean
           last_updated_at?: string | null
+          latitude?: number | null
+          longitude?: number | null
           num_bathrooms?: number | null
           num_bedrooms?: number | null
           post_code: string
@@ -248,6 +252,8 @@ export type Database = {
           image_url?: string | null
           is_new_build?: boolean
           last_updated_at?: string | null
+          latitude?: number | null
+          longitude?: number | null
           num_bathrooms?: number | null
           num_bedrooms?: number | null
           post_code?: string
@@ -448,6 +454,8 @@ export type Database = {
           image_url: string | null
           is_new_build: boolean
           last_updated_at: string | null
+          latitude: number | null
+          longitude: number | null
           num_bathrooms: number | null
           num_bedrooms: number | null
           post_code: string
@@ -498,6 +506,8 @@ export type Database = {
           image_url: string | null
           is_new_build: boolean
           last_updated_at: string | null
+          latitude: number | null
+          longitude: number | null
           num_bathrooms: number | null
           num_bedrooms: number | null
           post_code: string

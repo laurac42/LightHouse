@@ -8,6 +8,12 @@ const supabase = createClient<Database>(
     process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
+/**
+ * Update the description and features of a property in the database
+ * @param propertyId id of the property to update the description for
+ * @param newDescription new description to update the property with
+ * @param features list of features to update the property with
+ */
 async function updatePropertyDescription(propertyId: number, newDescription: string, features: string[]) {
     try {
         const { data, error } = await supabase
@@ -20,7 +26,10 @@ async function updatePropertyDescription(propertyId: number, newDescription: str
     }
 }
 
-
+/**
+ * Fetch all property descriptions from the database
+ * @returns a list of all properties with their id and description
+ */
 async function fetchAllPropertyDescriptions() {
     const { data, error } = await supabase
         .from("properties")
@@ -31,7 +40,12 @@ async function fetchAllPropertyDescriptions() {
     return data;
 }
 
-export function getFeaturesFromDescription(description: string | null) {
+/**
+ * Get the features of a property from its description by extracting the content between <li> tags in the description
+ * @param description description to extract features from
+ * @returns A list of features extracted from the description
+ */
+function getFeaturesFromDescription(description: string | null) {
     if (!description) return [];
     // all features are in <li> tags, so extract content between all <li> tags in the description, then remove <li> tags from the extracted content
     return description.match(/<li>([^<]*)<\/li>/g)?.map(li => li.replace(/<\/?li>/g, '').trim()) || [];
