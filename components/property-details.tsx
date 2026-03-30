@@ -6,11 +6,11 @@ import { loadSellerAddedInfo } from "@/lib/data/property-utils";
 import { toast } from "sonner";
 import { saveFavourite, removeFavourite } from "@/lib/data/favourites";
 import { validateUser } from "@/lib/auth/user";
-
+import type { Tag } from "@/types/tags";
 import SellerDetails from "./seller-details";
 import { Button } from "./ui/button";
 
-type Property = Database["public"]["Tables"]["properties"]["Row"] & {isFavourite?: boolean};
+type Property = Database["public"]["Tables"]["properties"]["Row"] & { isFavourite?: boolean, tags?: Tag[] };
 
 // page options are:
 // - view: view the property details as a buyer would see them
@@ -101,6 +101,7 @@ export default function PropertyDetails({ params, page = "view" }: { params: { i
                         </div>
                     </div>
                     <hr />
+
                     <div className={styles.description + ` ${sellerDetails ? 'mb-8 md:mb-12 lg:mb-4' : 'mb-20 md:mb-28 lg:mb-8'} whitespace:`}>
                         <h1 className={styles.features}>Key Features</h1>
                         <ul>
@@ -111,6 +112,25 @@ export default function PropertyDetails({ params, page = "view" }: { params: { i
                         <h1>Description</h1>
                         <p>{property.description}</p>
                     </div>
+
+                     <hr className="mt-12"/>
+                    <div >
+                        <h1 className={styles.tagHeading}>What are other Buyers Saying?</h1>
+                        {property.tags && property.tags.length > 0 ? (
+                            <div className="flex flex-wrap gap-2 my-2">
+                                {property.tags.map((tag) => (
+                                    <div key={tag.tag_id} className="inline-flex items-center gap-1 px-2 py-1 bg-buttonColor rounded-md text-sm">
+                                        <BookOpenText size={12} />
+                                        {tag.name} ({tag.count})
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <p>No tags for this property.</p>
+                        )}
+                    </div>
+                    <hr className="pb-4" />
+                    
                     {((sellerDetails) || (page === "edit")) && (
                         <SellerDetails property={property} reason={reason} description={sellerDetails} page={page} />
                     )}

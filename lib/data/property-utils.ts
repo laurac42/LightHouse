@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Database } from "@/types/supabase";
 import type { UserPreferences } from "@/types/user";
 import type { BoundingBox } from "@/types/location";
+import type { Tag } from "@/types/tags";
 
 type Property = Database["public"]["Tables"]["properties"]["Row"];
 
@@ -291,7 +292,7 @@ async function fetchRankedPropertiesWithoutPreferences(page: number, page_size: 
             .lte("longitude", boundingBox.maxLongitude)
             .gte("longitude", boundingBox.minLongitude);
 
-            // 
+        // 
 
         if (error) {
             throw error;
@@ -308,4 +309,21 @@ async function fetchRankedPropertiesWithoutPreferences(page: number, page_size: 
         }
         return { data, count };
     }
+}
+
+/**
+* Fetch property tags for a given property ID
+* @param propertyId ID of the property to fetch tags for
+* @returns A list of tags for the property, including the tag name and count of how many times the tag has been applied to properties in the database
+*/
+export async function fetchPropertyTags(propertyId: number) {
+    const supabase = createClient();
+    const { data, error } = await supabase
+        .rpc("get_tag_counts", { p_property_id: propertyId });
+    if (error) {
+        throw error;
+    }
+    console.log("data from get_tag_counts RPC: ", data);
+    return data as Tag[];
+
 }

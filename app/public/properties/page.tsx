@@ -14,8 +14,10 @@ import { fetchUserPreferences } from "@/lib/data/buyer-profile";
 import { UserPreferences } from "@/types/user";
 import { getBoundingBoxForLocation } from "@/lib/data/location";
 import type { BoundingBox } from "@/types/location";
+import type { Tag } from "@/types/tags";
+import { fetchPropertyTags } from "@/lib/data/property-utils";
 
-type Property = Database["public"]["Tables"]["properties"]["Row"] & { images: string[], isFavourite?: boolean };
+type Property = Database["public"]["Tables"]["properties"]["Row"] & { images: string[], isFavourite?: boolean, tags?: Tag[] };
 const PAGE_SIZE = 10; // number of properties to display per page
 
 export default function PropertiesPage() {
@@ -31,6 +33,7 @@ export default function PropertiesPage() {
     const [preferences, setPreferences] = useState<UserPreferences | null>(null);
     const [userChecked, setUserChecked] = useState<Boolean>(false); // state to track whether we've checked if the user is logged in or not
     const [boundingBox, setBoundingBox] = useState<BoundingBox | null | undefined>(undefined); // undefined is before it is set, null is if there is no bounding box for the location (e.g. view all properties)
+
 
     const updateMedia = useCallback(() => {
         setIsMobile(window.innerWidth < 768);
@@ -87,7 +90,7 @@ export default function PropertiesPage() {
      * @param page Page number to fetch properties for - default is 1
      * @param id User ID for fetching personalised properties
      */
-    const fetchProperties = useCallback(async (page: number = 1, id: string | null, box: BoundingBox | null | undefined ) => {
+    const fetchProperties = useCallback(async (page: number = 1, id: string | null, box: BoundingBox | null | undefined) => {
         try {
             // scroll to top
             setLoading(true);
@@ -101,7 +104,7 @@ export default function PropertiesPage() {
                 }
             }
             if (box !== undefined) {
-                console.log("fetching properties with bounding box: ", box);    
+                console.log("fetching properties with bounding box: ", box);
                 const { data, count } = await fetchPropertiesForPage(page, PAGE_SIZE, user_preferences, box);
                 setTotalProperties(count || 0);
 
@@ -122,6 +125,10 @@ export default function PropertiesPage() {
                 }
                 const propertiesWithFavourites = await fetchFavouritesForProperties(propertiesWithImages) as Property[];
 
+                for (const property of propertiesWithFavourites) {
+                    const tags = await fetchPropertyTags(property.id);
+                    property.tags = tags;
+                }
                 setProperties(propertiesWithFavourites);
             }
         } catch (error) {
@@ -196,21 +203,21 @@ export default function PropertiesPage() {
     return (
         <div className="bg-background min-h-screen w-full">
             <Navbar />
-            <FilterBar loc={location} setLoc={setLocation}/>
+            <FilterBar loc={location} setLoc={setLocation} />
             {loading ? (
                 <div className="flex items-center justify-center h-64">
                     <p className="text-2xl text-gray-500">Loading properties...</p>
                 </div>
             ) : (
                 <>{properties.length === 0 ? (
-                        <div className="flex items-center justify-center h-64">
-                            <p className="text-2xl text-gray-500">No properties found{location ? ` in ${location}` : ""}.</p>
-                        </div>
-                    ) : (
-                        <div className="pt-2 px-6 text-highlight">
-                            <p>Showing properties {currentPage * PAGE_SIZE - (PAGE_SIZE - 1)} - {Math.min(currentPage * PAGE_SIZE, totalProperties)} of {totalProperties} properties in {location}</p>
-                        </div>
-                    )
+                    <div className="flex items-center justify-center h-64">
+                        <p className="text-2xl text-gray-500">No properties found{location ? ` in ${location}` : ""}.</p>
+                    </div>
+                ) : (
+                    <div className="pt-2 px-6 text-highlight">
+                        <p>Showing properties {currentPage * PAGE_SIZE - (PAGE_SIZE - 1)} - {Math.min(currentPage * PAGE_SIZE, totalProperties)} of {totalProperties} properties {location ? `in ${location}` : ""}</p>
+                    </div>
+                )
                 }
                 </>
             )}

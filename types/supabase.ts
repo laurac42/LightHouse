@@ -332,19 +332,19 @@ export type Database = {
           created_at: string | null
           property_id: number
           tag_id: number
-          user_id: string | null
+          user_id: string
         }
         Insert: {
           created_at?: string | null
           property_id?: number
           tag_id: number
-          user_id?: string | null
+          user_id: string
         }
         Update: {
           created_at?: string | null
           property_id?: number
           tag_id?: number
-          user_id?: string | null
+          user_id?: string
         }
         Relationships: [
           {
@@ -489,8 +489,10 @@ export type Database = {
           city: string
           council_tax_band: string
           description: string
+          driveway: boolean
           epc_rating: string
           features: string[]
+          garden: boolean
           has_garage: boolean
           id: number
           image_url: string
@@ -605,6 +607,14 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      get_tag_counts: {
+        Args: { p_property_id: number }
+        Returns: {
+          count: number
+          name: string
+          tag_id: number
+        }[]
       }
       get_users_granted_by_agent: {
         Args: never
