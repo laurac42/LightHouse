@@ -37,7 +37,7 @@ export function getLatitudeLongitudeFromPostcode(postcode: string) {
 }
 
 // Store the time of the last request to the Nominatim API to ensure that not more than one request per second is made to avoid being rate limited
-getBoundingBoxForLocation.lastRequestTime = 0;
+let lastRequestTime = 0;
 
 /**
  * Get the bounding box for a location using the Nominatim API, using a delay if the last request was made less than a second ago to avoid being rate limited by the API
@@ -46,19 +46,20 @@ getBoundingBoxForLocation.lastRequestTime = 0;
  * @returns An object containing the minimum and maximum latitude and longitude of the bounding box for the location
  */
 export function getBoundingBoxForLocation(location: string)  {
-    
+
     // ensure that not more than one request per second is made to the Nominatim API to avoid being rate limited
     const now = Date.now();
-    const delay = Math.max(0, now - getBoundingBoxForLocation.lastRequestTime);
-    if (delay < 1000) {
+    console.log("last request time: ", lastRequestTime);
+    const elapsed = Math.max(0, now - lastRequestTime);
+    if (elapsed < 1000) {
         return new Promise((resolve) => {
             setTimeout(() => {
-                getBoundingBoxForLocation.lastRequestTime = Date.now();
+                lastRequestTime = Date.now();
                 resolve(fetchBoundingBox(location));
-            }, 1000 - delay);
+            }, 1000 - elapsed);
         });
     }
-    getBoundingBoxForLocation.lastRequestTime = Date.now();
+    lastRequestTime = Date.now();
     return fetchBoundingBox(location);
 }
 

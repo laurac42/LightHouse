@@ -13,7 +13,7 @@ import { fetchPropertiesForPage } from "@/lib/data/property-utils";
 import { fetchUserPreferences } from "@/lib/data/buyer-profile";
 import { UserPreferences } from "@/types/user";
 import { getBoundingBoxForLocation } from "@/lib/data/location";
-
+import type { BoundingBox } from "@/types/location";
 
 type Property = Database["public"]["Tables"]["properties"]["Row"] & { images: string[], isFavourite?: boolean };
 const PAGE_SIZE = 10; // number of properties to display per page
@@ -21,7 +21,7 @@ const PAGE_SIZE = 10; // number of properties to display per page
 export default function PropertiesPage() {
 
     const [properties, setProperties] = useState<Property[]>([]);
-    const [location, setLocation] = useState("Dundee");
+    const [location, setLocation] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [totalProperties, setTotalProperties] = useState(0);
@@ -30,6 +30,7 @@ export default function PropertiesPage() {
     const [userId, setUserId] = useState<string | null>(null);
     const [preferences, setPreferences] = useState<UserPreferences | null>(null);
     const [userChecked, setUserChecked] = useState<Boolean>(false); // state to track whether we've checked if the user is logged in or not
+    const [boundingBox, setBoundingBox] = useState<BoundingBox | null>(null);
 
     const updateMedia = useCallback(() => {
         setIsMobile(window.innerWidth < 768);
@@ -53,72 +54,94 @@ export default function PropertiesPage() {
         return () => subscription.unsubscribe();
     }, []);
 
+    useEffect(() => {
+        // fetch the bounding box for the location in the URL query parameters and set the location state to the location name from the bounding box, so that we can display it on the page
+        const urlParams = new URLSearchParams(window.location.search);
+        const locationParam = urlParams.get("location");
+        if (locationParam) {
+            setLocation(locationParam);
+            getBoundingBoxForLocation(locationParam)
+                .then((box) => {
+                    if (box) {
+                        const typedBox = box as { minLat: string, maxLat: string, minLng: string, maxLng: string };
+                        setBoundingBox({
+                            minLatitude: parseFloat(typedBox.minLat),
+                            maxLatitude: parseFloat(typedBox.maxLat),
+                            minLongitude: parseFloat(typedBox.minLng),
+                            maxLongitude: parseFloat(typedBox.maxLng),
+                        });
+                    } else {
+                        console.error("Could not get bounding box for location");
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error getting bounding box for location: ", error);
+                });
+        }
+    }, []);
+
     /**
      * Fetch properties and property images for a given search results page
      * @param page Page number to fetch properties for - default is 1
      * @param id User ID for fetching personalised properties
      */
-    const fetchProperties = useCallback(async (page: number = 1, id: string | null) => {
+    const fetchProperties = useCallback(async (page: number = 1, id: string | null, box: BoundingBox | null) => {
         try {
             // scroll to top
             setLoading(true);
             window.scrollTo({ top: 0 });
 
-            let user_preferences = null;    
+            let user_preferences = null;
             if (id) {
                 user_preferences = await fetchBuyerPreferences(id);
                 if (user_preferences !== undefined) {
                     setPreferences(user_preferences);
                 }
             }
+            if (box) {
+                const { data, count } = await fetchPropertiesForPage(page, PAGE_SIZE, user_preferences, box);
+                setTotalProperties(count || 0);
 
-            const { data, count } = await fetchPropertiesForPage(page, PAGE_SIZE, user_preferences);
-            setTotalProperties(count || 0);
+                setTotalPages(Math.ceil((count || 0) / PAGE_SIZE));
+                setCurrentPage(page);
 
-            setTotalPages(Math.ceil((count || 0) / PAGE_SIZE));
-            setCurrentPage(page);
+                if (!data || (Array.isArray(data) && data.length === 0)) {
+                    setProperties([]);
+                    setLoading(false);
+                    return;
+                }
+                const propertiesWithImages = await fetchPropertyImages(data as Property[]);
 
-            if (!data || (Array.isArray(data) && data.length === 0)) {
-                setProperties([]);
-                setLoading(false);
-                return;
+                if (!propertiesWithImages) {
+                    setProperties([]);
+                    setLoading(false);
+                    return;
+                }
+                const propertiesWithFavourites = await fetchFavouritesForProperties(propertiesWithImages) as Property[];
+
+                setProperties(propertiesWithFavourites);
             }
-            const propertiesWithImages = await fetchPropertyImages(data as Property[]);
-
-            if (!propertiesWithImages) {
-                setProperties([]);
-                setLoading(false);
-                return;
-            }
-            const propertiesWithFavourites = await fetchFavouritesForProperties(propertiesWithImages) as Property[];
-
-            setProperties(propertiesWithFavourites);
-            setLoading(false);
         } catch (error) {
             console.error("Error fetching properties: ", error);
+        } finally {
+            setLoading(false);
         }
     }, []);
 
     useEffect(() => {
-        if (!userChecked) return; // don't fetch properties until we've checked if the user is logged in or not, so that we can fetch personalised properties for logged in users
-        fetchProperties(currentPage, userId); // fetch the first page of properties when the component mounts, and whenever the user logs in or out
+        if (!userChecked || !boundingBox) return; // don't fetch properties until we've checked if the user is logged in or not, so that we can fetch personalised properties for logged in users
+        fetchProperties(currentPage, userId, boundingBox); // fetch the first page of properties when the component mounts, and whenever the user logs in or out
 
-        getBoundingBoxForLocation(location).then((boundingBox) => {
-            console.log("Bounding box for location: ", boundingBox);
-        }).catch((error) => {
-            console.error("Error fetching bounding box for location: ", error);
-        });
-    }, [fetchProperties, userChecked, userId]);
+    }, [fetchProperties, userChecked, userId, boundingBox]);
 
     // fetch buyer preferences for a given buyer
     async function fetchBuyerPreferences(id: string | null) {
         if (!id) {
             return null;
         }
-
-        try { 
-           const preferences = await fetchUserPreferences(id);
-           return preferences;
+        try {
+            const preferences = await fetchUserPreferences(id);
+            return preferences;
         } catch (error) {
             console.error("Error fetching user preferences: ", error);
         }
@@ -127,7 +150,7 @@ export default function PropertiesPage() {
     // fetch images for a list of properties and add the image URLs to the corresponding property objects
     async function fetchPropertyImages(data: Property[]) {
         try {
-        // fetch images simultaneously for all properties
+            // fetch images simultaneously for all properties
             const entries = await Promise.all(
                 (data ?? []).map(async (property) => {
                     const imageUrls = await getImagesFromStorage(property.id);
@@ -176,9 +199,17 @@ export default function PropertiesPage() {
                     <p className="text-2xl text-gray-500">Loading properties...</p>
                 </div>
             ) : (
-                <div className="pt-2 px-6 text-highlight">
-                    <p>Showing properties {currentPage * PAGE_SIZE - (PAGE_SIZE - 1)} - {Math.min(currentPage * PAGE_SIZE, totalProperties)} of {totalProperties} properties in {location}</p>
-                </div>
+                <>{properties.length === 0 ? (
+                        <div className="flex items-center justify-center h-64">
+                            <p className="text-2xl text-gray-500">No properties found{location ? ` in ${location}` : ""}.</p>
+                        </div>
+                    ) : (
+                        <div className="pt-2 px-6 text-highlight">
+                            <p>Showing properties {currentPage * PAGE_SIZE - (PAGE_SIZE - 1)} - {Math.min(currentPage * PAGE_SIZE, totalProperties)} of {totalProperties} properties in {location}</p>
+                        </div>
+                    )
+                }
+                </>
             )}
             <div className="flex w-full items-center justify-center pt-4 px-6 md:px-10 md:pt-10">
                 <div className="w-full max-w-4xl">
@@ -189,7 +220,7 @@ export default function PropertiesPage() {
 
             </div>
             <div className="flex flex-row gap-2 justify-center py-8 mb-6">
-                {currentPage > 1 ? <Button className="mx-auto bg-background hover:bg-midBlue text-highlight border-none" size="sm" onClick={() => fetchProperties(currentPage - 1, userId)}>
+                {currentPage > 1 ? <Button className="mx-auto bg-background hover:bg-midBlue text-highlight border-none" size="sm" onClick={() => fetchProperties(currentPage - 1, userId, boundingBox)}>
                     <ChevronLeft size={16} />
                     Previous
                 </Button> : (
@@ -220,7 +251,7 @@ export default function PropertiesPage() {
                                 return i + 1; // if total pages is 8 or less, show all page numbers
                             }
                         }).map((page) => (
-                            <Button key={page} variant="outline" className={page === currentPage ? "bg-highlight text-white border-none hover:bg-highlight hover:text-white" : "hover:bg-midBlue"} size="sm" onClick={() => fetchProperties(page, userId)}>
+                            <Button key={page} variant="outline" className={page === currentPage ? "bg-highlight text-white border-none hover:bg-highlight hover:text-white" : "hover:bg-midBlue"} size="sm" onClick={() => fetchProperties(page, userId, boundingBox)} disabled={page === currentPage}>
                                 {page}
                             </Button>
                         ))}
@@ -232,11 +263,13 @@ export default function PropertiesPage() {
                             <span className="text-lg text-muted-foreground">...</span>
                         )}
                     </div>
-                    <p>Page {currentPage} of {totalPages}</p>
+                    {properties.length > 0 && (
+                        <p>Page {currentPage} of {totalPages}</p>
+                    )}
                 </div>
 
                 {currentPage < totalPages ? (
-                    <Button className="mx-auto bg-background hover:bg-midBlue text-highlight border-none" size="sm" onClick={() => fetchProperties(currentPage + 1, userId)} hidden={currentPage === totalPages}>
+                    <Button className="mx-auto bg-background hover:bg-midBlue text-highlight border-none" size="sm" onClick={() => fetchProperties(currentPage + 1, userId, boundingBox)} hidden={currentPage === totalPages}>
                         Next
                         <ChevronRight size={16} />
                     </Button>) :
