@@ -1,6 +1,6 @@
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group";
 import { X, ChevronDown, Menu } from "lucide-react";
-import { Label } from "@/components/ui/label";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import {
@@ -13,8 +13,13 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
-export default function FilterBar() {
-    const [location, setLocation] = useState<string>("");
+type FilterBarProps = {
+    loc?: string;
+    setLoc: React.Dispatch<React.SetStateAction<string>>;
+}
+
+export default function FilterBar({loc = "", setLoc}: FilterBarProps) {
+    const [location, setLocation] = useState<string>(loc);
     const [searchRadius, setSearchRadius] = useState<string>("This area only");
     const [minBedrooms, setMinBedrooms] = useState<string>("");
     const [maxBedrooms, setMaxBedrooms] = useState<string>("");
@@ -23,15 +28,29 @@ export default function FilterBar() {
     const [minBathrooms, setMinBathrooms] = useState<string>("");
     const [maxBathrooms, setMaxBathrooms] = useState<string>("");
     const [isMoreFiltersOpen, setIsMoreFiltersOpen] = useState<boolean>(false);
+
+    useEffect(() => {
+        setLocation(loc);
+    }, [loc]);
+
     return (
         <div className="w-full bg-highlight p-4 shadow-sm shadow-highlight">
             <div className="flex flex-row gap-3">
                 <InputGroup className="border border-foreground flex flex-1 bg-white ">
                     <InputGroupInput
                         placeholder="e.g. Dundee, Monifieth ..."
-                        value={"Dundee"}
+                        value={location}
                         onChange={(e) => setLocation(e.target.value)}
                         className="flex-1 border-none"
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                                setLoc((e.target as HTMLInputElement).value);
+                                // set url params
+                                const params = new URLSearchParams(window.location.search);
+                                params.set("location", (e.target as HTMLInputElement).value);
+                                window.history.replaceState({}, "", `${window.location.pathname}?${params.toString()}`);
+                            }
+                        }}
                     />
                     <InputGroupButton size="sm" className="text-md text-foreground bg-white hover:bg-lightPink md:w-10 h-full"><X /></InputGroupButton>
                 </InputGroup>

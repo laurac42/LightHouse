@@ -23,6 +23,7 @@ import { Field, FieldDescription, FieldLabel } from "./ui/field";
 import { isSellerByEmail } from "@/lib/auth/role";
 import { getIdByEmail, getEmailById } from "@/lib/auth/user";
 import { addImageUrlToProperty } from "@/lib/data/add-property";
+import { getLatitudeLongitudeFromPostcode } from "@/lib/data/location";
 
 export default function EditPropertyForm({ propertyId, role }: { propertyId: number, role: string }) {
     const [loading, setLoading] = useState(false)
@@ -31,6 +32,7 @@ export default function EditPropertyForm({ propertyId, role }: { propertyId: num
     const [stagedImages, setStagedImages] = useState<StagedFiles>();
     const [imagesMarkedForDeletion, setImagesMarkedForDeletion] = useState<string[]>([]);
     const [property, setProperty] = useState<EditableProperty | null>(null);
+    const [originalPostcode, setOriginalPostcode] = useState<string>("");
     const [sellerEmail, setSellerEmail] = useState<string | null>(null);
 
     useEffect(() => {
@@ -39,6 +41,7 @@ export default function EditPropertyForm({ propertyId, role }: { propertyId: num
                 const property = await fetchPropertyDetails(propertyId);
                 if (property) {
                     setProperty(property);
+                    setOriginalPostcode(property.post_code);
                     if (property.seller_id) {
                         const email = await getEmailById(property.seller_id);
                         if (email) {
@@ -72,6 +75,14 @@ export default function EditPropertyForm({ propertyId, role }: { propertyId: num
                     return;
                 }
             }
+            // if the postcode has changed, update the latitude and longitude
+            if (originalPostcode !== property?.post_code) {
+                const results = await getLatitudeLongitudeFromPostcode(property?.post_code || "");
+                if (results && property) {
+                    setProperty({...property, latitude: results.latitude, longitude: results.longitude });
+                }
+            }
+                
             await editProperty(propertyId, {
                 ...property,
                 last_updated_at: new Date().toISOString(),

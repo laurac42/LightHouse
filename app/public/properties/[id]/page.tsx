@@ -47,11 +47,16 @@ export function PropertyDetailsPage({ params }: { params: Promise<{ id: number }
                     });
 
                     const user = await validateUser();
-                    fetchFavourites([propertyData.id], user?.user.id || "").then((favouriteIds) => {
-                        if (favouriteIds.includes(propertyData.id)) {
-                            setProperty((prev) => prev ? { ...prev, isFavourite: true } : prev);
-                        }
-                    });
+                    if (user) {
+                        fetchFavourites([propertyData.id], user?.user.id || "").then((favouriteIds) => {
+                            if (favouriteIds.includes(propertyData.id)) {
+                                setProperty((prev) => prev ? { ...prev, isFavourite: true } : prev);
+                            }
+                        });
+                    } else {
+                        setProperty((prev) => prev ? { ...prev, isFavourite: false } : prev);
+                    }
+
                 }
             } catch (error) {
                 console.error("Error fetching property details:", error);

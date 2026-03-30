@@ -2,7 +2,7 @@ import { createClient } from "../supabase/client";
 import { AddableProperty } from "@/types/property";
 import { uploadImageToStorage } from "./images";
 import { StagedFiles } from "@/components/edit-images";
-import { add } from "cheerio/dist/commonjs/api/traversing";
+import { getLatitudeLongitudeFromPostcode } from "@/lib/data/location";
 
 /**
  * Add a property to the database with the given details and agent ID
@@ -26,9 +26,14 @@ export async function addProperty(propertyData: AddableProperty, agentId: string
         throw agencyError;
     }
 
+    const coordinates = await getLatitudeLongitudeFromPostcode(propertyData.post_code);
+    if (!coordinates) {
+        throw new Error("Failed to get coordinates for postcode. Please check the postcode.");
+    }
+
     const { data, error } = await supabase
         .from("properties")
-        .insert({ ...propertyData, agent_id: agentId, agency_location_id: agencyData?.estate_agency_location_id, seller_id: sellerId })
+        .insert({ ...propertyData, agent_id: agentId, agency_location_id: agencyData?.estate_agency_location_id, seller_id: sellerId, latitude: coordinates?.latitude, longitude: coordinates?.longitude })
         .select("id");
 
     if (error) {

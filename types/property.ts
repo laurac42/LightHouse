@@ -21,6 +21,8 @@ export type EditableProperty = Pick<
     | "has_garage"
     | "is_new_build"
     | "features"
+    | "latitude"
+    | "longitude"
 >;
 
 export type AddableProperty = Pick<

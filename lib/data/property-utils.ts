@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/client";
 import { Database } from "@/types/supabase";
 import type { UserPreferences } from "@/types/user";
+import type { BoundingBox } from "@/types/location";
 
 type Property = Database["public"]["Tables"]["properties"]["Row"];
 
@@ -227,12 +228,12 @@ export async function loadSellerAddedInfo(propertyId: number) {
  * @param preferences Optional user preferences to use for filtering the properties
  * @returns Promise resolving to an object containing the properties and total count of properties matching the search criteria, or null on error
  */
-export async function fetchPropertiesForPage(page: number = 1, page_size: number = 10, preferences?: UserPreferences | null) {
+export async function fetchPropertiesForPage(page: number = 1, page_size: number = 10, preferences?: UserPreferences | null, boundingBox?: BoundingBox | null) {
     if (preferences) {
-        return await fetchRankedPropertiesWithPreferences(page, page_size, preferences);
+        return await fetchRankedPropertiesWithPreferences(page, page_size, preferences, boundingBox);
 
     } else {
-        return await fetchRankedPropertiesWithoutPreferences(page, page_size);
+        return await fetchRankedPropertiesWithoutPreferences(page, page_size, boundingBox);
     }
 }
 
@@ -243,24 +244,32 @@ export async function fetchPropertiesForPage(page: number = 1, page_size: number
  * @param preferences User preferences to use for ranking the properties
  * @returns Promise resolving to an object containing the ranked properties and total count of properties matching the search criteria, or null on error
  */
-async function fetchRankedPropertiesWithPreferences(page: number, page_size: number, preferences: UserPreferences) {
+async function fetchRankedPropertiesWithPreferences(page: number, page_size: number, preferences: UserPreferences, boundingBox?: BoundingBox | null) {
     const supabase = createClient();
+    console.log("boundary box in fetchRankedPropertiesWithPreferences: ", boundingBox);
+    console.log("preferences in fetchRankedPropertiesWithPreferences: ", preferences);
     const { data, error } = await supabase
         .rpc("fetch_ranked_properties", {
+            p_min_lat: boundingBox?.minLatitude ?? undefined,
+            p_max_lat: boundingBox?.maxLatitude ?? undefined,
+            p_min_long: boundingBox?.minLongitude ?? undefined,
+            p_max_long: boundingBox?.maxLongitude ?? undefined,
             p_preferred_num_bedrooms: preferences?.preferred_num_bedrooms ?? undefined,
             p_budget: preferences?.budget ?? undefined,
             p_preferred_property_types: preferences.preferred_property_types ?? undefined,
             page: page,
-            page_size: page_size
+            page_size: page_size,
         });
     if (error) {
         throw error;
     }
+    console.log("data from fetch_ranked_properties RPC: ", data);
     const total_count = data?.[0]?.total_count ?? 0;
     const properties = data?.map(({ total_count, ...property }) => property) ?? [];
 
     return { data: properties, count: total_count };
 }
+
 
 /**
  * Fetch properties for a given search results page without using user preferences for ranking 
@@ -268,15 +277,35 @@ async function fetchRankedPropertiesWithPreferences(page: number, page_size: num
  * @param page_size size of the page to fetch - default is 10
  * @returns Promise resolving to an object containing the properties and total count of properties matching the search criteria, or null on error
  */
-async function fetchRankedPropertiesWithoutPreferences(page: number, page_size: number) {
+async function fetchRankedPropertiesWithoutPreferences(page: number, page_size: number, boundingBox?: BoundingBox | null) {
     const supabase = await createClient();
-    const { data, error, count } = await supabase
-        .from("properties")
-        .select("*", { count: "exact" })
-        .or(`status.eq."under offer",status.eq."active"`)
-        .range((page - 1) * page_size, page * page_size - 1);
-    if (error) {
-        throw error;
+    if (boundingBox) {
+
+        const { data, error, count } = await supabase
+            .from("properties")
+            .select("*", { count: "exact" })
+            .or(`status.eq."under offer",status.eq."active"`)
+            .range((page - 1) * page_size, page * page_size - 1)
+            .lte("latitude", boundingBox.maxLatitude)
+            .gte("latitude", boundingBox.minLatitude)
+            .lte("longitude", boundingBox.maxLongitude)
+            .gte("longitude", boundingBox.minLongitude);
+
+            // 
+
+        if (error) {
+            throw error;
+        }
+        return { data, count };
+    } else {
+        const { data, error, count } = await supabase
+            .from("properties")
+            .select("*", { count: "exact" })
+            .or(`status.eq."under offer",status.eq."active"`)
+            .range((page - 1) * page_size, page * page_size - 1);
+        if (error) {
+            throw error;
+        }
+        return { data, count };
     }
-    return { data, count };
 }
