@@ -67,8 +67,8 @@ export default function Navbar() {
                                 </div>
                                 <X onClick={() => setIsMenuOpen(false)} />
                             </div>
-                            <a href="#" className="text-foreground text-lg">Home</a>
-                            <a href="#" className="text-foreground text-lg">Buy</a>
+                            <a href="/public/home" className="text-foreground text-lg">Home</a>
+                            <a href="/public/properties" className="text-foreground text-lg">Buy</a>
                             <a href="#" className="text-foreground text-lg">Sell</a>
                             <a href="#" className="text-foreground text-lg">Estate Agents</a>
                             {isLoggedIn && userIsAdmin && (
@@ -90,7 +90,7 @@ export default function Navbar() {
                         </div>
                     </Link>
                     <div className="flex flex-row gap-6">
-                        <a href="/" className="hidden md:flex text-foreground hover:text-foregroundHover hover:underline">Buy</a>
+                        <a href="/public/properties" className="hidden md:flex text-foreground hover:text-foregroundHover hover:underline">Buy</a>
                         <a href="/" className="hidden md:flex text-foreground hover:text-foregroundHover hover:underline">Sell</a>
                         <a href="/" className="hidden md:flex text-foreground hover:text-foregroundHover hover:underline">Estate Agents</a>
                     </div>

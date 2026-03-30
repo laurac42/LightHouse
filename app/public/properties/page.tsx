@@ -30,7 +30,7 @@ export default function PropertiesPage() {
     const [userId, setUserId] = useState<string | null>(null);
     const [preferences, setPreferences] = useState<UserPreferences | null>(null);
     const [userChecked, setUserChecked] = useState<Boolean>(false); // state to track whether we've checked if the user is logged in or not
-    const [boundingBox, setBoundingBox] = useState<BoundingBox | null>(null);
+    const [boundingBox, setBoundingBox] = useState<BoundingBox | null | undefined>(undefined); // undefined is before it is set, null is if there is no bounding box for the location (e.g. view all properties)
 
     const updateMedia = useCallback(() => {
         setIsMobile(window.innerWidth < 768);
@@ -77,6 +77,8 @@ export default function PropertiesPage() {
                 .catch((error) => {
                     console.error("Error getting bounding box for location: ", error);
                 });
+        } else {
+            setBoundingBox(null); // if there is no location query parameter, we want to fetch all properties
         }
     }, []);
 
@@ -85,7 +87,7 @@ export default function PropertiesPage() {
      * @param page Page number to fetch properties for - default is 1
      * @param id User ID for fetching personalised properties
      */
-    const fetchProperties = useCallback(async (page: number = 1, id: string | null, box: BoundingBox | null) => {
+    const fetchProperties = useCallback(async (page: number = 1, id: string | null, box: BoundingBox | null | undefined ) => {
         try {
             // scroll to top
             setLoading(true);
@@ -98,7 +100,8 @@ export default function PropertiesPage() {
                     setPreferences(user_preferences);
                 }
             }
-            if (box) {
+            if (box !== undefined) {
+                console.log("fetching properties with bounding box: ", box);    
                 const { data, count } = await fetchPropertiesForPage(page, PAGE_SIZE, user_preferences, box);
                 setTotalProperties(count || 0);
 
@@ -129,7 +132,7 @@ export default function PropertiesPage() {
     }, []);
 
     useEffect(() => {
-        if (!userChecked || !boundingBox) return; // don't fetch properties until we've checked if the user is logged in or not, so that we can fetch personalised properties for logged in users
+        if (!userChecked || boundingBox === undefined) return; // don't fetch properties until we've checked if the user is logged in or not, so that we can fetch personalised properties for logged in users
         fetchProperties(currentPage, userId, boundingBox); // fetch the first page of properties when the component mounts, and whenever the user logs in or out
 
     }, [fetchProperties, userChecked, userId, boundingBox]);
