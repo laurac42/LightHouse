@@ -27,7 +27,6 @@ export async function addProperty(propertyData: AddableProperty, agentId: string
     }
 
     const coordinates = await getLatitudeLongitudeFromPostcode(propertyData.post_code);
-    console.log("Coordinates for postcode ", propertyData.post_code, ": ", coordinates);
     if (!coordinates) {
         throw new Error("Failed to get coordinates for postcode. Please check the postcode.");
     }
