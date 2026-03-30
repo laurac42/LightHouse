@@ -82,11 +82,13 @@ export default function Navbar() {
                             )}
                         </div>
                     )}
-                    <div className="pl-4 flex flex-row items-center">
-                        <img src="/images/logo.png" alt="LightHouse Logo" className="w-11 h-11"></img>
-                        <p className="text-4xl font-extrabold font-fuggles">L</p>
-                        <p className="text-lg font-bold">ightHouse</p>
-                    </div>
+                    <Link href="/public/home">
+                        <div className="pl-4 flex flex-row items-center">
+                            <img src="/images/logo.png" alt="LightHouse Logo" className="w-11 h-11"></img>
+                            <p className="text-4xl font-extrabold font-fuggles">L</p>
+                            <p className="text-lg font-bold">ightHouse</p>
+                        </div>
+                    </Link>
                     <div className="flex flex-row gap-6">
                         <a href="/" className="hidden md:flex text-foreground hover:text-foregroundHover hover:underline">Buy</a>
                         <a href="/" className="hidden md:flex text-foreground hover:text-foregroundHover hover:underline">Sell</a>

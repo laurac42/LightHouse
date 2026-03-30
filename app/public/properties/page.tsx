@@ -12,6 +12,7 @@ import { fetchFavourites } from "@/lib/data/favourites";
 import { fetchPropertiesForPage } from "@/lib/data/property-utils";
 import { fetchUserPreferences } from "@/lib/data/buyer-profile";
 import { UserPreferences } from "@/types/user";
+import { getBoundingBoxForLocation } from "@/lib/data/location";
 
 
 type Property = Database["public"]["Tables"]["properties"]["Row"] & { images: string[], isFavourite?: boolean };
@@ -39,7 +40,8 @@ export default function PropertiesPage() {
         return () => window.removeEventListener("resize", updateMedia);
     }, [updateMedia]);
 
-    // determine whether the user is logged in or not
+    // determine whether the user is logged in or not 
+    // this is needed because we need to know whether they are logged in to know whether to fetch personalised properties for them or not
     useEffect(() => {
         const supabase = createClient();
         setUserChecked(false); // reset to false when the component mounts, so that we can check if the user is logged in or not and fetch personalised properties for logged in users if applicable
@@ -100,6 +102,12 @@ export default function PropertiesPage() {
     useEffect(() => {
         if (!userChecked) return; // don't fetch properties until we've checked if the user is logged in or not, so that we can fetch personalised properties for logged in users
         fetchProperties(currentPage, userId); // fetch the first page of properties when the component mounts, and whenever the user logs in or out
+
+        getBoundingBoxForLocation(location).then((boundingBox) => {
+            console.log("Bounding box for location: ", boundingBox);
+        }).catch((error) => {
+            console.error("Error fetching bounding box for location: ", error);
+        });
     }, [fetchProperties, userChecked, userId]);
 
     // fetch buyer preferences for a given buyer
