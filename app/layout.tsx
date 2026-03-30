@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Cabin, Fuggles } from "next/font/google";
 import { ThemeProvider } from "next-themes";
-import { Toaster } from "@/components/ui/sonner"
+import { Toaster } from "@/components/ui/sonner";
+import { Footer } from "@/components/footer";
 import "./globals.css";
 
 const defaultUrl = process.env.VERCEL_URL
@@ -49,6 +50,7 @@ export default function RootLayout({
               },
             }}
           />
+          <Footer />
         </ThemeProvider>
       </body>
     </html>
