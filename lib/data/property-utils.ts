@@ -230,7 +230,7 @@ export async function loadSellerAddedInfo(propertyId: number) {
  */
 export async function fetchPropertiesForPage(page: number = 1, page_size: number = 10, preferences?: UserPreferences | null, boundingBox?: BoundingBox | null) {
     if (preferences) {
-        return await fetchRankedPropertiesWithPreferences(page, page_size, preferences);
+        return await fetchRankedPropertiesWithPreferences(page, page_size, preferences, boundingBox);
 
     } else {
         return await fetchRankedPropertiesWithoutPreferences(page, page_size, boundingBox);
@@ -244,15 +244,20 @@ export async function fetchPropertiesForPage(page: number = 1, page_size: number
  * @param preferences User preferences to use for ranking the properties
  * @returns Promise resolving to an object containing the ranked properties and total count of properties matching the search criteria, or null on error
  */
-async function fetchRankedPropertiesWithPreferences(page: number, page_size: number, preferences: UserPreferences) {
+async function fetchRankedPropertiesWithPreferences(page: number, page_size: number, preferences: UserPreferences, boundingBox?: BoundingBox | null) {
     const supabase = createClient();
+    console.log("boundary box in fetchRankedPropertiesWithPreferences: ", boundingBox);
     const { data, error } = await supabase
         .rpc("fetch_ranked_properties", {
+            p_min_lat: boundingBox?.minLatitude ?? undefined,
+            p_max_lat: boundingBox?.maxLatitude ?? undefined,
+            p_min_long: boundingBox?.minLongitude ?? undefined,
+            p_max_long: boundingBox?.maxLongitude ?? undefined,
             p_preferred_num_bedrooms: preferences?.preferred_num_bedrooms ?? undefined,
             p_budget: preferences?.budget ?? undefined,
             p_preferred_property_types: preferences.preferred_property_types ?? undefined,
             page: page,
-            page_size: page_size
+            page_size: page_size,
         });
     if (error) {
         throw error;
@@ -263,6 +268,7 @@ async function fetchRankedPropertiesWithPreferences(page: number, page_size: num
     return { data: properties, count: total_count };
 }
 
+
 /**
  * Fetch properties for a given search results page without using user preferences for ranking 
  * @param page page number to fetch properties for - default is 1
@@ -272,7 +278,7 @@ async function fetchRankedPropertiesWithPreferences(page: number, page_size: num
 async function fetchRankedPropertiesWithoutPreferences(page: number, page_size: number, boundingBox?: BoundingBox | null) {
     const supabase = await createClient();
     if (boundingBox) {
-    
+
         const { data, error, count } = await supabase
             .from("properties")
             .select("*", { count: "exact" })
@@ -282,6 +288,8 @@ async function fetchRankedPropertiesWithoutPreferences(page: number, page_size: 
             .gte("latitude", boundingBox.minLatitude)
             .lte("longitude", boundingBox.maxLongitude)
             .gte("longitude", boundingBox.minLongitude);
+
+            // 
 
         if (error) {
             throw error;

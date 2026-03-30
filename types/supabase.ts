@@ -401,6 +401,10 @@ export type Database = {
       fetch_ranked_properties: {
         Args: {
           p_budget?: number
+          p_max_lat?: number
+          p_max_long?: number
+          p_min_lat?: number
+          p_min_long?: number
           p_preferred_num_bedrooms?: number
           p_preferred_property_types?: string[]
           page?: number
@@ -422,6 +426,8 @@ export type Database = {
           image_url: string
           is_new_build: boolean
           last_updated_at: string
+          latitude: number
+          longitude: number
           num_bathrooms: number
           num_bedrooms: number
           post_code: string
