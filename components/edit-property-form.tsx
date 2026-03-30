@@ -79,10 +79,10 @@ export default function EditPropertyForm({ propertyId, role }: { propertyId: num
             if (originalPostcode !== property?.post_code) {
                 const results = await getLatitudeLongitudeFromPostcode(property?.post_code || "");
                 if (results && property) {
-                    setProperty({...property, latitude: results.latitude, longitude: results.longitude });
+                    setProperty({ ...property, latitude: results.latitude, longitude: results.longitude });
                 }
             }
-                
+
             await editProperty(propertyId, {
                 ...property,
                 last_updated_at: new Date().toISOString(),
@@ -382,17 +382,6 @@ export default function EditPropertyForm({ propertyId, role }: { propertyId: num
                                         </div>
 
                                         <div className="flex flex row items-center">
-                                            <Label className="py-2 text-sm" htmlFor="features">Garage:</Label>
-                                            <Input
-                                                id="garage"
-                                                type="checkbox"
-                                                checked={property?.has_garage || false}
-                                                onChange={(e) => setProperty(property ? { ...property, has_garage: e.target.checked } : null)}
-                                                className="ml-2 w-[20px]"
-                                            />
-                                        </div>
-
-                                        <div className="flex flex row items-center">
                                             <Label className="py-2 text-sm" htmlFor="features">New Build:</Label>
                                             <Input
                                                 id="newBuild"
@@ -402,6 +391,41 @@ export default function EditPropertyForm({ propertyId, role }: { propertyId: num
                                                 className="ml-2 w-[20px]"
                                             />
                                         </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <Label className="py-2 text-xl" htmlFor="features">Parking and Outdoors</Label>
+                                    <p>Does the property have a .....</p>
+                                    <div className="flex flex row items-center">
+                                        <Label className="py-2 text-sm" htmlFor="features">Garage:</Label>
+                                        <Input
+                                            id="garage"
+                                            type="checkbox"
+                                            checked={property?.has_garage || false}
+                                            onChange={(e) => setProperty(property ? { ...property, has_garage: e.target.checked } : null)}
+                                            className="ml-2 w-[20px]"
+                                        />
+                                    </div>
+                                    <div className="flex flex row items-center">
+                                        <Label className="py-2 text-sm" htmlFor="features">Driveway:</Label>
+                                        <Input
+                                            id="driveway"
+                                            type="checkbox"
+                                            checked={property?.driveway || false}
+                                            onChange={(e) => setProperty(property ? { ...property, driveway: e.target.checked } : null)}
+                                            className="ml-2 w-[20px]"
+                                        />
+                                    </div>
+                                    <div className="flex flex row items-center">
+                                        <Label className="py-2 text-sm" htmlFor="features">Garden:</Label>
+                                        <Input
+                                            id="garden"
+                                            type="checkbox"
+                                            checked={property?.garden || false}
+                                            onChange={(e) => setProperty(property ? { ...property, garden: e.target.checked } : null)}
+                                            className="ml-2 w-[20px]"
+                                        />
                                     </div>
                                 </div>
 

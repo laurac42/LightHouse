@@ -187,8 +187,10 @@ export type Database = {
           city: string
           council_tax_band: string | null
           description: string
+          driveway: boolean | null
           epc_rating: string | null
           features: string[] | null
+          garden: boolean | null
           has_garage: boolean | null
           id: number
           image_url: string | null
@@ -216,8 +218,10 @@ export type Database = {
           city: string
           council_tax_band?: string | null
           description: string
+          driveway?: boolean | null
           epc_rating?: string | null
           features?: string[] | null
+          garden?: boolean | null
           has_garage?: boolean | null
           id?: number
           image_url?: string | null
@@ -245,8 +249,10 @@ export type Database = {
           city?: string
           council_tax_band?: string | null
           description?: string
+          driveway?: boolean | null
           epc_rating?: string | null
           features?: string[] | null
+          garden?: boolean | null
           has_garage?: boolean | null
           id?: number
           image_url?: string | null
@@ -320,6 +326,70 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      property_tags: {
+        Row: {
+          created_at: string | null
+          property_id: number
+          tag_id: number
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          property_id?: number
+          tag_id: number
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          property_id?: number
+          tag_id?: number
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_tags_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "property_tags_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "tags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "property_tags_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tags: {
+        Row: {
+          created_at: string
+          id: number
+          is_seed: boolean
+          name: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          is_seed?: boolean
+          name?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          is_seed?: boolean
+          name?: string | null
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {
@@ -453,8 +523,10 @@ export type Database = {
           city: string
           council_tax_band: string | null
           description: string
+          driveway: boolean | null
           epc_rating: string | null
           features: string[] | null
+          garden: boolean | null
           has_garage: boolean | null
           id: number
           image_url: string | null
@@ -505,8 +577,10 @@ export type Database = {
           city: string
           council_tax_band: string | null
           description: string
+          driveway: boolean | null
           epc_rating: string | null
           features: string[] | null
+          garden: boolean | null
           has_garage: boolean | null
           id: number
           image_url: string | null

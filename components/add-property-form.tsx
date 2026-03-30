@@ -50,6 +50,8 @@ export default function AddPropertyForm({ role, id }: { role: "admin" | "estate-
         is_new_build: false,
         features: [],
         status: "draft",
+        driveway: false,
+        garden: false,
     });
 
     // fetch agencies for admin to select from when adding a property
@@ -528,17 +530,6 @@ export default function AddPropertyForm({ role, id }: { role: "admin" | "estate-
                                             </div>
 
                                             <div className="flex flex row items-center">
-                                                <Label className="py-2 text-sm" htmlFor="features">Garage:</Label>
-                                                <Input
-                                                    id="garage"
-                                                    type="checkbox"
-                                                    checked={propertyData?.has_garage || false}
-                                                    onChange={(e) => setPropertyData({ ...propertyData, has_garage: e.target.checked })}
-                                                    className="ml-2 w-[20px]"
-                                                />
-                                            </div>
-
-                                            <div className="flex flex row items-center">
                                                 <Label className="py-2 text-sm" htmlFor="features">New Build:</Label>
                                                 <Input
                                                     id="newBuild"
@@ -552,6 +543,41 @@ export default function AddPropertyForm({ role, id }: { role: "admin" | "estate-
                                     </div>
                                     <hr />
 
+                                    <div>
+                                        <Label className="py-2 text-xl" htmlFor="features">Parking and Outdoors</Label>
+                                        <p>Does the property have a .....</p>
+                                        <div className="flex flex row items-center">
+                                            <Label className="py-2 text-sm" htmlFor="features">Garage:</Label>
+                                            <Input
+                                                id="garage"
+                                                type="checkbox"
+                                                checked={propertyData?.has_garage || false}
+                                                onChange={(e) => setPropertyData({ ...propertyData, has_garage: e.target.checked })}
+                                                className="ml-2 w-[20px]"
+                                            />
+                                        </div>
+                                        <div className="flex flex row items-center">
+                                            <Label className="py-2 text-sm" htmlFor="features">Driveway:</Label>
+                                            <Input
+                                                id="driveway"
+                                                type="checkbox"
+                                                checked={propertyData?.driveway || false}
+                                                onChange={(e) => setPropertyData({ ...propertyData, driveway: e.target.checked })}
+                                                className="ml-2 w-[20px]"
+                                            />
+                                        </div>
+                                        <div className="flex flex row items-center">
+                                            <Label className="py-2 text-sm" htmlFor="features">Garden:</Label>
+                                            <Input
+                                                id="garden"
+                                                type="checkbox"
+                                                checked={propertyData?.garden || false}
+                                                onChange={(e) => setPropertyData({ ...propertyData, garden: e.target.checked })}
+                                                className="ml-2 w-[20px]"
+                                            />
+                                        </div>
+                                    </div>
+                                    <hr />
                                     <div>
                                         <Label className="py-2 text-2xl">Images</Label>
                                         <EditImages
