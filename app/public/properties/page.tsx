@@ -80,7 +80,7 @@ export default function PropertiesPage() {
         } else {
             setBoundingBox(null); // if there is no location query parameter, we want to fetch all properties
         }
-    }, []);
+    }, [location]);
 
     /**
      * Fetch properties and property images for a given search results page
@@ -196,7 +196,7 @@ export default function PropertiesPage() {
     return (
         <div className="bg-background min-h-screen w-full">
             <Navbar />
-            <FilterBar />
+            <FilterBar loc={location} setLoc={setLocation}/>
             {loading ? (
                 <div className="flex items-center justify-center h-64">
                     <p className="text-2xl text-gray-500">Loading properties...</p>
