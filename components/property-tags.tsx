@@ -3,69 +3,77 @@ import type { Tag, TagCount } from "@/types/tags";
 import styles from '../app/public/properties/page.module.css';
 import { ArrowBigUp, CirclePlus } from "lucide-react";
 import { Button } from "./ui/button";
+import { useEffect, useState } from "react";
+import { groupTagsByCategory, addTagToProperty, fetchAllTags, fetchPropertyTags, removeTagFromProperty } from "@/lib/data/tag-utils";
+import { createClient } from "@/lib/supabase/client";
+import { toast } from "sonner";
 
 const CATEGORY_ORDER = ["Parking", "Garden", "Property Features", "Location"] as const;
-type Category = (typeof CATEGORY_ORDER)[number];
 
-// get the category for a tag based on keywords in the tag name
-function getTagCategory(name: string): Category {
-    const normalised = name.toLowerCase();
+export function PropertyTags({ propertyId }: { propertyId: number }) {
+    const [groupedAllTags, setGroupedAllTags] = useState<Record<(typeof CATEGORY_ORDER)[number], Tag[]>>({
+        "Parking": [],
+        "Garden": [],
+        "Property Features": [],
+        "Location": [],
+    });
+    const [propertyTags, setPropertyTags] = useState<TagCount[]>([]);
 
-    if (
-        normalised.includes("parking") ||
-        normalised.includes("garage") ||
-        normalised.includes("driveway") ||
-        normalised.includes("car") ||
-        normalised.includes("ev charger") ||
-        normalised.includes("permit")
-    ) {
-        return "Parking";
+    useEffect(() => {
+        const getTags = async () => {
+            const supabase = createClient();
+            const { data } = await supabase.auth.getClaims();
+            const user = data?.claims;
+            fetchPropertyTags(propertyId, user?.user_metadata?.sub || null).then((tags) => {
+                setPropertyTags(tags);
+            }).catch((error) => {
+                console.error("Error fetching property tags: ", error);
+            });
+        }
+        getTags();
+    }, [propertyId]);
+
+    useEffect(() => {
+        const fetchAllTagsData = async () => {
+            try {
+                const tags = await fetchAllTags();
+                // filter tags to remove those already applied to the property
+                const appliedTagIds = propertyTags?.map(tag => tag.tag_id) || [];
+                const filteredTags = tags.filter(propertyTag => !appliedTagIds.includes(propertyTag.id));
+                const grouped = groupTagsByCategory(filteredTags);
+                setGroupedAllTags(grouped);
+            } catch (error) {
+                console.error("Error fetching all tags: ", error);
+            }
+        };
+        fetchAllTagsData();
+    }, [propertyTags]);
+
+    async function voteOnTag(tag: TagCount) {
+        try {
+            console.log("Voting on tag: ", tag);
+            const supabase = createClient();
+            const { data } = await supabase.auth.getClaims();
+            const user = data?.claims;
+            if (!user || !user.user_metadata?.sub) {
+                toast.error("You must be logged in to vote on a tag.", { position: "top-right" });
+                return;
+            }
+
+            // add or remove vote depending on whether user has already applied the tag or not
+            if (tag.user_applied) {
+                await removeTagFromProperty(propertyId, tag.tag_id, user.user_metadata.sub);
+                setPropertyTags((prev) => prev.map(t => t.tag_id === tag.tag_id ? { ...t, count: t.count - 1, user_applied: false } : t));
+
+            } else {
+                await addTagToProperty(propertyId, tag.tag_id, user?.user_metadata?.sub);
+                setPropertyTags((prev) => prev.map(t => t.tag_id === tag.tag_id ? { ...t, count: t.count + 1, user_applied: true } : t));
+            }
+        } catch (error) {
+            toast.error("An error occurred while voting on the tag. Please try again.", { position: "top-right" });
+
+        }
     }
-
-    if (
-        normalised.includes("garden") ||
-        normalised.includes("patio") ||
-        normalised.includes("terrace") ||
-        normalised.includes("balcony") ||
-        normalised.includes("outdoor")
-    ) {
-        return "Garden";
-    }
-
-    if (
-        normalised.includes("location") ||
-        normalised.includes("station") ||
-        normalised.includes("transport") ||
-        normalised.includes("neighborhood") ||
-        normalised.includes("commute") ||
-        normalised.includes("near")
-    ) {
-        return "Location";
-    }
-
-    return "Property Features";
-}
-
-// group tags by category for display purposes
-function groupTagsByCategory<T extends { name: string }>(tags: T[]) {
-    const grouped = {
-        Parking: [] as T[],
-        Garden: [] as T[],
-        "Property Features": [] as T[],
-        Location: [] as T[],
-    };
-
-    for (const tag of tags) {
-        grouped[getTagCategory(tag.name)].push(tag);
-    }
-
-    return grouped;
-}
-
-export function PropertyTags({ propertyTags, allTags }: { propertyTags: TagCount[], allTags: Tag[] }) {
-    const groupedPropertyTags = groupTagsByCategory(propertyTags ?? []);
-    const groupedAllTags = groupTagsByCategory(allTags ?? []);
-
     return (
         <div>
             <hr className="mt-12" />
@@ -78,7 +86,9 @@ export function PropertyTags({ propertyTags, allTags }: { propertyTags: TagCount
                             <div key={tag.tag_id} className="inline-flex items-center gap-3 px-2 py-1 bg-buttonColor rounded-md text-md">
                                 {tag.name}
                                 <div className="inline-flex items-center ">
-                                    <ArrowBigUp />
+                                    <Button onClick={() => voteOnTag(tag)} variant={"ghost"} size={"icon"} className="hover:bg-transparent">
+                                        <ArrowBigUp className={tag.user_applied ? "fill-muted-foreground hover:text-foreground size-6" : "size-6 hover:text-foreground"} />
+                                    </Button>
                                     {tag.count}
                                 </div>
                             </div>
@@ -93,7 +103,7 @@ export function PropertyTags({ propertyTags, allTags }: { propertyTags: TagCount
             <hr className="pb-4" />
             <div className="pb-4" >
                 <p>Help out other buyers by adding a tag to this property:</p>
-                {allTags && allTags.length > 0 && (
+                {groupedAllTags && (
                     <div className="my-3 space-y-4 mb-8">
                         {CATEGORY_ORDER.map((category) => (
                             groupedAllTags[category].length > 0 && (

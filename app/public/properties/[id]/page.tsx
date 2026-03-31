@@ -15,9 +15,8 @@ import PropertyDetails from "@/components/property-details";
 import { fetchFavourites } from "@/lib/data/favourites";
 import { validateUser } from "@/lib/auth/user";
 import { Button } from "@/components/ui/button";
-import type { Tag, TagCount } from "@/types/tags";
 
-type Property = Database["public"]["Tables"]["properties"]["Row"] & { isFavourite?: boolean, tags?: TagCount[] };
+type Property = Database["public"]["Tables"]["properties"]["Row"] & { isFavourite?: boolean};
 
 // Component to fetch and display property details, images and agency details for a given property ID
 export function PropertyDetailsPage({ params }: { params: Promise<{ id: number }> }) {
@@ -49,10 +48,6 @@ export function PropertyDetailsPage({ params }: { params: Promise<{ id: number }
                         setImages(imageUrls);
                     });
 
-                    fetchPropertyTags(propertyData.id).then((tags) => {
-                        setProperty((prev) => prev ? { ...prev, tags } : prev);
-                    });
-
                     const user = await validateUser();
                     if (user) {
                         fetchFavourites([propertyData.id], user?.user.id || "").then((favouriteIds) => {
@@ -63,7 +58,6 @@ export function PropertyDetailsPage({ params }: { params: Promise<{ id: number }
                     } else {
                         setProperty((prev) => prev ? { ...prev, isFavourite: false } : prev);
                     }
-
                 }
             } catch (error) {
                 console.error("Error fetching property details:", error);

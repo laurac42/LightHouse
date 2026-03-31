@@ -126,7 +126,7 @@ export default function PropertiesPage() {
                 const propertiesWithFavourites = await fetchFavouritesForProperties(propertiesWithImages) as Property[];
 
                 for (const property of propertiesWithFavourites) {
-                    const tags = await fetchPropertyTags(property.id);
+                    const tags = await fetchPropertyTags(property.id, id ?? null);
                     property.tags = tags;
                 }
                 setProperties(propertiesWithFavourites);

@@ -12,7 +12,7 @@ import { Button } from "./ui/button";
 import { fetchAllTags } from "@/lib/data/tag-utils";
 import { PropertyTags } from "./property-tags";
 
-type Property = Database["public"]["Tables"]["properties"]["Row"] & { isFavourite?: boolean, tags?: TagCount[] };
+type Property = Database["public"]["Tables"]["properties"]["Row"] & { isFavourite?: boolean};
 
 // page options are:
 // - view: view the property details as a buyer would see them
@@ -22,7 +22,6 @@ export default function PropertyDetails({ params, page = "view" }: { params: { i
     const [sellerDetails, setSellerDetails] = useState<string | null>(null);
     const [reason, setReason] = useState<string | null>(null);
     const [isFavourite, setIsFavourite] = useState(false);
-    const [allTags, setAllTags] = useState<Tag[]>([]);
 
     // load seller added info
     useEffect(() => {
@@ -36,21 +35,6 @@ export default function PropertyDetails({ params, page = "view" }: { params: { i
             }
         };
         loadInfo();
-    }, [property]);
-
-    useEffect(() => {
-        const fetchAllTagsData = async () => {
-            try {
-                const tags = await fetchAllTags();
-                // filter tags to remove those already applied to the property
-                const appliedTagIds = property.tags?.map(tag => tag.tag_id) || [];
-                const filteredTags = tags.filter(propertyTag => !appliedTagIds.includes(propertyTag.id));
-                setAllTags(filteredTags);
-            } catch (error) {
-                console.error("Error fetching all tags: ", error);
-            }
-        };
-        fetchAllTagsData();
     }, [property]);
 
     // handle saving favourite
@@ -131,7 +115,7 @@ export default function PropertyDetails({ params, page = "view" }: { params: { i
                         <p>{property.description}</p>
                     </div>
 
-                    <PropertyTags propertyTags={property.tags || []} allTags={allTags} />
+                    <PropertyTags propertyId={property.id} />
 
                     {((sellerDetails) || (page === "edit")) && (
                         <SellerDetails property={property} reason={reason} description={sellerDetails} page={page} />
