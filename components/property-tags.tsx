@@ -4,10 +4,11 @@ import styles from '../app/public/properties/page.module.css';
 import { ArrowBigUp, CirclePlus, ChevronDown, ChevronUp, Plus } from "lucide-react";
 import { Button } from "./ui/button";
 import { useEffect, useState, useCallback } from "react";
-import { groupTagsByCategory, addTagToProperty, fetchAllTags, fetchPropertyTags, removeTagFromProperty } from "@/lib/data/tag-utils";
+import { groupTagsByCategory, addTagToProperty, fetchAllTags, fetchPropertyTags, removeTagFromProperty, addNewTagToProperty } from "@/lib/data/tag-utils";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { Card } from "./ui/card";
+import { Input } from "./ui/input";
 
 const CATEGORY_ORDER = ["Parking", "Garden", "Property Features", "Location"] as const;
 
@@ -27,6 +28,7 @@ export function PropertyTags({ propertyId }: { propertyId: number }) {
         "Location": false,
     });
     const [isMobile, setIsMobile] = useState(false);
+    const [newTagName, setNewTagName] = useState("");
 
     const updateMedia = useCallback(() => {
         setIsMobile(window.innerWidth < 768);
@@ -67,32 +69,49 @@ export function PropertyTags({ propertyId }: { propertyId: number }) {
         fetchAllTagsData();
     }, [propertyTags]);
 
+    /**
+     * Check if a user is logged in by checking for a valid user ID in the Supabase auth claims. If no valid user ID is found, an error toast is shown. 
+     * @returns User ID if a user is logged in, or null if no user is logged in
+     */
+    async function checkLoggedIn() {
+        const supabase = createClient();
+        const { data } = await supabase.auth.getClaims();
+        const user = data?.claims;
+        if (!user || !user.user_metadata?.sub) {
+            toast.error("You must be logged in to vote on a tag.", { position: "top-right" });
+            return;
+        }
+        return user.user_metadata.sub;
+    }
+
+    /**
+     * Vote on a tag for the property by either adding or removing the tag from the property depending on whether the user has already applied the tag or not. 
+     * If the user has already applied the tag, their vote will be removed, and if they have not applied the tag, their vote will be added. 
+     * The property tags state is also updated to reflect the change immediately in the UI without needing to refetch data from the database.
+     * @param tagId Id of the tag to vote on
+     * @param name Name of the tag
+     * @param userHasApplied Whether the user has already voted on the tag or not
+     * @param existingTag Whether the tag already exists for the property or not 
+     * @returns 
+     */
     async function voteOnTag(tagId: number, name: string, userHasApplied: boolean, existingTag: boolean = false) {
         try {
-            console.log("Voting on tag: ", tagId);
-            const supabase = createClient();
-            const { data } = await supabase.auth.getClaims();
-            const user = data?.claims;
-            if (!user || !user.user_metadata?.sub) {
-                toast.error("You must be logged in to vote on a tag.", { position: "top-right" });
-                return;
-            }
+            const userId = await checkLoggedIn();
+            if (!userId) return;
 
             // add or remove vote depending on whether user has already applied the tag or not
+            // also update property tags state to reflect change immediately in UI without needing to refetch data from database
             if (userHasApplied) {
-                await removeTagFromProperty(propertyId, tagId, user.user_metadata.sub);
-                // for an existing tag, update count and user applied status for immediate UI update - if count goes to 0, remove the tag from the property tags
+                await removeTagFromProperty(propertyId, tagId, userId);
                 setPropertyTags((prev) => prev.filter(t => t.tag_id === tagId ? t.count > 1 : true).map(t => t.tag_id === tagId ? { ...t, count: t.count - 1, user_applied: false } : t));
 
             } else {
-                const tagInfo = await addTagToProperty(propertyId, tagId, user?.user_metadata?.sub);
+                const tagInfo = await addTagToProperty(propertyId, tagId, userId);
                 if (existingTag) {
-                    // for an existing tag, update count and user applied status for immediate UI update
                     if (tagInfo) {
                         setPropertyTags((prev) => prev.map(t => t.tag_id === tagId ? { ...t, count: t.count + 1, user_applied: true } : t));
                     }
                 } else {
-                    // for a new tag, add the tag to the property tags with a count of 1 and user applied as true for immediate UI update                    
                     if (tagInfo) {
                         setPropertyTags((prev) => [...prev, { tag_id: tagId, name: name, count: 1, user_applied: true }]);
                     }
@@ -103,6 +122,27 @@ export function PropertyTags({ propertyId }: { propertyId: number }) {
 
         }
     }
+
+    /**
+     * Add a new tag to the database and apply it to the property, then update the property tags state to reflect the change immediately in the UI without needing to refetch data from the database.
+     * @param name Name of the new tag to add and apply to the property
+     */
+    async function addNewTag(name: string) {
+        try {
+            const userId = await checkLoggedIn();
+            if (!userId) return;
+
+            const tagInfo = await addNewTagToProperty(propertyId, name, userId);
+            if (tagInfo) {
+                setPropertyTags((prev) => [...prev, { tag_id: tagInfo.tag_id, name: name, count: 1, user_applied: true }]);
+                setNewTagName("");
+            }
+        } catch (error) {
+            toast.error("An error occurred while adding the tag. Please try again.", { position: "top-right" });
+        }
+    }
+
+
     return (
         <Card className="p-4 border-none">
             <div >
@@ -167,11 +207,10 @@ export function PropertyTags({ propertyId }: { propertyId: number }) {
                             </div>
                         )}
 
-
                         <p>Can't find the right tag? Add your own custom tag:</p>
                         <div className="inline-flex items-center gap-3 px-2 py-1 rounded-md text-md">
-                            <input type="text" placeholder="Add a Tag" className="bg-transparent focus:outline-none" />
-                            <Button className="bg-buttonColor hover:bg-buttonHover" variant={"outline"} size={"sm"}>Add Tag</Button>
+                            <Input type="text" placeholder="Add a Tag" className="bg-transparent focus:outline-none" value={newTagName} onChange={(e) => setNewTagName(e.target.value)} />
+                            <Button onClick={() => addNewTag(newTagName)} className="bg-buttonColor hover:bg-buttonHover text-foreground" variant={"default"} size={"sm"}>Add Tag</Button>
                         </div>
                     </>
                 )}

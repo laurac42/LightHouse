@@ -140,3 +140,33 @@ export async function removeTagFromProperty(propertyId: number, tagId: number, u
         throw error;
     }
 }
+
+/**
+ * Add a new tag to the database, and then apply it to the given property
+ * @param propertyId Id of the property to add the new tag to 
+ * @param name Name of the new tag to add to the database and apply to the property
+ * @param userId Id of the user adding the new tag and applying it to the property
+ * @returns Property tag record that was added to the property_tags table for the new tag and property, including the new tag ID and name
+ */
+export async function addNewTagToProperty(propertyId: number, name: string, userId: string) {
+    const supabase = createClient();
+    // add the new tag to the tags table and get the new tag ID
+    const { data: tagData, error: tagError } = await supabase
+        .from("tags")
+        .insert({ name: name, is_seed: false })
+        .select("*")
+        .single();
+    if (tagError) {
+        throw tagError;
+    }
+    // add the new tag to the property_tags table
+    const { data: propertyTagData, error: propertyTagError } = await supabase
+        .from("property_tags")
+        .insert({ property_id: propertyId, tag_id: tagData.id, user_id: userId })
+        .select("*")
+        .single();
+    if (propertyTagError) {
+        throw propertyTagError;
+    }
+    return propertyTagData;
+}
