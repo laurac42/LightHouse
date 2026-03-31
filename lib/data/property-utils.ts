@@ -247,8 +247,6 @@ export async function fetchPropertiesForPage(page: number = 1, page_size: number
  */
 async function fetchRankedPropertiesWithPreferences(page: number, page_size: number, preferences: UserPreferences, boundingBox?: BoundingBox | null) {
     const supabase = createClient();
-    console.log("boundary box in fetchRankedPropertiesWithPreferences: ", boundingBox);
-    console.log("preferences in fetchRankedPropertiesWithPreferences: ", preferences);
     const { data, error } = await supabase
         .rpc("fetch_ranked_properties", {
             p_min_lat: boundingBox?.minLatitude ?? undefined,
@@ -264,7 +262,6 @@ async function fetchRankedPropertiesWithPreferences(page: number, page_size: num
     if (error) {
         throw error;
     }
-    console.log("data from fetch_ranked_properties RPC: ", data);
     const total_count = data?.[0]?.total_count ?? 0;
     const properties = data?.map(({ total_count, ...property }) => property) ?? [];
 

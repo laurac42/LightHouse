@@ -104,7 +104,6 @@ export default function PropertiesPage() {
                 }
             }
             if (box !== undefined) {
-                console.log("fetching properties with bounding box: ", box);
                 const { data, count } = await fetchPropertiesForPage(page, PAGE_SIZE, user_preferences, box);
                 setTotalProperties(count || 0);
 

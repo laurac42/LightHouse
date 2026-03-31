@@ -28,14 +28,12 @@ export async function fetchAllTags() {
 * @returns A list of tags for the property, including the tag name and count of how many times the tag has been applied to properties in the database
 */
 export async function fetchPropertyTags(propertyId: number, userId: string | null = null) {
-    console.log("Fetching tags for property ID: ", propertyId, " and user ID: ", userId);
     const supabase = createClient();
     const { data, error } = await supabase
         .rpc("get_tag_counts", { p_property_id: propertyId, p_user_id: userId });
     if (error) {
         throw error;
     }
-    console.log("data from get_tag_counts: ", data);
     return data as TagCount[];
 
 }
