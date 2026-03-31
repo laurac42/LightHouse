@@ -1,16 +1,18 @@
 import { Database } from "@/types/supabase";
 import styles from '../app/public/properties/page.module.css';
-import { Home, Bed, Bath, Grid2X2, Landmark, Lightbulb, BookOpenText, StickyNote, Heart } from "lucide-react";
+import { Home, Bed, Bath, Grid2X2, Landmark, Lightbulb, BookOpenText, Heart } from "lucide-react";
 import { useEffect, useState } from "react";
 import { loadSellerAddedInfo } from "@/lib/data/property-utils";
 import { toast } from "sonner";
 import { saveFavourite, removeFavourite } from "@/lib/data/favourites";
 import { validateUser } from "@/lib/auth/user";
-import type { Tag } from "@/types/tags";
+import type { Tag, TagCount } from "@/types/tags";
 import SellerDetails from "./seller-details";
 import { Button } from "./ui/button";
+import { fetchAllTags } from "@/lib/data/tag-utils";
+import { PropertyTags } from "./property-tags";
 
-type Property = Database["public"]["Tables"]["properties"]["Row"] & { isFavourite?: boolean, tags?: Tag[] };
+type Property = Database["public"]["Tables"]["properties"]["Row"] & { isFavourite?: boolean, tags?: TagCount[] };
 
 // page options are:
 // - view: view the property details as a buyer would see them
@@ -20,6 +22,7 @@ export default function PropertyDetails({ params, page = "view" }: { params: { i
     const [sellerDetails, setSellerDetails] = useState<string | null>(null);
     const [reason, setReason] = useState<string | null>(null);
     const [isFavourite, setIsFavourite] = useState(false);
+    const [allTags, setAllTags] = useState<Tag[]>([]);
 
     // load seller added info
     useEffect(() => {
@@ -33,6 +36,21 @@ export default function PropertyDetails({ params, page = "view" }: { params: { i
             }
         };
         loadInfo();
+    }, [property]);
+
+    useEffect(() => {
+        const fetchAllTagsData = async () => {
+            try {
+                const tags = await fetchAllTags();
+                // filter tags to remove those already applied to the property
+                const appliedTagIds = property.tags?.map(tag => tag.tag_id) || [];
+                const filteredTags = tags.filter(propertyTag => !appliedTagIds.includes(propertyTag.id));
+                setAllTags(filteredTags);
+            } catch (error) {
+                console.error("Error fetching all tags: ", error);
+            }
+        };
+        fetchAllTagsData();
     }, [property]);
 
     // handle saving favourite
@@ -113,24 +131,8 @@ export default function PropertyDetails({ params, page = "view" }: { params: { i
                         <p>{property.description}</p>
                     </div>
 
-                     <hr className="mt-12"/>
-                    <div >
-                        <h1 className={styles.tagHeading}>What are other Buyers Saying?</h1>
-                        {property.tags && property.tags.length > 0 ? (
-                            <div className="flex flex-wrap gap-2 my-2">
-                                {property.tags.map((tag) => (
-                                    <div key={tag.tag_id} className="inline-flex items-center gap-1 px-2 py-1 bg-buttonColor rounded-md text-sm">
-                                        <BookOpenText size={12} />
-                                        {tag.name} ({tag.count})
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <p>No tags for this property.</p>
-                        )}
-                    </div>
-                    <hr className="pb-4" />
-                    
+                    <PropertyTags propertyTags={property.tags || []} allTags={allTags} />
+
                     {((sellerDetails) || (page === "edit")) && (
                         <SellerDetails property={property} reason={reason} description={sellerDetails} page={page} />
                     )}

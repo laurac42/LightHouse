@@ -1,7 +1,8 @@
 'use client';
 import { Suspense, useEffect, useState, CSSProperties } from "react";
 import { use, useRef } from "react";
-import { fetchPropertyDetails, fetchPropertyTags, getAgencyDetails } from "@/lib/data/property-utils";
+import { fetchPropertyDetails, getAgencyDetails } from "@/lib/data/property-utils";
+import { fetchPropertyTags } from "@/lib/data/tag-utils";
 import { Database } from "@/types/supabase";
 import { getImagesFromStorage } from "@/lib/data/images";
 import ImageCarousel from "@/components/image-carousel";
@@ -14,9 +15,9 @@ import PropertyDetails from "@/components/property-details";
 import { fetchFavourites } from "@/lib/data/favourites";
 import { validateUser } from "@/lib/auth/user";
 import { Button } from "@/components/ui/button";
-import type { Tag } from "@/types/tags";
+import type { Tag, TagCount } from "@/types/tags";
 
-type Property = Database["public"]["Tables"]["properties"]["Row"] & { isFavourite?: boolean, tags?: Tag[] };
+type Property = Database["public"]["Tables"]["properties"]["Row"] & { isFavourite?: boolean, tags?: TagCount[] };
 
 // Component to fetch and display property details, images and agency details for a given property ID
 export function PropertyDetailsPage({ params }: { params: Promise<{ id: number }> }) {

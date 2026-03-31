@@ -1,13 +1,11 @@
 'use client';
 
-import { UserRound, Menu, X, LogOut, Heart } from "lucide-react";
+import { UserRound, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button"
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import Link from 'next/link';
 import { validateUser } from '@/lib/auth/user';
 import { isAdmin, isEstateAgent, isSeller } from '@/lib/auth/role';
-import { createClient } from "@/lib/supabase/client";
-import { useRouter, usePathname } from "next/navigation";
 import NavbarDropdown from "./navbar-dropdown";
 
 export default function Navbar() {

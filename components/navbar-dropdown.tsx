@@ -3,14 +3,12 @@ import {
     DropdownMenuContent,
     DropdownMenuGroup,
     DropdownMenuItem,
-    DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { LogOut, Heart, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button"
 import Link from 'next/link';
-import { validateUser } from '@/lib/auth/user';
 import { createClient } from "@/lib/supabase/client";
 import { useRouter, usePathname } from "next/navigation";
 
@@ -34,7 +32,7 @@ export default function NavbarDropdown() {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button className="text-md bg-buttonColor hover:bg-buttonHover shadow-md text-foreground ">Profile<UserRound className="w-4 h-4 ml-2" /></Button>
+                <Button className="text-sm bg-buttonColor hover:bg-buttonHover shadow-md text-foreground ">Profile<UserRound className="w-4 h-4 ml-2" /></Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="z-[200]">
                 <DropdownMenuGroup>

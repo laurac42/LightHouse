@@ -14,10 +14,10 @@ import { fetchUserPreferences } from "@/lib/data/buyer-profile";
 import { UserPreferences } from "@/types/user";
 import { getBoundingBoxForLocation } from "@/lib/data/location";
 import type { BoundingBox } from "@/types/location";
-import type { Tag } from "@/types/tags";
-import { fetchPropertyTags } from "@/lib/data/property-utils";
+import type { Tag, TagCount } from "@/types/tags";
+import { fetchPropertyTags } from "@/lib/data/tag-utils";
 
-type Property = Database["public"]["Tables"]["properties"]["Row"] & { images: string[], isFavourite?: boolean, tags?: Tag[] };
+type Property = Database["public"]["Tables"]["properties"]["Row"] & { images: string[], isFavourite?: boolean, tags?: TagCount[] };
 const PAGE_SIZE = 10; // number of properties to display per page
 
 export default function PropertiesPage() {
