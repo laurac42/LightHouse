@@ -6,10 +6,8 @@ import { loadSellerAddedInfo } from "@/lib/data/property-utils";
 import { toast } from "sonner";
 import { saveFavourite, removeFavourite } from "@/lib/data/favourites";
 import { validateUser } from "@/lib/auth/user";
-import type { Tag, TagCount } from "@/types/tags";
 import SellerDetails from "./seller-details";
 import { Button } from "./ui/button";
-import { fetchAllTags } from "@/lib/data/tag-utils";
 import { PropertyTags } from "./property-tags";
 import { Card } from "./ui/card";
 

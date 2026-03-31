@@ -4,7 +4,7 @@ import styles from '../app/public/properties/page.module.css';
 import { ArrowBigUp, CirclePlus, ChevronDown, ChevronUp, Plus } from "lucide-react";
 import { Button } from "./ui/button";
 import { useEffect, useState, useCallback } from "react";
-import { groupTagsByCategory, addTagToProperty, fetchAllTags, fetchPropertyTags, removeTagFromProperty, addNewTagToProperty } from "@/lib/data/tag-utils";
+import { groupTagsByCategory, addTagToProperty, fetchAllSeedTags, fetchPropertyTags, removeTagFromProperty, addNewTagToProperty } from "@/lib/data/tag-utils";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { Card } from "./ui/card";
@@ -56,7 +56,7 @@ export function PropertyTags({ propertyId }: { propertyId: number }) {
     useEffect(() => {
         const fetchAllTagsData = async () => {
             try {
-                const tags = await fetchAllTags();
+                const tags = await fetchAllSeedTags();
                 // filter tags to remove those already applied to the property
                 const appliedTagIds = propertyTags?.map(tag => tag.tag_id) || [];
                 const filteredTags = tags.filter(propertyTag => !appliedTagIds.includes(propertyTag.id));

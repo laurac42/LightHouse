@@ -173,12 +173,12 @@ export default function PropertyCard({ property, images, page, editable = false,
                         </div>
 
                         {/** Description */}
-                        <div className={page === "properties" || page === "favourites" ? "text-sm text-muted-foreground max-h-[100px] mx-1 my-4 overflow-hidden text-ellipsis line-clamp-3 lg:line-clamp-4" : "text-sm text-muted-foreground max-h-[100px] mx-1 my-1 overflow-hidden text-ellipsis line-clamp-2 lg:line-clamp-3"}>
+                        <div className={page === "properties" || page === "favourites" ? "text-sm text-muted-foreground max-h-[100px] mx-1 mt-2 mb-4 overflow-hidden text-ellipsis line-clamp-3 lg:line-clamp-4" : "text-sm text-muted-foreground max-h-[100px] mx-1 my-1 overflow-hidden text-ellipsis line-clamp-2 lg:line-clamp-3"}>
                             {property.description}
                         </div>
 
                         {/** Tag display */}
-                        <div className="h-8">
+                        <div className="h-8 mb-2">
                             {propertyTags.length > 0 && propertyTags.map((tag) => (
                                 <span key={tag.tag_id} className="inline-block bg-buttonColor text-foreground text-xs px-2 py-1 rounded-full mr-2 mb-2">
                                     {tag.name} ({tag.count})

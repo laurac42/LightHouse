@@ -1,4 +1,4 @@
-import type {Tag, TagCount} from "@/types/tags";
+import type { Tag, TagCount } from "@/types/tags";
 import { createClient } from "@/lib/supabase/client";
 
 
@@ -6,18 +6,33 @@ const CATEGORY_ORDER = ["Parking", "Garden", "Property Features", "Location"] as
 type Category = (typeof CATEGORY_ORDER)[number];
 
 /** 
- * Fetch all available tag options from the database (all standard tags, where seed is true)
+ * Fetch all available standard tag options from the database (all standard tags, where seed is true)
+ * @returns A list of all tags, including the tag name and id
+ */
+export async function fetchAllSeedTags() {
+    const supabase = createClient();
+    const { data, error } = await supabase
+        .from("tags")
+        .select("*")
+        .eq("is_seed", true);
+    if (error) {
+        throw error;
+    }
+    return data as Tag[];
+}
+
+/** 
+ * Fetch all available tag options from the database (all tags, including those added by users))
  * @returns A list of all tags, including the tag name and id
  */
 export async function fetchAllTags() {
     const supabase = createClient();
     const { data, error } = await supabase
         .from("tags")
-        .select("*")
-        .eq("is_seed", true);
-        if (error) {
-            throw error;
-        }
+        .select("*");
+    if (error) {
+        throw error;
+    }
     return data as Tag[];
 }
 
@@ -107,7 +122,7 @@ function getTagCategory(name: string): Category {
  * @param tagId Id of the tag to add to the property
  * @param userId Id of the user applying the tag
  */
-export async function addTagToProperty(propertyId: number, tagId: number, userId: string ) {
+export async function addTagToProperty(propertyId: number, tagId: number, userId: string) {
     const supabase = createClient();
     const { data, error } = await supabase
         .from("property_tags")
@@ -126,7 +141,7 @@ export async function addTagToProperty(propertyId: number, tagId: number, userId
  * @param tagId Id of the tag to remove from the property
  * @param userId Id of the user removing the tag
  */
-export async function removeTagFromProperty(propertyId: number, tagId: number, userId: string ) {
+export async function removeTagFromProperty(propertyId: number, tagId: number, userId: string) {
     const supabase = createClient();
     const { error } = await supabase
         .from("property_tags")
