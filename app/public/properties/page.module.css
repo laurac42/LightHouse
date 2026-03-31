@@ -8,11 +8,12 @@
 
 .description ul {
     list-style-type: disc;
-    padding-left: 40px;
+    padding-left: 30px;
     background-color: #AADBEC;
     border-bottom-left-radius: 10px;
     border-bottom-right-radius: 10px;
     padding-bottom: 10px;
+    padding-right: 10px;
 }
 
 .description li {
@@ -21,7 +22,7 @@
 
 .description h1 {
     font-size: 1.5em;
-    margin-top: 20px;
+    margin-top: 5px;
     font-weight: bold;
 }
 

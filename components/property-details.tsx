@@ -11,8 +11,9 @@ import SellerDetails from "./seller-details";
 import { Button } from "./ui/button";
 import { fetchAllTags } from "@/lib/data/tag-utils";
 import { PropertyTags } from "./property-tags";
+import { Card } from "./ui/card";
 
-type Property = Database["public"]["Tables"]["properties"]["Row"] & { isFavourite?: boolean};
+type Property = Database["public"]["Tables"]["properties"]["Row"] & { isFavourite?: boolean };
 
 // page options are:
 // - view: view the property details as a buyer would see them
@@ -104,18 +105,23 @@ export default function PropertyDetails({ params, page = "view" }: { params: { i
                     </div>
                     <hr />
 
-                    <div className={styles.description + ` ${sellerDetails ? 'mb-8 md:mb-12 lg:mb-4' : 'mb-20 md:mb-28 lg:mb-8'} whitespace:`}>
+                    <div className={styles.description + ` mt-6 pr-2 mb-8 md:mb-12 lg:mb-4 whitespace:`}>
                         <h1 className={styles.features}>Key Features</h1>
                         <ul>
                             {property.features?.map((feature, index) =>
                                 <li key={index}>{feature}</li>
                             )}
                         </ul>
-                        <h1>Description</h1>
-                        <p>{property.description}</p>
+                        <Card className="p-4 border-none mt-12 mb-12">
+                            <h1>Description</h1>
+                            <p>{property.description}</p>
+                        </Card>
                     </div>
 
-                    <PropertyTags propertyId={property.id} />
+                    <div className={sellerDetails ? "mb-8" : "mb-12"}>
+                        <PropertyTags propertyId={property.id} />
+
+                    </div>
 
                     {((sellerDetails) || (page === "edit")) && (
                         <SellerDetails property={property} reason={reason} description={sellerDetails} page={page} />

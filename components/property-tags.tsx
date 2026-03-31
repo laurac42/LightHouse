@@ -1,12 +1,13 @@
 "use client";
 import type { Tag, TagCount } from "@/types/tags";
 import styles from '../app/public/properties/page.module.css';
-import { ArrowBigUp, CirclePlus } from "lucide-react";
+import { ArrowBigUp, CirclePlus, ChevronDown, ChevronUp, Plus } from "lucide-react";
 import { Button } from "./ui/button";
 import { useEffect, useState } from "react";
 import { groupTagsByCategory, addTagToProperty, fetchAllTags, fetchPropertyTags, removeTagFromProperty } from "@/lib/data/tag-utils";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
+import { Card } from "./ui/card";
 
 const CATEGORY_ORDER = ["Parking", "Garden", "Property Features", "Location"] as const;
 
@@ -18,6 +19,7 @@ export function PropertyTags({ propertyId }: { propertyId: number }) {
         "Location": [],
     });
     const [propertyTags, setPropertyTags] = useState<TagCount[]>([]);
+    const [openAddTag, setOpenAddTag] = useState(false);
 
     useEffect(() => {
         const getTags = async () => {
@@ -75,20 +77,17 @@ export function PropertyTags({ propertyId }: { propertyId: number }) {
         }
     }
     return (
-        <div>
-            <hr className="mt-12" />
+        <Card className="p-4 border-none">
             <div >
                 <h1 className={styles.tagHeading}>What are other Buyers Saying?</h1>
                 <p>Upvote a tag to have your say</p>
                 {propertyTags && propertyTags.length > 0 ? (
-                    <div className="flex flex-wrap gap-2 py-2">
+                    <div className="flex flex-wrap gap-2 py-4">
                         {propertyTags.map((tag) => (
-                            <div key={tag.tag_id} className="inline-flex items-center gap-3 px-2 py-1 bg-buttonColor rounded-md text-md">
+                            <div key={tag.tag_id} className="inline-flex items-center gap-1 md:gap-3 px-2 py-1 bg-buttonColor rounded-md text-sm md:text-md">
                                 {tag.name}
-                                <div className="inline-flex items-center ">
-                                    <Button onClick={() => voteOnTag(tag)} variant={"ghost"} size={"icon"} className="hover:bg-transparent">
-                                        <ArrowBigUp className={tag.user_applied ? "fill-muted-foreground hover:text-foreground size-6" : "size-6 hover:text-foreground"} />
-                                    </Button>
+                                <div className="inline-flex items-center">
+                                        <ArrowBigUp onClick={() => voteOnTag(tag)}  className={tag.user_applied ? "fill-muted-foreground hover:text-foreground size-6" : "size-6 hover:text-foreground"} />
                                     {tag.count}
                                 </div>
                             </div>
@@ -102,34 +101,41 @@ export function PropertyTags({ propertyId }: { propertyId: number }) {
             </div>
             <hr className="pb-4" />
             <div className="pb-4" >
-                <p>Help out other buyers by adding a tag to this property:</p>
-                {groupedAllTags && (
-                    <div className="my-3 space-y-4 mb-8">
-                        {CATEGORY_ORDER.map((category) => (
-                            groupedAllTags[category].length > 0 && (
-                                <div key={category}>
-                                    <div className="flex flex-wrap gap-2 items-center">
-                                        <h2 className="font-semibold mb-2">{category}: </h2>
-                                        {groupedAllTags[category].map((tag) => (
-                                            <div key={tag.id} className="inline-flex items-center gap-1 px-2 py-2 bg-midBlue rounded-md text-sm">
-                                                {tag.name}
-                                                <CirclePlus className="w-4 h-4" />
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )
-                        ))}
-                    </div>
-                )}
-
-                <p>Can't find the right tag? Add your own custom tag:</p>
-                <div className="inline-flex items-center gap-3 px-2 py-1 rounded-md text-md">
-                    <input type="text" placeholder="Add a Tag" className="bg-transparent focus:outline-none" />
-                    <Button className="bg-buttonColor hover:bg-buttonHover" variant={"outline"} size={"sm"}>Add Tag</Button>
+                <div className="flex flex-row gap-4 items-center mr-4">
+                    <h3 className="text-lg font-bold">Add a New Tag</h3>
+                    {openAddTag ? <ChevronUp className="cursor-pointer w-10 h-10" onClick={() => setOpenAddTag(false)} />
+                        : <ChevronDown className="cursor-pointer w-10 h-10" onClick={() => setOpenAddTag(true)} />}
                 </div>
+                {openAddTag && (
+                    <>
+                        {groupedAllTags && (
+                            <div className="my-1 space-y-2 mb-6 mt-4">
+                                {CATEGORY_ORDER.map((category) => (
+                                    groupedAllTags[category].length > 0 && (
+                                        <div key={category} className="md:flex md:flex-row md:gap-4 pb-4">
+                                            <h2 className="font-semibold mb-2 md:w-16">{category}: </h2>
+                                            <div className="flex flex-wrap gap-2 items-center">
+                                                {groupedAllTags[category].map((tag) => (
+                                                    <div key={tag.id} className="inline-flex items-center gap-1 px-2 py-1 bg-midBlue rounded-md text-sm">
+                                                        {tag.name}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )
+                                ))}
+                            </div>
+                        )}
+
+
+                        <p>Can't find the right tag? Add your own custom tag:</p>
+                        <div className="inline-flex items-center gap-3 px-2 py-1 rounded-md text-md">
+                            <input type="text" placeholder="Add a Tag" className="bg-transparent focus:outline-none" />
+                            <Button className="bg-buttonColor hover:bg-buttonHover" variant={"outline"} size={"sm"}>Add Tag</Button>
+                        </div>
+                    </>
+                )}
             </div>
-            <hr className="pb-4" />
-        </div>
+        </Card>
     )
 }
