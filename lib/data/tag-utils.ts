@@ -111,7 +111,7 @@ function getTagCategory(name: string): Category {
  */
 export async function addTagToProperty(propertyId: number, tagId: number, userId: string ) {
     const supabase = createClient();
-    const { error } = await supabase
+    const { data, error } = await supabase
         .from("property_tags")
         .insert({ property_id: propertyId, tag_id: tagId, user_id: userId })
         .select("*")
@@ -119,6 +119,7 @@ export async function addTagToProperty(propertyId: number, tagId: number, userId
     if (error) {
         throw error;
     }
+    return data;
 }
 
 /**

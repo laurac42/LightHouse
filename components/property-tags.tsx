@@ -3,7 +3,7 @@ import type { Tag, TagCount } from "@/types/tags";
 import styles from '../app/public/properties/page.module.css';
 import { ArrowBigUp, CirclePlus, ChevronDown, ChevronUp, Plus } from "lucide-react";
 import { Button } from "./ui/button";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { groupTagsByCategory, addTagToProperty, fetchAllTags, fetchPropertyTags, removeTagFromProperty } from "@/lib/data/tag-utils";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
@@ -20,6 +20,22 @@ export function PropertyTags({ propertyId }: { propertyId: number }) {
     });
     const [propertyTags, setPropertyTags] = useState<TagCount[]>([]);
     const [openAddTag, setOpenAddTag] = useState(false);
+    const [categoryOpened, setCategoryOpened] = useState<Record<(typeof CATEGORY_ORDER)[number], boolean>>({
+        "Parking": false,
+        "Garden": false,
+        "Property Features": false,
+        "Location": false,
+    });
+    const [isMobile, setIsMobile] = useState(false);
+
+    const updateMedia = useCallback(() => {
+        setIsMobile(window.innerWidth < 768);
+    }, []);
+
+    useEffect(() => {
+        window.addEventListener("resize", updateMedia);
+        return () => window.removeEventListener("resize", updateMedia);
+    }, [updateMedia]);
 
     useEffect(() => {
         const getTags = async () => {
@@ -51,9 +67,9 @@ export function PropertyTags({ propertyId }: { propertyId: number }) {
         fetchAllTagsData();
     }, [propertyTags]);
 
-    async function voteOnTag(tag: TagCount) {
+    async function voteOnTag(tagId: number, name: string, userHasApplied: boolean, existingTag: boolean = false) {
         try {
-            console.log("Voting on tag: ", tag);
+            console.log("Voting on tag: ", tagId);
             const supabase = createClient();
             const { data } = await supabase.auth.getClaims();
             const user = data?.claims;
@@ -63,13 +79,24 @@ export function PropertyTags({ propertyId }: { propertyId: number }) {
             }
 
             // add or remove vote depending on whether user has already applied the tag or not
-            if (tag.user_applied) {
-                await removeTagFromProperty(propertyId, tag.tag_id, user.user_metadata.sub);
-                setPropertyTags((prev) => prev.map(t => t.tag_id === tag.tag_id ? { ...t, count: t.count - 1, user_applied: false } : t));
+            if (userHasApplied) {
+                await removeTagFromProperty(propertyId, tagId, user.user_metadata.sub);
+                // for an existing tag, update count and user applied status for immediate UI update - if count goes to 0, remove the tag from the property tags
+                setPropertyTags((prev) => prev.filter(t => t.tag_id === tagId ? t.count > 1 : true).map(t => t.tag_id === tagId ? { ...t, count: t.count - 1, user_applied: false } : t));
 
             } else {
-                await addTagToProperty(propertyId, tag.tag_id, user?.user_metadata?.sub);
-                setPropertyTags((prev) => prev.map(t => t.tag_id === tag.tag_id ? { ...t, count: t.count + 1, user_applied: true } : t));
+                const tagInfo = await addTagToProperty(propertyId, tagId, user?.user_metadata?.sub);
+                if (existingTag) {
+                    // for an existing tag, update count and user applied status for immediate UI update
+                    if (tagInfo) {
+                        setPropertyTags((prev) => prev.map(t => t.tag_id === tagId ? { ...t, count: t.count + 1, user_applied: true } : t));
+                    }
+                } else {
+                    // for a new tag, add the tag to the property tags with a count of 1 and user applied as true for immediate UI update                    
+                    if (tagInfo) {
+                        setPropertyTags((prev) => [...prev, { tag_id: tagId, name: name, count: 1, user_applied: true }]);
+                    }
+                }
             }
         } catch (error) {
             toast.error("An error occurred while voting on the tag. Please try again.", { position: "top-right" });
@@ -87,7 +114,7 @@ export function PropertyTags({ propertyId }: { propertyId: number }) {
                             <div key={tag.tag_id} className="inline-flex items-center gap-1 md:gap-3 px-2 py-1 bg-buttonColor rounded-md text-sm md:text-md">
                                 {tag.name}
                                 <div className="inline-flex items-center">
-                                        <ArrowBigUp onClick={() => voteOnTag(tag)}  className={tag.user_applied ? "fill-muted-foreground hover:text-foreground size-6" : "size-6 hover:text-foreground"} />
+                                    <ArrowBigUp onClick={() => voteOnTag(tag.tag_id, tag.name, tag.user_applied, true)} className={tag.user_applied ? "fill-muted-foreground hover:text-foreground size-6" : "size-6 hover:text-foreground"} />
                                     {tag.count}
                                 </div>
                             </div>
@@ -105,22 +132,35 @@ export function PropertyTags({ propertyId }: { propertyId: number }) {
                     <h3 className="text-lg font-bold">Add a New Tag</h3>
                     {openAddTag ? <ChevronUp className="cursor-pointer w-10 h-10" onClick={() => setOpenAddTag(false)} />
                         : <ChevronDown className="cursor-pointer w-10 h-10" onClick={() => setOpenAddTag(true)} />}
+
                 </div>
+                {openAddTag ? (
+                    <p className="text-sm text-muted-foreground">Add a tag to help other buyers</p>
+                ) : (
+                    <p className="text-sm text-muted-foreground">Click the menu to view available tags </p>
+                )}
                 {openAddTag && (
                     <>
                         {groupedAllTags && (
                             <div className="my-1 space-y-2 mb-6 mt-4">
                                 {CATEGORY_ORDER.map((category) => (
                                     groupedAllTags[category].length > 0 && (
-                                        <div key={category} className="md:flex md:flex-row md:gap-4 pb-4">
-                                            <h2 className="font-semibold mb-2 md:w-16">{category}: </h2>
-                                            <div className="flex flex-wrap gap-2 items-center">
-                                                {groupedAllTags[category].map((tag) => (
-                                                    <div key={tag.id} className="inline-flex items-center gap-1 px-2 py-1 bg-midBlue rounded-md text-sm">
-                                                        {tag.name}
-                                                    </div>
-                                                ))}
+                                        <div key={category} className="md:flex md:flex-row md:gap-4 pb-4 md:pb-8">
+                                            <div className="flex flex-row items-center gap-2">
+                                                <h2 className="font-semibold mb-2 md:w-16">{category}: </h2>
+                                                {categoryOpened[category] ? <ChevronUp className="md:hidden cursor-pointer w-6 h-6 mb-2" onClick={() => setCategoryOpened({ ...categoryOpened, [category]: false })} />
+                                                    : <ChevronDown className="md:hidden cursor-pointer w-6 h-6 mb-2" onClick={() => setCategoryOpened({ ...categoryOpened, [category]: true })} />}
                                             </div>
+                                            {(categoryOpened[category] || !isMobile) && (
+                                                <div className="flex flex-wrap gap-2 items-center">
+                                                    {groupedAllTags[category].map((tag) => (
+                                                        <div key={tag.id} className="inline-flex items-center gap-1 px-2 py-1 bg-midBlue rounded-md text-sm">
+                                                            {tag.name}
+                                                            <Plus onClick={() => voteOnTag(tag.id, tag.name, false)} />
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
                                         </div>
                                     )
                                 ))}
