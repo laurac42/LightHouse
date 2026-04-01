@@ -1,7 +1,7 @@
 "use client";
 import type { Tag, TagCount } from "@/types/tags";
 import styles from '../app/public/properties/page.module.css';
-import { ArrowBigUp, CirclePlus, ChevronDown, ChevronUp, Plus } from "lucide-react";
+import { ArrowBigUp, ChevronDown, ChevronUp, Plus, EllipsisVertical, Flag } from "lucide-react";
 import { Button } from "./ui/button";
 import { useEffect, useState, useCallback } from "react";
 import { groupTagsByCategory, addTagToProperty, fetchAllSeedTags, fetchPropertyTags, removeTagFromProperty, addNewTagToProperty } from "@/lib/data/tag-utils";
@@ -9,6 +9,12 @@ import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { Card } from "./ui/card";
 import { Input } from "./ui/input";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from "@/components/ui/tooltip"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 
 const CATEGORY_ORDER = ["Parking", "Garden", "Property Features", "Location"] as const;
 
@@ -152,8 +158,21 @@ export function PropertyTags({ propertyId }: { propertyId: number }) {
                     <div className="flex flex-wrap gap-2 py-4">
                         {propertyTags.map((tag) => (
                             <div key={tag.tag_id} className="inline-flex items-center gap-1 md:gap-3 px-2 py-1 bg-buttonColor rounded-md text-sm md:text-md">
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger>
+                                        <EllipsisVertical className="w-4 h-4" />
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent>
+                                        <DropdownMenuItem>
+                                            <Flag className="fill-red-500"></Flag>Flag as Irrelevant
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem>
+                                            <Flag className="fill-red-500"></Flag>Flag as Inappropriate
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
                                 {tag.name}
-                                <div className="inline-flex items-center">
+                                < div className="inline-flex items-center" >
                                     <ArrowBigUp onClick={() => voteOnTag(tag.tag_id, tag.name, tag.user_applied, true)} className={tag.user_applied ? "fill-muted-foreground hover:text-foreground size-6" : "size-6 hover:text-foreground"} />
                                     {tag.count}
                                 </div>
@@ -163,9 +182,10 @@ export function PropertyTags({ propertyId }: { propertyId: number }) {
                     </div>
                 ) : (
                     <p>No tags added yet.</p>
-                )}
+                )
+                }
 
-            </div>
+            </div >
             <hr className="pb-4" />
             <div className="pb-4" >
                 <div className="flex flex-row gap-4 items-center mr-4">
@@ -215,6 +235,6 @@ export function PropertyTags({ propertyId }: { propertyId: number }) {
                     </>
                 )}
             </div>
-        </Card>
+        </Card >
     )
 }

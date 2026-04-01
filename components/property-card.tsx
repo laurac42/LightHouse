@@ -40,7 +40,7 @@ export default function PropertyCard({ property, images, page, editable = false,
     }, []);
 
     useEffect(() => {
-        fetchPropertyTags(property.id, null).then((tags) => {
+        fetchPropertyTags(property.id, undefined).then((tags) => {
             setPropertyTags(tags.slice(0, 5)); // only display top 5 tags for each property
             for (const tag of tags) {
                 if (tag.count < 5) {

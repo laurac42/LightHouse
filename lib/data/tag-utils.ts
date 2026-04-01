@@ -42,7 +42,7 @@ export async function fetchAllTags() {
 * @param userId (optional) ID of the user to check if they have applied each tag - if not provided, user_has_applied will be false for all tags
 * @returns A list of tags for the property, including the tag name and count of how many times the tag has been applied to properties in the database
 */
-export async function fetchPropertyTags(propertyId: number, userId: string | null = null) {
+export async function fetchPropertyTags(propertyId: number, userId: string | undefined = undefined) {
     const supabase = createClient();
     const { data, error } = await supabase
         .rpc("get_tag_counts", { p_property_id: propertyId, p_user_id: userId });
