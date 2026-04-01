@@ -327,6 +327,30 @@ export type Database = {
           },
         ]
       }
+      property_tag_flags: {
+        Row: {
+          created_at: string
+          property_id: number
+          reason: string
+          tag_id: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          property_id: number
+          reason?: string
+          tag_id: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          property_id?: number
+          reason?: string
+          tag_id?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       property_tags: {
         Row: {
           created_at: string | null

@@ -4,7 +4,7 @@ import styles from '../app/public/properties/page.module.css';
 import { ArrowBigUp, ChevronDown, ChevronUp, Plus, EllipsisVertical, Flag } from "lucide-react";
 import { Button } from "./ui/button";
 import { useEffect, useState, useCallback } from "react";
-import { groupTagsByCategory, addTagToProperty, fetchAllSeedTags, fetchPropertyTags, removeTagFromProperty, addNewTagToProperty } from "@/lib/data/tag-utils";
+import { groupTagsByCategory, addTagToProperty, fetchAllSeedTags, fetchPropertyTags, removeTagFromProperty, addNewTagToProperty, addFlagToTag } from "@/lib/data/tag-utils";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { Card } from "./ui/card";
@@ -84,7 +84,7 @@ export function PropertyTags({ propertyId }: { propertyId: number }) {
         const { data } = await supabase.auth.getClaims();
         const user = data?.claims;
         if (!user || !user.user_metadata?.sub) {
-            toast.error("You must be logged in to vote on a tag.", { position: "top-right" });
+            toast.error("You must be logged in to complete this action.", { position: "top-right" });
             return;
         }
         return user.user_metadata.sub;
@@ -148,6 +148,29 @@ export function PropertyTags({ propertyId }: { propertyId: number }) {
         }
     }
 
+    /**
+     * Flag a tag as inappropriate
+     * @param tagId Id of the tag to flag
+     * @param reason Reason for flagging
+     */
+    async function flagTag(tagId: number, reason: string) {
+        try {
+            console.log("checking login")
+            const userId = await checkLoggedIn();
+            if (!userId) return;
+
+            console.log("flagging")
+            const tagData = await addFlagToTag(propertyId, tagId, userId, reason);
+            if (!tagData) {
+                throw new Error;
+            }
+            toast.success("Tag has been flagged and is under review", { position: "top-right" })
+
+        } catch (error) {
+            toast.error("An error occurred while flagging the tag. Please try again. ", { position: "top-right" });
+        }
+    }
+
 
     return (
         <Card className="p-4 border-none">
@@ -164,10 +187,14 @@ export function PropertyTags({ propertyId }: { propertyId: number }) {
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent>
                                         <DropdownMenuItem>
-                                            <Flag className="fill-red-500"></Flag>Flag as Irrelevant
+                                            <Button variant={"ghost"} onClick={() => flagTag(tag.tag_id, "Irrelevant")}>
+                                                <Flag className="fill-red-500"></Flag>Flag as Irrelevant
+                                            </Button>
                                         </DropdownMenuItem>
                                         <DropdownMenuItem>
-                                            <Flag className="fill-red-500"></Flag>Flag as Inappropriate
+                                            <Button variant={"ghost"} onClick={() => flagTag(tag.tag_id, "Inappropriate")}>
+                                                <Flag className="fill-red-500"></Flag>Flag as Inappropriate
+                                            </Button>
                                         </DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>

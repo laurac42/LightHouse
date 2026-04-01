@@ -183,3 +183,17 @@ export async function addNewTagToProperty(propertyId: number, name: string, user
     }
     return propertyTagData;
 }
+
+export async function addFlagToTag(propertyId: number, tagId: number, userId: string, reason: string) {
+    const supabase = createClient();
+    const {data, error} = await supabase
+        .from("property_tag_flags")
+        .insert({property_id: propertyId, tag_id: tagId, user_id: userId, reason: reason})
+        .select("*")
+        .single();
+
+    if (error) {
+        throw error;
+    }
+    return data;
+}
