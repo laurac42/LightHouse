@@ -27,7 +27,6 @@ export function getLatitudeLongitudeFromPostcode(postcode: string) {
     return fetch(`https://api.postcodes.io/postcodes/${encodedPostcode}`, requestOptions)
         .then((response) => response.json())
         .then((result) => {
-            console.log(result);
             return { latitude: result.result.latitude, longitude: result.result.longitude } as { latitude: number, longitude: number };
         })
         .catch((error) => {
@@ -73,7 +72,6 @@ function fetchBoundingBox(location: string) {
     return fetch(`https://nominatim.openstreetmap.org/search?q=${encodedLocation}&format=json&polygon_geojson=1`, nominationRequestOptions)
         .then((response) => response.json())
         .then((result) => {
-            console.log(result);
             return { minLat: result[0].boundingbox[0], maxLat: result[0].boundingbox[1], minLng: result[0].boundingbox[2], maxLng: result[0].boundingbox[3] } as { minLat: number, maxLat: number, minLng: number, maxLng: number };
         })
         .catch((error) => {

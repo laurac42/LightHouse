@@ -17,6 +17,8 @@ import { Button } from "./ui/button";
 import { removeFavourite, saveFavourite } from "@/lib/data/favourites";
 import { validateUser } from "@/lib/auth/user";
 import { toast } from "sonner";
+import { fetchPropertyTags } from "@/lib/data/tag-utils";
+import { TagCount } from "@/types/tags";
 
 type Property = Database["public"]["Tables"]["properties"]["Row"] & { isFavourite?: boolean };
 
@@ -27,6 +29,7 @@ type Property = Database["public"]["Tables"]["properties"]["Row"] & { isFavourit
 export default function PropertyCard({ property, images, page, editable = false, seller = false }: { property: Property; images: string[]; page: string; editable?: boolean; seller?: boolean }) {
     const [agencyDetails, setAgencyDetails] = useState<AgencyLocationDetails | null>(null);
     const [isFavourite, setIsFavourite] = useState(property.isFavourite || false);
+    const [propertyTags, setPropertyTags] = useState<TagCount[]>([]);
 
     useEffect(() => {
         if (property.agency_location_id) {
@@ -35,6 +38,20 @@ export default function PropertyCard({ property, images, page, editable = false,
             });
         }
     }, []);
+
+    useEffect(() => {
+        fetchPropertyTags(property.id, undefined).then((tags) => {
+            setPropertyTags(tags.slice(0, 5)); // only display top 5 tags for each property
+            for (const tag of tags) {
+                if (tag.count < 5) {
+                    // dont display tags with < 5 votes
+                    setPropertyTags((prev) => prev.filter((t) => t.tag_id !== tag.tag_id));
+                }
+            }
+        }).catch((error) => {
+            console.error("Error fetching property tags: ", error);
+        });
+    }, [property.id]);
 
     // handle saving favourite
     async function handleSaveFavourite() {
@@ -71,14 +88,16 @@ export default function PropertyCard({ property, images, page, editable = false,
                     <div className={page === "manage" ? "flex flex-col gap-0 md:w-64 shrink-0" : "flex flex-col gap-0 md:w-80 shrink-0"}>
                         <ImageCarousel images={images} property={property} page={page} isModalOpen={null} />
                         <div>
-                            <CardHeader className={page === "manage" ? "h-12 p-0 gap-0 m-0 bg-highlight rounded-b-md text-white flex flex-row items-center justify-center" : "p-0 gap-0 m-0 bg-highlight rounded-b-md text-white flex flex-row items-center justify-center"}>
+                            <CardHeader className={page === "manage" ? "h-12 p-0 gap-0 m-0 bg-highlight rounded-b-md text-white flex flex-row items-center justify-center" : "p-0 gap-0 m-0 bg-highlight rounded-b-md text-white flex flex-row items-center justify-center md:h-16 lg:h-10"}>
                                 <CardTitle className="text-2xl text-center">{'£' + property.price.toLocaleString()}</CardTitle>
                                 <p className="text-center text-sm"> &nbsp; {uppercaseWords(property.price_type || '')}</p>
                             </CardHeader>
                         </div>
                     </div>
                     <div className="flex-1 px-4">
-                        {(page === "properties"  || page === "favourites") && (
+
+                        {/** Title and favourite button */}
+                        {(page === "properties" || page === "favourites") && (
                             <div className="flex gap-2 justify-between">
                                 <Link href={page === "properties" ? `properties/${property.id}` : `favourites/${property.id}`}>
                                     <CardHeader className="p-1 pt-2">
@@ -88,6 +107,8 @@ export default function PropertyCard({ property, images, page, editable = false,
                                 <Button onClick={handleSaveFavourite} variant={"link"} className="ml-2 mt-1 p-0 text-sm text-muted-foreground"><Heart className={`size-6 ${isFavourite ? 'fill-current text-red-500' : ''}`} /></Button>
                             </div>
                         )}
+
+                        {/** Title on management page */}
                         {page === "manage" && (
                             <div className="flex gap-2">
                                 <CardHeader className="p-1 mt-2 ">
@@ -95,8 +116,10 @@ export default function PropertyCard({ property, images, page, editable = false,
                                 </CardHeader>
                             </div>
                         )}
+
+                        {/** Main Features display */}
                         <div>
-                            {(page === "properties"  || page === "favourites") ? (
+                            {(page === "properties" || page === "favourites") ? (
                                 <Link href={page === "properties" ? `properties/${property.id}` : `favourites/${property.id}`}>
                                     <div className="grid grid-cols-2 lg:grid-cols-3 md:px-8 px-1 py-1 lg:py-2 text-md gap-2 lg:gap-4">
                                         <div className="inline-flex items-center gap-1 font-bold">
@@ -148,9 +171,22 @@ export default function PropertyCard({ property, images, page, editable = false,
                                 </div>
                             )}
                         </div>
-                        <div className={page === "properties" || page === "favourites" ? "text-sm text-muted-foreground max-h-[100px] mx-1 my-4 overflow-hidden text-ellipsis line-clamp-4 lg:line-clamp-5" : "text-sm text-muted-foreground max-h-[100px] mx-1 my-1 overflow-hidden text-ellipsis line-clamp-2 lg:line-clamp-3"}>
+
+                        {/** Description */}
+                        <div className={page === "properties" || page === "favourites" ? "text-sm text-muted-foreground max-h-[100px] mx-1 mt-2 mb-4 overflow-hidden text-ellipsis line-clamp-3 lg:line-clamp-4" : "text-sm text-muted-foreground max-h-[100px] mx-1 my-1 overflow-hidden text-ellipsis line-clamp-2 lg:line-clamp-3"}>
                             {property.description}
                         </div>
+
+                        {/** Tag display */}
+                        <div className="h-8 mb-2">
+                            {propertyTags.length > 0 && propertyTags.map((tag) => (
+                                <span key={tag.tag_id} className="inline-block bg-buttonColor text-foreground text-xs px-2 py-1 rounded-full mr-2 mb-2">
+                                    {tag.name} ({tag.count})
+                                </span>
+                            ))}
+                        </div>
+
+                        {/** Agency details */}
                         {agencyDetails && page !== "manage" && (
                             <div className="flex flex-row items-center gap-4 pb-2 md:py-0">
                                 {agencyDetails.logo_url && (
@@ -160,7 +196,7 @@ export default function PropertyCard({ property, images, page, editable = false,
                                         className="w-20 object-contain"
                                     />
                                 )}
-                                <div className="flex flex-row ml-auto pr-4 gap-4">
+                                <div className="flex flex-row ml-auto pr-4 gap-4 items-center">
                                     {agencyDetails.phone_number && (
                                         <div className="flex justify-end">
                                             <a className='mr-0 flex items-center gap-1 font-bold underline hover:text-blue-500' href={`tel:${agencyDetails.phone_number}`}>
@@ -176,6 +212,8 @@ export default function PropertyCard({ property, images, page, editable = false,
                                 </div>
                             </div>
                         )}
+
+                        {/** Manage property options */}
                         {page === "manage" &&
                             <>
                                 {editable ? (

@@ -23,6 +23,8 @@ export type EditableProperty = Pick<
     | "features"
     | "latitude"
     | "longitude"
+    | "driveway"
+    | "garden"
 >;
 
 export type AddableProperty = Pick<
@@ -45,4 +47,6 @@ export type AddableProperty = Pick<
     | "is_new_build"
     | "features"
     | "status"
+    | "driveway"
+    | "garden"
 >;

@@ -14,8 +14,10 @@ import { fetchUserPreferences } from "@/lib/data/buyer-profile";
 import { UserPreferences } from "@/types/user";
 import { getBoundingBoxForLocation } from "@/lib/data/location";
 import type { BoundingBox } from "@/types/location";
+import type { Tag, TagCount } from "@/types/tags";
+import { fetchPropertyTags } from "@/lib/data/tag-utils";
 
-type Property = Database["public"]["Tables"]["properties"]["Row"] & { images: string[], isFavourite?: boolean };
+type Property = Database["public"]["Tables"]["properties"]["Row"] & { images: string[], isFavourite?: boolean, tags?: TagCount[] };
 const PAGE_SIZE = 10; // number of properties to display per page
 
 export default function PropertiesPage() {
@@ -28,9 +30,9 @@ export default function PropertiesPage() {
     const [loading, setLoading] = useState(true);
     const [isMobile, setIsMobile] = useState(false);
     const [userId, setUserId] = useState<string | null>(null);
-    const [preferences, setPreferences] = useState<UserPreferences | null>(null);
     const [userChecked, setUserChecked] = useState<Boolean>(false); // state to track whether we've checked if the user is logged in or not
     const [boundingBox, setBoundingBox] = useState<BoundingBox | null | undefined>(undefined); // undefined is before it is set, null is if there is no bounding box for the location (e.g. view all properties)
+    const [selectedTags, setSelectedTags] = useState<Tag[]>([]); 
 
     const updateMedia = useCallback(() => {
         setIsMobile(window.innerWidth < 768);
@@ -86,23 +88,22 @@ export default function PropertiesPage() {
      * Fetch properties and property images for a given search results page
      * @param page Page number to fetch properties for - default is 1
      * @param id User ID for fetching personalised properties
+     * @param selectedTags Selected tags for filtering properties
      */
-    const fetchProperties = useCallback(async (page: number = 1, id: string | null, box: BoundingBox | null | undefined ) => {
+    const fetchProperties = useCallback(async (page: number = 1, id: string | null, box: BoundingBox | null | undefined, selectedTags: Tag[]) => {
         try {
             // scroll to top
             setLoading(true);
             window.scrollTo({ top: 0 });
 
+            console.log("selected tags ", selectedTags);
+
             let user_preferences = null;
             if (id) {
                 user_preferences = await fetchBuyerPreferences(id);
-                if (user_preferences !== undefined) {
-                    setPreferences(user_preferences);
-                }
             }
             if (box !== undefined) {
-                console.log("fetching properties with bounding box: ", box);    
-                const { data, count } = await fetchPropertiesForPage(page, PAGE_SIZE, user_preferences, box);
+                const { data, count } = await fetchPropertiesForPage(page, PAGE_SIZE, user_preferences, box, selectedTags);
                 setTotalProperties(count || 0);
 
                 setTotalPages(Math.ceil((count || 0) / PAGE_SIZE));
@@ -122,6 +123,10 @@ export default function PropertiesPage() {
                 }
                 const propertiesWithFavourites = await fetchFavouritesForProperties(propertiesWithImages) as Property[];
 
+                for (const property of propertiesWithFavourites) {
+                    const tags = await fetchPropertyTags(property.id, id ?? undefined);
+                    property.tags = tags;
+                }
                 setProperties(propertiesWithFavourites);
             }
         } catch (error) {
@@ -133,9 +138,9 @@ export default function PropertiesPage() {
 
     useEffect(() => {
         if (!userChecked || boundingBox === undefined) return; // don't fetch properties until we've checked if the user is logged in or not, so that we can fetch personalised properties for logged in users
-        fetchProperties(currentPage, userId, boundingBox); // fetch the first page of properties when the component mounts, and whenever the user logs in or out
+        fetchProperties(currentPage, userId, boundingBox, selectedTags); // fetch the first page of properties when the component mounts, and whenever the user logs in or out
 
-    }, [fetchProperties, userChecked, userId, boundingBox]);
+    }, [fetchProperties, userChecked, userId, boundingBox, selectedTags]);
 
     // fetch buyer preferences for a given buyer
     async function fetchBuyerPreferences(id: string | null) {
@@ -196,21 +201,21 @@ export default function PropertiesPage() {
     return (
         <div className="bg-background min-h-screen w-full">
             <Navbar />
-            <FilterBar loc={location} setLoc={setLocation}/>
+            <FilterBar loc={location} setLoc={setLocation} selectedTags={selectedTags} setSelectedTags={setSelectedTags} />
             {loading ? (
                 <div className="flex items-center justify-center h-64">
                     <p className="text-2xl text-gray-500">Loading properties...</p>
                 </div>
             ) : (
                 <>{properties.length === 0 ? (
-                        <div className="flex items-center justify-center h-64">
-                            <p className="text-2xl text-gray-500">No properties found{location ? ` in ${location}` : ""}.</p>
-                        </div>
-                    ) : (
-                        <div className="pt-2 px-6 text-highlight">
-                            <p>Showing properties {currentPage * PAGE_SIZE - (PAGE_SIZE - 1)} - {Math.min(currentPage * PAGE_SIZE, totalProperties)} of {totalProperties} properties in {location}</p>
-                        </div>
-                    )
+                    <div className="flex items-center justify-center h-64">
+                        <p className="text-2xl text-gray-500">No properties found{location ? ` in ${location}` : ""}.</p>
+                    </div>
+                ) : (
+                    <div className="pt-2 px-6 text-highlight">
+                        <p>Showing properties {currentPage * PAGE_SIZE - (PAGE_SIZE - 1)} - {Math.min(currentPage * PAGE_SIZE, totalProperties)} of {totalProperties} properties {location ? `in ${location}` : ""}</p>
+                    </div>
+                )
                 }
                 </>
             )}
@@ -223,7 +228,7 @@ export default function PropertiesPage() {
 
             </div>
             <div className="flex flex-row gap-2 justify-center py-8 mb-6">
-                {currentPage > 1 ? <Button className="mx-auto bg-background hover:bg-midBlue text-highlight border-none" size="sm" onClick={() => fetchProperties(currentPage - 1, userId, boundingBox)}>
+                {currentPage > 1 ? <Button className="mx-auto bg-background hover:bg-midBlue text-highlight border-none" size="sm" onClick={() => fetchProperties(currentPage - 1, userId, boundingBox, selectedTags)}>
                     <ChevronLeft size={16} />
                     Previous
                 </Button> : (
@@ -254,7 +259,7 @@ export default function PropertiesPage() {
                                 return i + 1; // if total pages is 8 or less, show all page numbers
                             }
                         }).map((page) => (
-                            <Button key={page} variant="outline" className={page === currentPage ? "bg-highlight text-white border-none hover:bg-highlight hover:text-white" : "hover:bg-midBlue"} size="sm" onClick={() => fetchProperties(page, userId, boundingBox)} disabled={page === currentPage}>
+                            <Button key={page} variant="outline" className={page === currentPage ? "bg-highlight text-white border-none hover:bg-highlight hover:text-white" : "hover:bg-midBlue"} size="sm" onClick={() => fetchProperties(page, userId, boundingBox, selectedTags)} disabled={page === currentPage}>
                                 {page}
                             </Button>
                         ))}
@@ -272,7 +277,7 @@ export default function PropertiesPage() {
                 </div>
 
                 {currentPage < totalPages ? (
-                    <Button className="mx-auto bg-background hover:bg-midBlue text-highlight border-none" size="sm" onClick={() => fetchProperties(currentPage + 1, userId, boundingBox)} hidden={currentPage === totalPages}>
+                    <Button className="mx-auto bg-background hover:bg-midBlue text-highlight border-none" size="sm" onClick={() => fetchProperties(currentPage + 1, userId, boundingBox, selectedTags)} hidden={currentPage === totalPages}>
                         Next
                         <ChevronRight size={16} />
                     </Button>) :

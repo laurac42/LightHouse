@@ -1,4 +1,4 @@
-import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group";
+import { InputGroup, InputGroupButton, InputGroupInput } from "@/components/ui/input-group";
 import { X, ChevronDown, Menu } from "lucide-react";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -9,16 +9,20 @@ import {
     DropdownMenuGroup,
     DropdownMenuItem,
     DropdownMenuLabel,
-    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Tag } from "@/types/tags";
+import { fetchAllTags } from "@/lib/data/tag-utils";
+import FilterBarOverlay from "@/components/filter-bar-overlay";
 
 type FilterBarProps = {
     loc?: string;
     setLoc: React.Dispatch<React.SetStateAction<string>>;
+    selectedTags: Tag[];
+    setSelectedTags: React.Dispatch<React.SetStateAction<Tag[]>>;
 }
 
-export default function FilterBar({loc = "", setLoc}: FilterBarProps) {
+export default function FilterBar({ loc = "", setLoc, selectedTags, setSelectedTags }: FilterBarProps) {
     const [location, setLocation] = useState<string>(loc);
     const [searchRadius, setSearchRadius] = useState<string>("This area only");
     const [minBedrooms, setMinBedrooms] = useState<string>("");
@@ -28,10 +32,23 @@ export default function FilterBar({loc = "", setLoc}: FilterBarProps) {
     const [minBathrooms, setMinBathrooms] = useState<string>("");
     const [maxBathrooms, setMaxBathrooms] = useState<string>("");
     const [isMoreFiltersOpen, setIsMoreFiltersOpen] = useState<boolean>(false);
+    const [allTags, setAllTags] = useState<Tag[]>([]);
 
     useEffect(() => {
         setLocation(loc);
     }, [loc]);
+
+    useEffect(() => {
+        async function loadTags() {
+            try {
+                const tags = await fetchAllTags();
+                setAllTags(tags);
+            } catch (error) {
+                console.error("Error fetching tags:", error);
+            }
+        }
+        loadTags();
+    }, []);
 
     return (
         <div className="w-full bg-highlight p-4 shadow-sm shadow-highlight">
@@ -82,7 +99,7 @@ export default function FilterBar({loc = "", setLoc}: FilterBarProps) {
                             <div className="flex flex-row gap-2">
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                        <Button  variant="outline" className="bg-white hover:bg-lightPink">{minPrice ? minPrice + " Price" : "Min Price"} <ChevronDown /></Button>
+                                        <Button variant="outline" className="bg-white hover:bg-lightPink">{minPrice ? minPrice + " Price" : "Min Price"} <ChevronDown /></Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent>
                                         <DropdownMenuGroup>
@@ -131,12 +148,11 @@ export default function FilterBar({loc = "", setLoc}: FilterBarProps) {
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent>
                                         <DropdownMenuGroup>
-                                            <DropdownMenuLabel onClick={() => setMinBedrooms("1")}>1 Bed</DropdownMenuLabel>
-                                            <DropdownMenuItem onClick={() => setMinBedrooms("2")}>2 Beds</DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => setMinBedrooms("3")}>3 Beds</DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => setMinBedrooms("4")}>4 Beds</DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => setMinBedrooms("5")}>5 Beds</DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => setMinBedrooms("6")}>6 Beds</DropdownMenuItem>
+                                            {[1, 2, 3, 4, 5, 6].map((bed, index) => (
+                                                <DropdownMenuLabel key={bed} onClick={() => setMinBedrooms(bed.toString())}>
+                                                    {bed} Bed{index === 0 ? "" : "s"}
+                                                </DropdownMenuLabel>
+                                            ))}
                                         </DropdownMenuGroup>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
@@ -148,12 +164,11 @@ export default function FilterBar({loc = "", setLoc}: FilterBarProps) {
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent>
                                         <DropdownMenuGroup>
-                                            <DropdownMenuLabel onClick={() => setMaxBedrooms("1")}>1 Bed</DropdownMenuLabel>
-                                            <DropdownMenuItem onClick={() => setMaxBedrooms("2")}>2 Beds</DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => setMaxBedrooms("3")}>3 Beds</DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => setMaxBedrooms("4")}>4 Beds</DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => setMaxBedrooms("5")}>5 Beds</DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => setMaxBedrooms("6")}>6 Beds</DropdownMenuItem>
+                                            {[1, 2, 3, 4, 5, 6].map((bed, index) => (
+                                                <DropdownMenuLabel key={bed} onClick={() => setMaxBedrooms(bed.toString())}>
+                                                    {bed} Bed{index === 0 ? "" : "s"}
+                                                </DropdownMenuLabel>
+                                            ))}
                                         </DropdownMenuGroup>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
@@ -182,12 +197,11 @@ export default function FilterBar({loc = "", setLoc}: FilterBarProps) {
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent>
                                         <DropdownMenuGroup>
-                                            <DropdownMenuLabel onClick={() => setMinBathrooms("1")}>1 Bath</DropdownMenuLabel>
-                                            <DropdownMenuItem onClick={() => setMinBathrooms("2")}>2 Baths</DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => setMinBathrooms("3")}>3 Baths</DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => setMinBathrooms("4")}>4 Baths</DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => setMinBathrooms("5")}>5 Baths</DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => setMinBathrooms("6")}>6 Baths</DropdownMenuItem>
+                                            {[1, 2, 3, 4, 5, 6].map((bath, index) => (
+                                                <DropdownMenuLabel key={bath} onClick={() => setMinBathrooms(bath.toString())}>
+                                                    {bath} Bath{index === 0 ? "" : "s"}
+                                                </DropdownMenuLabel>
+                                            ))}
                                         </DropdownMenuGroup>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
@@ -195,16 +209,15 @@ export default function FilterBar({loc = "", setLoc}: FilterBarProps) {
                                     <DropdownMenuTrigger asChild>
                                         <Button variant="outline" className="bg-white hover:bg-lightPink">
                                             {maxBathrooms ? maxBathrooms + " Bathrooms" : "Max Bathrooms"} <ChevronDown />
-                                            </Button>
+                                        </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent>
                                         <DropdownMenuGroup>
-                                            <DropdownMenuLabel onClick={() => setMaxBathrooms("1")}>1 Bath</DropdownMenuLabel>
-                                            <DropdownMenuItem onClick={() => setMaxBathrooms("2")}>2 Baths</DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => setMaxBathrooms("3")}>3 Baths</DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => setMaxBathrooms("4")}>4 Baths</DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => setMaxBathrooms("5")}>5 Baths</DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => setMaxBathrooms("6")}>6 Baths</DropdownMenuItem>
+                                            {[1, 2, 3, 4, 5, 6].map((bath, index) => (
+                                                <DropdownMenuLabel key={bath} onClick={() => setMaxBathrooms(bath.toString())}>
+                                                    {bath} Bath{index === 0 ? "" : "s"}
+                                                </DropdownMenuLabel>
+                                            ))}
                                         </DropdownMenuGroup>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
@@ -217,26 +230,15 @@ export default function FilterBar({loc = "", setLoc}: FilterBarProps) {
                         More Filters <ChevronDown />
                     </Button>
                 </div>
-                {/* Mobile Menu Overlay */}
-                {isMoreFiltersOpen && (
-                    <div className="fixed inset-0 bg-black/50 z-40" onClick={() => setIsMoreFiltersOpen(false)} />
-                )}
-                {isMoreFiltersOpen && (
-                    <div className="fixed top-0 right-0 h-screen w-1/2 md:w-1/3 bg-navBar flex flex-col space-y-4 p-6 z-50 shadow-lg overflow-y-auto">
-                        <div className="flex flex-row items-center mb-6 gap-4">
-                            <div className="flex flex-row items-center">
-                                <p className="text-lg font-bold">More Filters</p>
-                            </div>
-                            <X onClick={() => setIsMoreFiltersOpen(false)} />
-                        </div>
-                        <a href="#" className="text-foreground text-lg">One</a>
-                        <a href="#" className="text-foreground text-lg">Two</a>
-                        <a href="#" className="text-foreground text-lg">Three</a>
-                        <a href="#" className="text-foreground text-lg">Four</a>
-                    </div>
-                )}
 
-
+                <FilterBarOverlay
+                    isOpen={isMoreFiltersOpen}
+                    onClose={() => setIsMoreFiltersOpen(false)}
+                    selectedTags={selectedTags}
+                    setSelectedTags={setSelectedTags}
+                    allTags={allTags}
+                    setAllTags={setAllTags}
+                />
             </div>
         </div>
     );

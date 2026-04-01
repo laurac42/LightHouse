@@ -187,8 +187,10 @@ export type Database = {
           city: string
           council_tax_band: string | null
           description: string
+          driveway: boolean | null
           epc_rating: string | null
           features: string[] | null
+          garden: boolean | null
           has_garage: boolean | null
           id: number
           image_url: string | null
@@ -216,8 +218,10 @@ export type Database = {
           city: string
           council_tax_band?: string | null
           description: string
+          driveway?: boolean | null
           epc_rating?: string | null
           features?: string[] | null
+          garden?: boolean | null
           has_garage?: boolean | null
           id?: number
           image_url?: string | null
@@ -245,8 +249,10 @@ export type Database = {
           city?: string
           council_tax_band?: string | null
           description?: string
+          driveway?: boolean | null
           epc_rating?: string | null
           features?: string[] | null
+          garden?: boolean | null
           has_garage?: boolean | null
           id?: number
           image_url?: string | null
@@ -320,6 +326,94 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      property_tag_flags: {
+        Row: {
+          created_at: string
+          property_id: number
+          reason: string
+          tag_id: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          property_id: number
+          reason?: string
+          tag_id: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          property_id?: number
+          reason?: string
+          tag_id?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      property_tags: {
+        Row: {
+          created_at: string | null
+          property_id: number
+          tag_id: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          property_id?: number
+          tag_id: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          property_id?: number
+          tag_id?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_tags_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "property_tags_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "tags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "property_tags_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tags: {
+        Row: {
+          created_at: string
+          id: number
+          is_seed: boolean
+          name: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          is_seed?: boolean
+          name?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          is_seed?: boolean
+          name?: string | null
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {
@@ -407,6 +501,7 @@ export type Database = {
           p_min_long?: number
           p_preferred_num_bedrooms?: number
           p_preferred_property_types?: string[]
+          p_tag_ids?: number[]
           page?: number
           page_size?: number
         }
@@ -419,8 +514,10 @@ export type Database = {
           city: string
           council_tax_band: string
           description: string
+          driveway: boolean
           epc_rating: string
           features: string[]
+          garden: boolean
           has_garage: boolean
           id: number
           image_url: string
@@ -453,8 +550,10 @@ export type Database = {
           city: string
           council_tax_band: string | null
           description: string
+          driveway: boolean | null
           epc_rating: string | null
           features: string[] | null
+          garden: boolean | null
           has_garage: boolean | null
           id: number
           image_url: string | null
@@ -505,8 +604,10 @@ export type Database = {
           city: string
           council_tax_band: string | null
           description: string
+          driveway: boolean | null
           epc_rating: string | null
           features: string[] | null
+          garden: boolean | null
           has_garage: boolean | null
           id: number
           image_url: string | null
@@ -532,6 +633,15 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      get_tag_counts: {
+        Args: { p_property_id: number; p_user_id?: string }
+        Returns: {
+          count: number
+          name: string
+          tag_id: number
+          user_applied: boolean
+        }[]
+      }
       get_users_granted_by_agent: {
         Args: never
         Returns: {
@@ -540,6 +650,10 @@ export type Database = {
           id: string
           last_name: string
         }[]
+      }
+      get_valid_tags_for_property: {
+        Args: { p_property_id: number }
+        Returns: number[]
       }
       getagencylocationdetails: {
         Args: { p_id: string }

@@ -2,19 +2,21 @@
 import { Suspense, useEffect, useState, CSSProperties } from "react";
 import { use, useRef } from "react";
 import { fetchPropertyDetails, getAgencyDetails } from "@/lib/data/property-utils";
+import { fetchPropertyTags } from "@/lib/data/tag-utils";
 import { Database } from "@/types/supabase";
 import { getImagesFromStorage } from "@/lib/data/images";
 import ImageCarousel from "@/components/image-carousel";
 import Navbar from "@/components/navbar";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { MoveLeft } from "lucide-react";
 import { AgencyLocationDetails } from "@/types/agency";
 import AgencyCard from "@/components/agency-card";
 import PropertyDetails from "@/components/property-details";
 import { fetchFavourites } from "@/lib/data/favourites";
 import { validateUser } from "@/lib/auth/user";
+import { Button } from "@/components/ui/button";
 
-type Property = Database["public"]["Tables"]["properties"]["Row"] & { isFavourite?: boolean };
+type Property = Database["public"]["Tables"]["properties"]["Row"] & { isFavourite?: boolean};
 
 // Component to fetch and display property details, images and agency details for a given property ID
 export function PropertyDetailsPage({ params }: { params: Promise<{ id: number }> }) {
@@ -56,7 +58,6 @@ export function PropertyDetailsPage({ params }: { params: Promise<{ id: number }
                     } else {
                         setProperty((prev) => prev ? { ...prev, isFavourite: false } : prev);
                     }
-
                 }
             } catch (error) {
                 console.error("Error fetching property details:", error);
@@ -105,12 +106,13 @@ export function PropertyDetailsPage({ params }: { params: Promise<{ id: number }
 
 // Separate component to allow use of suspense for loading state while fetching property details and agency details
 export default function Page({ params }: { params: Promise<{ id: number }> }) {
+    const router = useRouter();
     return (
         <Suspense fallback={<div>Loading...</div>}>
 
             <div className="bg-background min-h-screen w-full">
                 <Navbar />
-                <Link className="flex inline-flex text-highlight m-6 mb-0 mt-4" href="/properties"><MoveLeft /> &nbsp; Back to Properties</Link>
+                <Button className="text-highlight text-md mt-4 ml-4" variant={"link"} onClick={() => router.back()}><MoveLeft /> &nbsp; Back to Properties</Button>
                 <PropertyDetailsPage params={params} />
             </div>
         </Suspense>

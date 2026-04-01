@@ -3,6 +3,8 @@ import { Cabin, Fuggles } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
 import { Footer } from "@/components/footer";
+import { TooltipProvider } from "@/components/ui/tooltip"
+
 import "./globals.css";
 
 const defaultUrl = process.env.VERCEL_URL
@@ -36,22 +38,24 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${cabin.variable} ${fuggles.variable} antialiased`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {children}
-          <Toaster
-            toastOptions={{
-              style: {
-                background: 'white',
-              },
-            }}
-          />
-          <Footer />
-        </ThemeProvider>
+        <TooltipProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="light"
+            enableSystem
+            disableTransitionOnChange
+          >
+            {children}
+            <Toaster
+              toastOptions={{
+                style: {
+                  background: 'white',
+                },
+              }}
+            />
+            <Footer />
+          </ThemeProvider>
+        </TooltipProvider>
       </body>
     </html>
   );
