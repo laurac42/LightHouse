@@ -20,7 +20,7 @@ import { toast } from "sonner";
 import { fetchPropertyTags } from "@/lib/data/tag-utils";
 import { TagCount } from "@/types/tags";
 
-type Property = Database["public"]["Tables"]["properties"]["Row"] & { isFavourite?: boolean };
+type Property = Database["public"]["Tables"]["properties"]["Row"] & { isFavourite?: boolean, recommended?: boolean };
 
 // pages are:
 // properties - for listing properties on the main page
@@ -82,13 +82,18 @@ export default function PropertyCard({ property, images, page, editable = false,
     }
 
     return (
-        <Card key={property.id} className={page === "manage" ? "bg-white/90 border-none mb-6 lg:h-60" : "bg-white/90 border-none mb-6"}>
-            <CardContent className="p-0">
+        <Card key={property.id} className={"bg-white/90 border-none mb-6 flex flex-col" + (page === "manage" ? " lg:h-60" : "")}>
+            <CardContent className="p-0 flex flex-col flex-1">
+                {property.recommended && (
+                    <span className="w-full inline-flex px-2 py-1 items-center gap-1 rounded-t-md bg-highlight text-sm font-medium text-white">
+                        Recommended
+                    </span>
+                )}
                 <div className="flex flex-col md:flex-row gap-2">
                     <div className={page === "manage" ? "flex flex-col gap-0 md:w-64 shrink-0" : "flex flex-col gap-0 md:w-80 shrink-0"}>
                         <ImageCarousel images={images} property={property} page={page} isModalOpen={null} />
-                        <div>
-                            <CardHeader className={page === "manage" ? "h-12 p-0 gap-0 m-0 bg-highlight rounded-b-md text-white flex flex-row items-center justify-center" : "p-0 gap-0 m-0 bg-highlight rounded-b-md text-white flex flex-row items-center justify-center md:h-16 lg:h-10"}>
+                        <div className="flex flex-1">
+                            <CardHeader className={page === "manage" ? "flex-1 min-h-12 p-0 gap-0 m-0 bg-highlight rounded-b-md text-white flex flex-row items-center justify-center" : "p-0 gap-0 m-0 bg-highlight rounded-b-md text-white flex flex-row items-center justify-center flex-1 min-h-12 md:min-h-20 lg:min-h-10"}>
                                 <CardTitle className="text-2xl text-center">{'£' + property.price.toLocaleString()}</CardTitle>
                                 <p className="text-center text-sm"> &nbsp; {uppercaseWords(property.price_type || '')}</p>
                             </CardHeader>
@@ -100,7 +105,7 @@ export default function PropertyCard({ property, images, page, editable = false,
                         {(page === "properties" || page === "favourites") && (
                             <div className="flex gap-2 justify-between">
                                 <Link href={page === "properties" ? `properties/${property.id}` : `favourites/${property.id}`}>
-                                    <CardHeader className="p-1 pt-2">
+                                    <CardHeader className="p-1 pt-2 min-w-0">
                                         <CardTitle className="text-xl">{property.title}</CardTitle>
                                     </CardHeader>
                                 </Link>

@@ -17,8 +17,101 @@ import type { BoundingBox } from "@/types/location";
 import type { Tag, TagCount } from "@/types/tags";
 import { fetchPropertyTags } from "@/lib/data/tag-utils";
 
-type Property = Database["public"]["Tables"]["properties"]["Row"] & { images: string[], isFavourite?: boolean, tags?: TagCount[] };
+type Property = Database["public"]["Tables"]["properties"]["Row"] & { images: string[], isFavourite?: boolean, tags?: TagCount[], weighted_score: number, recommended?: boolean };
 const PAGE_SIZE = 10; // number of properties to display per page
+
+/**
+ * Set whether a property is recommended or not based on whether it is in the top 3 properties for the first page of results, and has a weighted score of 50000 or less (i.e. it is a not-bad match for the user's preferences). We only want to set recommended for the first page of results, as this is where we show the properties ordered by relevance to the user's preferences, and we only want to show "recommended" for properties that are a reasonably good match for the user's preferences (i.e. weighted score of 10000 or less), as we don't want to recommend properties that are a bad match for the user's preferences, even if they are in the top 3 results.
+ * @param properties Properties to set recommended for
+ * @param page Page number of the properties
+ * @param user_preferences User preferences
+ * @param selectedTags Tags the user has selected
+ * @returns 
+ */
+function setPropertyRecommended(properties: Property[], page: number, user_preferences: UserPreferences | null, selectedTags: Tag[] | null) {
+    properties.forEach(property => {
+        property.recommended = false;
+    });
+    // then set true for top 3 if they are a not-bad match (weighted penalty 50000 or less)
+    if (page === 1 && (user_preferences || (selectedTags && selectedTags.length > 0))) {
+        properties.slice(0, 3).forEach(property => {
+            property.recommended = property.weighted_score <= 50000 ? true : false; // only set as recommended if they have a weighted score of 50000 or less
+            console.log(property.recommended)
+        })
+    }
+    return properties;
+}
+
+/**
+ * Fetch Buyer preferences for a given buyer
+ * @param id Id of the buyer to fetch preferences for
+ * @returns the buyer preferences, or null if there was an error fetching the preferences or if the buyer has no preferences
+ */
+async function fetchBuyerPreferences(id: string | null) {
+    if (!id) {
+        return null;
+    }
+    try {
+        const preferences = await fetchUserPreferences(id);
+        return preferences;
+    } catch (error) {
+        console.error("Error fetching user preferences: ", error);
+        return null;
+    }
+}
+
+/**
+ * Fetch images for a list of properties, and return a new list of properties with the images included. We fetch the images simultaneously for all properties to speed up the loading time, especially for pages with many properties.
+ * @param data List of properties to fetch images for
+ * @returns A new list of properties with the images included
+ */
+async function fetchPropertyImages(data: Property[]) {
+    try {
+        // fetch images simultaneously for all properties
+        const entries = await Promise.all(
+            (data ?? []).map(async (property) => {
+                const imageUrls = await getImagesFromStorage(property.id);
+                return { property, imageUrls };
+            })
+        )
+
+        const propertiesList: Property[] = [];
+        for (const { property, imageUrls } of entries) {
+            if (!imageUrls) continue;
+            propertiesList.push({ ...property, images: imageUrls });
+        }
+        return propertiesList;
+    } catch (error) {
+        console.error("Error fetching property images: ", error);
+    }
+}
+
+/**
+ * Fetch the user's favourite properties from the list of properties to display, and return a new list of properties with an isFavourite property set to true for the properties that are in the user's favourites. We fetch the favourites for all properties simultaneously to speed up the loading time, especially for pages with many properties.
+ * @param propertiesList List of properties to check against the user's favourites
+ * @param userId Id of the user to fetch favourites for
+ * @returns New list of properties with an isFavourite property set to true for the properties that are in the user's favourites
+ */
+async function fetchFavouritesForProperties(propertiesList: Property[], userId: string | null) {
+    try {
+        const favouriteIds = userId
+            ? await fetchFavourites(
+                propertiesList.map((property) => property.id),
+                userId,
+            )
+            : [];
+
+        const favouriteIdsSet = new Set(favouriteIds);
+        const propertiesWithFavourites = propertiesList.map((property) => ({
+            ...property,
+            isFavourite: favouriteIdsSet.has(property.id),
+        }));
+        return propertiesWithFavourites;
+    } catch (error) {
+        console.error("Error fetching favourites: ", error);
+    }
+}
+
 
 export default function PropertiesPage() {
 
@@ -32,7 +125,8 @@ export default function PropertiesPage() {
     const [userId, setUserId] = useState<string | null>(null);
     const [userChecked, setUserChecked] = useState<Boolean>(false); // state to track whether we've checked if the user is logged in or not
     const [boundingBox, setBoundingBox] = useState<BoundingBox | null | undefined>(undefined); // undefined is before it is set, null is if there is no bounding box for the location (e.g. view all properties)
-    const [selectedTags, setSelectedTags] = useState<Tag[]>([]); 
+    const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
+    const [preferencesExist, setPreferencesExist] = useState<boolean>(false); // state to track whether the user has set preferences or not, so that we can show a message encouraging them to set preferences if they haven't
 
     const updateMedia = useCallback(() => {
         setIsMobile(window.innerWidth < 768);
@@ -98,12 +192,16 @@ export default function PropertiesPage() {
 
             console.log("selected tags ", selectedTags);
 
-            let user_preferences = null;
+            let user_preferences: UserPreferences | null = null;
             if (id) {
-                user_preferences = await fetchBuyerPreferences(id);
+                user_preferences = await fetchBuyerPreferences(id) ?? null;
+                if (user_preferences) {
+                    setPreferencesExist(true);
+                }
             }
             if (box !== undefined) {
                 const { data, count } = await fetchPropertiesForPage(page, PAGE_SIZE, user_preferences, box, selectedTags);
+
                 setTotalProperties(count || 0);
 
                 setTotalPages(Math.ceil((count || 0) / PAGE_SIZE));
@@ -114,14 +212,17 @@ export default function PropertiesPage() {
                     setLoading(false);
                     return;
                 }
-                const propertiesWithImages = await fetchPropertyImages(data as Property[]);
+
+                const recommendedProperties = setPropertyRecommended(data as Property[], page, user_preferences, selectedTags);
+
+                const propertiesWithImages = await fetchPropertyImages(recommendedProperties);
 
                 if (!propertiesWithImages) {
                     setProperties([]);
                     setLoading(false);
                     return;
                 }
-                const propertiesWithFavourites = await fetchFavouritesForProperties(propertiesWithImages) as Property[];
+                const propertiesWithFavourites = await fetchFavouritesForProperties(propertiesWithImages, id) as Property[];
 
                 for (const property of propertiesWithFavourites) {
                     const tags = await fetchPropertyTags(property.id, id ?? undefined);
@@ -141,62 +242,6 @@ export default function PropertiesPage() {
         fetchProperties(currentPage, userId, boundingBox, selectedTags); // fetch the first page of properties when the component mounts, and whenever the user logs in or out
 
     }, [fetchProperties, userChecked, userId, boundingBox, selectedTags]);
-
-    // fetch buyer preferences for a given buyer
-    async function fetchBuyerPreferences(id: string | null) {
-        if (!id) {
-            return null;
-        }
-        try {
-            const preferences = await fetchUserPreferences(id);
-            return preferences;
-        } catch (error) {
-            console.error("Error fetching user preferences: ", error);
-        }
-    }
-
-    // fetch images for a list of properties and add the image URLs to the corresponding property objects
-    async function fetchPropertyImages(data: Property[]) {
-        try {
-            // fetch images simultaneously for all properties
-            const entries = await Promise.all(
-                (data ?? []).map(async (property) => {
-                    const imageUrls = await getImagesFromStorage(property.id);
-                    return { property, imageUrls };
-                })
-            )
-
-            const propertiesList: Property[] = [];
-            for (const { property, imageUrls } of entries) {
-                if (!imageUrls) continue;
-                propertiesList.push({ ...property, images: imageUrls });
-            }
-            return propertiesList;
-        } catch (error) {
-            console.error("Error fetching property images: ", error);
-        }
-    }
-
-    // fetch the user's favourite properties and mark them as favourites in the properties list
-    async function fetchFavouritesForProperties(propertiesList: Property[]) {
-        try {
-            const favouriteIds = userId
-                ? await fetchFavourites(
-                    propertiesList.map((property) => property.id),
-                    userId,
-                )
-                : [];
-
-            const favouriteIdsSet = new Set(favouriteIds);
-            const propertiesWithFavourites = propertiesList.map((property) => ({
-                ...property,
-                isFavourite: favouriteIdsSet.has(property.id),
-            }));
-            return propertiesWithFavourites;
-        } catch (error) {
-            console.error("Error fetching favourites: ", error);
-        }
-    }
 
     return (
         <div className="bg-background min-h-screen w-full">
@@ -219,8 +264,11 @@ export default function PropertiesPage() {
                 }
                 </>
             )}
-            <div className="flex w-full items-center justify-center pt-4 px-6 md:px-10 md:pt-10">
+            <div className="flex w-full items-center justify-center pt-4 px-6 md:px-10 md:pt-8">
                 <div className="w-full max-w-4xl">
+                    {(!loading && (preferencesExist || selectedTags.length > 0)) &&
+                        <p className="pb-2 text-highlight">Properties are ordered by your {preferencesExist && selectedTags.length > 0 ? (<><a href="/protected/profile" className="hover:underline"><b>preferences</b></a> and selected tags</>) : preferencesExist ? (<a href="/protected/profile" className="hover:underline"><b>preferences</b></a>) : <>selected tags</>}</p>
+                    }
                     {properties.map((property) => (
                         <PropertyCard key={property.id} property={property} images={property.images} page="properties" />
                     ))}
