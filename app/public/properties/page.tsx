@@ -103,7 +103,7 @@ export default function PropertiesPage() {
                 user_preferences = await fetchBuyerPreferences(id);
             }
             if (box !== undefined) {
-                const { data, count } = await fetchPropertiesForPage(page, PAGE_SIZE, user_preferences, box);
+                const { data, count } = await fetchPropertiesForPage(page, PAGE_SIZE, user_preferences, box, selectedTags);
                 setTotalProperties(count || 0);
 
                 setTotalPages(Math.ceil((count || 0) / PAGE_SIZE));

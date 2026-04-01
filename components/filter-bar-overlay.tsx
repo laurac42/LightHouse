@@ -20,12 +20,14 @@ export default function FilterBarOverlay({
     allTags,
     setAllTags,
 }: FilterBarOverlayProps) {
-    if (!isOpen) return null;
+    
     const [filterTags, setFilterTags] = useState<Tag[]>([]);
 
     useEffect(() => {
         setFilterTags(selectedTags);
     }, [selectedTags]);
+
+    if (!isOpen) return null;
 
     return (
         <div>
@@ -43,26 +45,26 @@ export default function FilterBarOverlay({
                 {/* Tag prioritisation - allow users to select tags to prioritise in search results */}
                 <div>
                     <h3 className="text-lg font-bold mb-2">Prioritise by Tag</h3>
-                    {selectedTags.length > 0 && (
-                        <>
-                            <h3 className="text-md font-semibold mb-2">Selected Tags</h3>
-                            <div className="flex flex-wrap gap-1 max-h-48 overflow-y-auto mb-2">
-                                {filterTags.map((tag) => (
-                                    <Button
-                                        key={tag.id}
-                                        variant={"outline"}
-                                        className="inline-block bg-yellow hover:bg-yellowHover text-foreground text-xs px-2 py-1 rounded-xl mr-2 mb-2"
-                                        onClick={() => {
-                                            setAllTags([...allTags, tag]);
-                                            setFilterTags(filterTags.filter(t => t.id !== tag.id))
-                                        }}
-                                    >
-                                        {tag.name}
-                                    </Button>
-                                ))}
-                            </div>
-                        </>
-                    )}
+
+                    {selectedTags.length > 0 &&
+                        <h3 className="text-md font-semibold mb-2">Selected Tags</h3>
+                    }
+                    <div className="flex flex-wrap gap-1 max-h-48 overflow-y-auto mb-2">
+                        {filterTags.map((tag) => (
+                            <Button
+                                key={tag.id}
+                                variant={"outline"}
+                                className="inline-block bg-yellow hover:bg-yellowHover text-foreground text-xs px-2 py-1 rounded-xl mr-2 mb-2"
+                                onClick={() => {
+                                    setAllTags([...allTags, tag]);
+                                    setFilterTags(filterTags.filter(t => t.id !== tag.id))
+                                }}
+                            >
+                                {tag.name}
+                            </Button>
+                        ))}
+                    </div>
+
                     {allTags.length > 0 && (
                         <>
                             <h3 className="text-md font-semibold mb-2">All Tags</h3>

@@ -477,6 +477,7 @@ export type Database = {
           p_min_long?: number
           p_preferred_num_bedrooms?: number
           p_preferred_property_types?: string[]
+          p_tag_ids?: number[]
           page?: number
           page_size?: number
         }
@@ -609,11 +610,12 @@ export type Database = {
         }
       }
       get_tag_counts: {
-        Args: { p_property_id: number }
+        Args: { p_property_id: number; p_user_id?: string }
         Returns: {
           count: number
           name: string
           tag_id: number
+          user_applied: boolean
         }[]
       }
       get_users_granted_by_agent: {
@@ -624,6 +626,10 @@ export type Database = {
           id: string
           last_name: string
         }[]
+      }
+      get_valid_tags_for_property: {
+        Args: { p_property_id: number }
+        Returns: number[]
       }
       getagencylocationdetails: {
         Args: { p_id: string }
