@@ -494,6 +494,7 @@ export type Database = {
       }
       fetch_ranked_properties: {
         Args: {
+          geo_json?: string
           p_budget?: number
           p_max_lat?: number
           p_max_long?: number

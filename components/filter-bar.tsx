@@ -44,13 +44,6 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
         }));
     };
 
-    const radiusLabel =
-        fils.milesRadius === 1
-            ? "Within 1 mile"
-            : fils.milesRadius === 2
-                ? "Within 2 miles"
-                : "This area only";
-
     const handleSelectedTagsChange: React.Dispatch<React.SetStateAction<Tag[]>> = (value) => {
         const nextTags = typeof value === "function" ? value(fils.selectedTags) : value;
         updateLocalFilter("selectedTags", nextTags);

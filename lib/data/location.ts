@@ -1,3 +1,4 @@
+import { GeoJSON } from "geojson";
 const myHeaders = new Headers();
 myHeaders.append("Accept", "application/json");
 
@@ -39,40 +40,55 @@ export function getLatitudeLongitudeFromPostcode(postcode: string) {
 let lastRequestTime = 0;
 
 /**
- * Get the bounding box for a location using the Nominatim API, using a delay if the last request was made less than a second ago to avoid being rate limited by the API
+ * Get the polygon and bounding box for a location using the Nominatim API, using a delay if the last request was made less than a second ago to avoid being rate limited by the API
  * This is used to determine which properties to display when a location is searched for
- * @param location location to get the bounding box for
- * @returns An object containing the minimum and maximum latitude and longitude of the bounding box for the location
+ * @param location location to get the polygon and bounding box for
+ * @returns An object containing the GeoJSON polygon and bounding box for the location
  */
-export function getBoundingBoxForLocation(location: string)  {
+export function getPolygonBoundingBoxForLocation(location: string)  {
 
     // ensure that not more than one request per second is made to the Nominatim API to avoid being rate limited
     const now = Date.now();
-    console.log("last request time: ", lastRequestTime);
     const elapsed = Math.max(0, now - lastRequestTime);
     if (elapsed < 1000) {
+        console.log(`Delaying Nominatim API request for ${1000 - elapsed}ms to avoid rate limiting`);
         return new Promise((resolve) => {
             setTimeout(() => {
                 lastRequestTime = Date.now();
-                resolve(fetchBoundingBox(location));
+                resolve(fetchPolygonBoundingBox(location));
             }, 1000 - elapsed);
         });
     }
     lastRequestTime = Date.now();
-    return fetchBoundingBox(location);
+    return fetchPolygonBoundingBox(location);
 }
 
 /**
- * Fetch the bounding box for a location using the Nominatim API
- * @param location locaction to get the bounding box for
- * @returns An object containing the minimum and maximum latitude and longitude of the bounding box for the location
+ * Fetch the polygon and bounding box for a location using the Nominatim API
+ * @param location location to get the polygon for
+ * @returns An object containing the GeoJSON polygon and bounding box for the location
  */
-function fetchBoundingBox(location: string) {
+function fetchPolygonBoundingBox(location: string) {
     const encodedLocation = encodeURIComponent(location);
     return fetch(`https://nominatim.openstreetmap.org/search?q=${encodedLocation}&format=json&polygon_geojson=1`, nominationRequestOptions)
         .then((response) => response.json())
         .then((result) => {
-            return { minLat: result[0].boundingbox[0], maxLat: result[0].boundingbox[1], minLng: result[0].boundingbox[2], maxLng: result[0].boundingbox[3] } as { minLat: number, maxLat: number, minLng: number, maxLng: number };
+            // take first UK based geojson result which is a polygon
+            // don't use postcode results, as these are not very accurate
+            const ukPolygonResults = result.filter((item: any) => item.geojson.type === "Polygon" && item.display_name.toLowerCase().includes("united kingdom") && item.addresstype !== "postcode");
+            const selectedResults = ukPolygonResults.length > 0 ? ukPolygonResults : result; // fall back to first result if no UK based polygon results found
+
+            if (!selectedResults || selectedResults.length === 0) {
+                return null;
+            }
+
+            return {
+                geojson: ukPolygonResults.length > 0 ? JSON.stringify(selectedResults[0].geojson) : null,
+                minLat: Number(selectedResults[0].boundingbox[0]),
+                maxLat: Number(selectedResults[0].boundingbox[1]),
+                minLng: Number(selectedResults[0].boundingbox[2]),
+                maxLng: Number(selectedResults[0].boundingbox[3])
+            } as { geojson: string,  minLat: number, maxLat: number, minLng: number, maxLng: number };
         })
         .catch((error) => {
             console.error(error);

@@ -12,7 +12,7 @@ import { fetchFavourites } from "@/lib/data/favourites";
 import { fetchPropertiesForPage } from "@/lib/data/property-utils";
 import { fetchUserPreferences } from "@/lib/data/buyer-profile";
 import { UserPreferences } from "@/types/user";
-import { getBoundingBoxForLocation } from "@/lib/data/location";
+import { getPolygonBoundingBoxForLocation } from "@/lib/data/location";
 import type { BoundingBox } from "@/types/location";
 import type { Tag, TagCount } from "@/types/tags";
 import { fetchPropertyTags } from "@/lib/data/tag-utils";
@@ -130,13 +130,15 @@ export default function PropertiesPage() {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [totalProperties, setTotalProperties] = useState(0);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
     const [userId, setUserId] = useState<string | null>(null);
     const [userChecked, setUserChecked] = useState<Boolean>(false); // state to track whether we've checked if the user is logged in or not
     const [boundingBox, setBoundingBox] = useState<BoundingBox | null | undefined>(undefined); // undefined is before it is set, null is if there is no bounding box for the location (e.g. view all properties)
-    const [preferencesExist, setPreferencesExist] = useState<boolean>(false); 
-    
+    const [geoJson, setGeoJson] = useState<string | null>(null);
+    const [preferencesExist, setPreferencesExist] = useState<boolean>(false);
+    const [errorMessage, setErrorMessage] = useState<string>("");
+
     const updateMedia = useCallback(() => {
         setIsMobile(window.innerWidth < 768);
     }, []);
@@ -160,32 +162,38 @@ export default function PropertiesPage() {
     }, []);
 
     useEffect(() => {
+        setErrorMessage("");
         // fetch the bounding box for the location in the URL query parameters and set the location state to the location name from the bounding box, so that we can display it on the page
         const urlParams = new URLSearchParams(window.location.search);
-        console.log("location update effect ran with location: ", urlParams.get("location"));
         const locationParam = urlParams.get("location");
         if (locationParam) {
             setFilters((prev) => ({ ...prev, location: locationParam }));
-            getBoundingBoxForLocation(locationParam)
-                .then((box) => {
-                    if (box) {
-                        const typedBox = box as { minLat: string, maxLat: string, minLng: string, maxLng: string };
-                        console.log("Bounding box for location: ", typedBox);
+            getPolygonBoundingBoxForLocation(locationParam)
+                .then((geoData) => {
+                    if (geoData) {
+                        const typedGeoData = geoData as { geojson: string, minLat: string, maxLat: string, minLng: string, maxLng: string };
                         setBoundingBox({
-                            minLatitude: parseFloat(typedBox.minLat),
-                            maxLatitude: parseFloat(typedBox.maxLat),
-                            minLongitude: parseFloat(typedBox.minLng),
-                            maxLongitude: parseFloat(typedBox.maxLng),
+                            minLatitude: parseFloat(typedGeoData.minLat),
+                            maxLatitude: parseFloat(typedGeoData.maxLat),
+                            minLongitude: parseFloat(typedGeoData.minLng),
+                            maxLongitude: parseFloat(typedGeoData.maxLng),
                         });
+                        if (typedGeoData.geojson) {
+                            setGeoJson(typedGeoData.geojson);
+                        } else {
+                            setGeoJson(null);
+                        }
                     } else {
-                        console.error("Could not get bounding box for location");
+                        setErrorMessage("Could not find your location. Check your spelling or try a different location.");
+                        setProperties([]); // clear properties if there was an error fetching the bounding box for the location, to avoid showing irrelevant properties for the previously searched location
+                        setBoundingBox(undefined);
                     }
                 })
                 .catch((error) => {
                     console.error("Error getting bounding box for location: ", error);
                 });
         } else {
-            setBoundingBox(null); // if there is no location query parameter, we want to fetch all properties
+            setBoundingBox(null); // if there is no location query parameter, fetch all properties
         }
     }, [filters.location]);
 
@@ -195,7 +203,7 @@ export default function PropertiesPage() {
      * @param id User ID for fetching personalised properties
      * @param selectedTags Selected tags for filtering properties
      */
-    const fetchProperties = useCallback(async (page: number = 1, id: string | null, box: BoundingBox | null | undefined, selectedTags: Tag[]) => {
+    const fetchProperties = useCallback(async (page: number = 1, id: string | null, box: BoundingBox | null | undefined, selectedTags: Tag[], geo: string | null) => {
         try {
             // scroll to top
             setLoading(true);
@@ -209,8 +217,7 @@ export default function PropertiesPage() {
                 }
             }
             if (box !== undefined) {
-                const { data, count } = await fetchPropertiesForPage(page, PAGE_SIZE, user_preferences, box, selectedTags);
-
+                const { data, count } = await fetchPropertiesForPage(page, PAGE_SIZE, user_preferences, box, selectedTags, geo);
                 setTotalProperties(count || 0);
 
                 setTotalPages(Math.ceil((count || 0) / PAGE_SIZE));
@@ -248,9 +255,10 @@ export default function PropertiesPage() {
 
     useEffect(() => {
         if (!userChecked || boundingBox === undefined) return; // don't fetch properties until we've checked if the user is logged in or not, so that we can fetch personalised properties for logged in users
-        fetchProperties(currentPage, userId, boundingBox, filters.selectedTags); // fetch the first page of properties when the component mounts, and whenever the user logs in or out
+        if (filters.location && boundingBox === null) return; // location is set but bbox hasn't resolved yet
+        fetchProperties(currentPage, userId, boundingBox, filters.selectedTags, geoJson); // fetch the first page of properties when the component mounts, and whenever the user logs in or out
 
-    }, [fetchProperties, userChecked, userId, boundingBox, filters.selectedTags]);
+    }, [fetchProperties, userChecked, userId, boundingBox, filters.selectedTags, geoJson]);
 
     return (
         <div className="bg-background min-h-screen w-full">
@@ -261,21 +269,27 @@ export default function PropertiesPage() {
                     <p className="text-2xl text-gray-500">Loading properties...</p>
                 </div>
             ) : (
-                <>{properties.length === 0 ? (
-                    <div className="flex items-center justify-center h-64">
-                        <p className="text-2xl text-gray-500">No properties found{filters.location ? ` in ${filters.location}` : ""}.</p>
-                    </div>
-                ) : (
-                    <div className="pt-2 px-6 text-highlight">
-                        <p>Showing properties {currentPage * PAGE_SIZE - (PAGE_SIZE - 1)} - {Math.min(currentPage * PAGE_SIZE, totalProperties)} of {totalProperties} properties {filters.location ? `in ${filters.location}` : ""}</p>
-                    </div>
-                )
-                }
+
+                <>
+                    {errorMessage ? (
+                        <div className="mx-4 flex items-center justify-center h-64">
+                            <p className="text-2xl text-gray-500">{errorMessage}</p>
+                        </div>
+                    ) : properties.length === 0 ? (
+                        <div className="mx-4 flex items-center justify-center h-64">
+                            <p className="text-2xl text-gray-500">No properties found{filters.location ? ` in ${filters.location}` : ""}.</p>
+                        </div>
+                    ) : (
+                        <div className="pt-2 px-6 text-highlight">
+                            <p>Showing properties {currentPage * PAGE_SIZE - (PAGE_SIZE - 1)} - {Math.min(currentPage * PAGE_SIZE, totalProperties)} of {totalProperties} properties {filters.location ? `in ${filters.location}` : ""}</p>
+                        </div>
+                    )
+                    }
                 </>
             )}
             <div className="flex w-full items-center justify-center pt-4 px-6 md:px-10 md:pt-8">
                 <div className="w-full max-w-4xl">
-                    {(!loading && (preferencesExist || filters.selectedTags.length > 0)) &&
+                    {(!loading && ((preferencesExist || filters.selectedTags.length > 0) && properties.length > 0 && errorMessage === "")) &&
                         <p className="pb-2 text-highlight">Properties are ordered by your {preferencesExist && filters.selectedTags.length > 0 ? (<><a href="/protected/profile" className="hover:underline"><b>preferences</b></a> and selected tags</>) : preferencesExist ? (<a href="/protected/profile" className="hover:underline"><b>preferences</b></a>) : <>selected tags</>}</p>
                     }
                     {properties.map((property) => (
@@ -285,7 +299,7 @@ export default function PropertiesPage() {
 
             </div>
             <div className="flex flex-row gap-2 justify-center py-8 mb-6">
-                {currentPage > 1 ? <Button className="mx-auto bg-background hover:bg-midBlue text-highlight border-none" size="sm" onClick={() => fetchProperties(currentPage - 1, userId, boundingBox, filters.selectedTags)}>
+                {currentPage > 1 ? <Button className="mx-auto bg-background hover:bg-midBlue text-highlight border-none" size="sm" onClick={() => fetchProperties(currentPage - 1, userId, boundingBox, filters.selectedTags, geoJson)} hidden={currentPage === 1}>
                     <ChevronLeft size={16} />
                     Previous
                 </Button> : (
@@ -316,7 +330,7 @@ export default function PropertiesPage() {
                                 return i + 1; // if total pages is 8 or less, show all page numbers
                             }
                         }).map((page) => (
-                            <Button key={page} variant="outline" className={page === currentPage ? "bg-highlight text-white border-none hover:bg-highlight hover:text-white" : "hover:bg-midBlue"} size="sm" onClick={() => fetchProperties(page, userId, boundingBox, filters.selectedTags)} disabled={page === currentPage}>
+                            <Button key={page} variant="outline" className={page === currentPage ? "bg-highlight text-white border-none hover:bg-highlight hover:text-white" : "hover:bg-midBlue"} size="sm" onClick={() => fetchProperties(page, userId, boundingBox, filters.selectedTags, geoJson)} disabled={page === currentPage}>
                                 {page}
                             </Button>
                         ))}
@@ -334,7 +348,7 @@ export default function PropertiesPage() {
                 </div>
 
                 {currentPage < totalPages ? (
-                    <Button className="mx-auto bg-background hover:bg-midBlue text-highlight border-none" size="sm" onClick={() => fetchProperties(currentPage + 1, userId, boundingBox, filters.selectedTags)} hidden={currentPage === totalPages}>
+                    <Button className="mx-auto bg-background hover:bg-midBlue text-highlight border-none" size="sm" onClick={() => fetchProperties(currentPage + 1, userId, boundingBox, filters.selectedTags, geoJson)} hidden={currentPage === totalPages}>
                         Next
                         <ChevronRight size={16} />
                     </Button>) :

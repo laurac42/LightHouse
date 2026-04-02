@@ -229,14 +229,9 @@ export async function loadSellerAddedInfo(propertyId: number) {
  * @param preferences Optional user preferences to use for filtering the properties
  * @returns Promise resolving to an object containing the properties and total count of properties matching the search criteria, or null on error
  */
-export async function fetchPropertiesForPage(page: number = 1, page_size: number = 10, preferences?: UserPreferences | null, boundingBox?: BoundingBox | null, tags?: Tag[]) {
+export async function fetchPropertiesForPage(page: number = 1, page_size: number = 10, preferences?: UserPreferences | null, boundingBox?: BoundingBox | null, tags?: Tag[], geoJson?: string | null) {
     const tagIds = tags?.map(tag => tag.id) ?? [];
-    if (preferences) {
-        return await fetchRankedPropertiesWithPreferences(page, page_size, preferences, boundingBox, tagIds);
-
-    } else {
-        return await fetchRankedPropertiesWithoutPreferences(page, page_size, boundingBox);
-    }
+    return await fetchRankedPropertiesWithPreferences(page, page_size, preferences ?? null, boundingBox, tagIds, geoJson);
 }
 
 /**
@@ -246,9 +241,8 @@ export async function fetchPropertiesForPage(page: number = 1, page_size: number
  * @param preferences User preferences to use for ranking the properties
  * @returns Promise resolving to an object containing the ranked properties and total count of properties matching the search criteria, or null on error
  */
-async function fetchRankedPropertiesWithPreferences(page: number, page_size: number, preferences: UserPreferences, boundingBox?: BoundingBox | null, tagIds?: number[]) {
+async function fetchRankedPropertiesWithPreferences(page: number, page_size: number, preferences: UserPreferences | null, boundingBox?: BoundingBox | null, tagIds?: number[], geoJson?: string | null) {
     const supabase = createClient();
-    console.log("fetching ranked properties: ", tagIds)
     const { data, error } = await supabase
         .rpc("fetch_ranked_properties", {
             p_min_lat: boundingBox?.minLatitude ?? undefined,
@@ -257,10 +251,11 @@ async function fetchRankedPropertiesWithPreferences(page: number, page_size: num
             p_max_long: boundingBox?.maxLongitude ?? undefined,
             p_preferred_num_bedrooms: preferences?.preferred_num_bedrooms ?? undefined,
             p_budget: preferences?.budget ?? undefined,
-            p_preferred_property_types: preferences.preferred_property_types ?? undefined,
+            p_preferred_property_types: preferences?.preferred_property_types ?? undefined,
             p_tag_ids: tagIds ?? undefined,
             page: page,
             page_size: page_size,
+            geo_json: geoJson ?? undefined,
         });
     if (error) {
         throw error;
@@ -269,42 +264,4 @@ async function fetchRankedPropertiesWithPreferences(page: number, page_size: num
     const properties = data?.map(({ total_count, ...property }) => property) ?? [];
 
     return { data: properties, count: total_count };
-}
-
-
-/**
- * Fetch properties for a given search results page without using user preferences for ranking 
- * @param page page number to fetch properties for - default is 1
- * @param page_size size of the page to fetch - default is 10
- * @returns Promise resolving to an object containing the properties and total count of properties matching the search criteria, or null on error
- */
-async function fetchRankedPropertiesWithoutPreferences(page: number, page_size: number, boundingBox?: BoundingBox | null) {
-    const supabase = await createClient();
-    if (boundingBox) {
-
-        const { data, error, count } = await supabase
-            .from("properties")
-            .select("*", { count: "exact" })
-            .or(`status.eq."under offer",status.eq."active"`)
-            .range((page - 1) * page_size, page * page_size - 1)
-            .lte("latitude", boundingBox.maxLatitude)
-            .gte("latitude", boundingBox.minLatitude)
-            .lte("longitude", boundingBox.maxLongitude)
-            .gte("longitude", boundingBox.minLongitude);
-
-        if (error) {
-            throw error;
-        }
-        return { data, count };
-    } else {
-        const { data, error, count } = await supabase
-            .from("properties")
-            .select("*", { count: "exact" })
-            .or(`status.eq."under offer",status.eq."active"`)
-            .range((page - 1) * page_size, page * page_size - 1);
-        if (error) {
-            throw error;
-        }
-        return { data, count };
-    }
 }
