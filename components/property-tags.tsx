@@ -155,11 +155,9 @@ export function PropertyTags({ propertyId }: { propertyId: number }) {
      */
     async function flagTag(tagId: number, reason: string) {
         try {
-            console.log("checking login")
             const userId = await checkLoggedIn();
             if (!userId) return;
 
-            console.log("flagging")
             const tagData = await addFlagToTag(propertyId, tagId, userId, reason);
             if (!tagData) {
                 throw new Error;
@@ -176,37 +174,40 @@ export function PropertyTags({ propertyId }: { propertyId: number }) {
         <Card className="p-4 border-none">
             <div >
                 <h1 className={styles.tagHeading}>What are other Buyers Saying?</h1>
-                <p>Upvote a tag to have your say</p>
-                {propertyTags && propertyTags.length > 0 ? (
-                    <div className="flex flex-wrap gap-2 py-4">
-                        {propertyTags.map((tag) => (
-                            <div key={tag.tag_id} className="inline-flex items-center gap-1 md:gap-3 px-2 py-1 bg-buttonColor rounded-md text-sm md:text-md">
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger>
-                                        <EllipsisVertical className="w-4 h-4" />
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent>
-                                        <DropdownMenuItem>
-                                            <Button variant={"ghost"} onClick={() => flagTag(tag.tag_id, "Irrelevant")}>
-                                                <Flag className="fill-red-500"></Flag>Flag as Irrelevant
-                                            </Button>
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem>
-                                            <Button variant={"ghost"} onClick={() => flagTag(tag.tag_id, "Inappropriate")}>
-                                                <Flag className="fill-red-500"></Flag>Flag as Inappropriate
-                                            </Button>
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                                {tag.name}
-                                < div className="inline-flex items-center" >
-                                    <ArrowBigUp onClick={() => voteOnTag(tag.tag_id, tag.name, tag.user_applied, true)} className={tag.user_applied ? "fill-muted-foreground hover:text-foreground size-6" : "size-6 hover:text-foreground"} />
-                                    {tag.count}
-                                </div>
-                            </div>
 
-                        ))}
-                    </div>
+                {propertyTags && propertyTags.length > 0 ? (
+                    <>
+                        <p className="pb-2">Upvote a tag to have your say</p>
+                        <div className="flex flex-wrap gap-2 py-4">
+                            {propertyTags.map((tag) => (
+                                <div key={tag.tag_id} className="inline-flex items-center gap-1 md:gap-3 px-2 py-1 bg-buttonColor rounded-md text-sm md:text-md">
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger>
+                                            <EllipsisVertical className="w-4 h-4" />
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent>
+                                            <DropdownMenuItem>
+                                                <Button variant={"ghost"} onClick={() => flagTag(tag.tag_id, "Irrelevant")}>
+                                                    <Flag className="fill-red-500"></Flag>Flag as Irrelevant
+                                                </Button>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem>
+                                                <Button variant={"ghost"} onClick={() => flagTag(tag.tag_id, "Inappropriate")}>
+                                                    <Flag className="fill-red-500"></Flag>Flag as Inappropriate
+                                                </Button>
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                    {tag.name}
+                                    < div className="inline-flex items-center" >
+                                        <ArrowBigUp onClick={() => voteOnTag(tag.tag_id, tag.name, tag.user_applied, true)} className={tag.user_applied ? "fill-muted-foreground hover:text-foreground size-6" : "size-6 hover:text-foreground"} />
+                                        {tag.count}
+                                    </div>
+                                </div>
+
+                            ))}
+                        </div>
+                    </>
                 ) : (
                     <p>No tags added yet.</p>
                 )

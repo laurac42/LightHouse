@@ -232,11 +232,9 @@ export async function loadSellerAddedInfo(propertyId: number) {
 export async function fetchPropertiesForPage(page: number = 1, page_size: number = 10, preferences?: UserPreferences | null, boundingBox?: BoundingBox | null, tags?: Tag[]) {
     const tagIds = tags?.map(tag => tag.id) ?? [];
     if (preferences) {
-        console.log("preferences")
         return await fetchRankedPropertiesWithPreferences(page, page_size, preferences, boundingBox, tagIds);
 
     } else {
-        console.log("no preferences")
         return await fetchRankedPropertiesWithoutPreferences(page, page_size, boundingBox);
     }
 }
