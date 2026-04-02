@@ -92,9 +92,11 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
                         <DropdownMenuGroup>
-                            <DropdownMenuLabel onClick={() => { updateLocalFilter("milesRadius", null); updateFilters("milesRadius", null); }}>This area only</DropdownMenuLabel>
+                            <DropdownMenuItem onClick={() => { updateLocalFilter("milesRadius", null); updateFilters("milesRadius", null); }}>This area only</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => { updateLocalFilter("milesRadius", 1); updateFilters("milesRadius", 1); }}>Within 1 mile</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => { updateLocalFilter("milesRadius", 2); updateFilters("milesRadius", 2); }}>Within 2 miles</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => { updateLocalFilter("milesRadius", 5); updateFilters("milesRadius", 5); }}>Within 5 miles</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => { updateLocalFilter("milesRadius", 10); updateFilters("milesRadius", 10); }}>Within 10 miles</DropdownMenuItem>
                         </DropdownMenuGroup>
                     </DropdownMenuContent>
                 </DropdownMenu>

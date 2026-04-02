@@ -163,6 +163,7 @@ export default function PropertiesPage() {
 
     useEffect(() => {
         setErrorMessage("");
+        setProperties([]);
         // fetch the bounding box for the location in the URL query parameters and set the location state to the location name from the bounding box, so that we can display it on the page
         const urlParams = new URLSearchParams(window.location.search);
         const locationParam = urlParams.get("location");
@@ -203,7 +204,7 @@ export default function PropertiesPage() {
      * @param id User ID for fetching personalised properties
      * @param selectedTags Selected tags for filtering properties
      */
-    const fetchProperties = useCallback(async (page: number = 1, id: string | null, box: BoundingBox | null | undefined, selectedTags: Tag[], geo: string | null) => {
+    const fetchProperties = useCallback(async (page: number = 1, id: string | null, box: BoundingBox | null | undefined, filters: Filters, geo: string | null) => {
         try {
             // scroll to top
             setLoading(true);
@@ -217,7 +218,7 @@ export default function PropertiesPage() {
                 }
             }
             if (box !== undefined) {
-                const { data, count } = await fetchPropertiesForPage(page, PAGE_SIZE, user_preferences, box, selectedTags, geo);
+                const { data, count } = await fetchPropertiesForPage(page, PAGE_SIZE, user_preferences, box, filters, geo);
                 setTotalProperties(count || 0);
 
                 setTotalPages(Math.ceil((count || 0) / PAGE_SIZE));
@@ -229,7 +230,7 @@ export default function PropertiesPage() {
                     return;
                 }
 
-                const recommendedProperties = setPropertyRecommended(data as Property[], page, user_preferences, selectedTags);
+                const recommendedProperties = setPropertyRecommended(data as Property[], page, user_preferences, filters.selectedTags);
 
                 const propertiesWithImages = await fetchPropertyImages(recommendedProperties);
 
@@ -256,9 +257,9 @@ export default function PropertiesPage() {
     useEffect(() => {
         if (!userChecked || boundingBox === undefined) return; // don't fetch properties until we've checked if the user is logged in or not, so that we can fetch personalised properties for logged in users
         if (filters.location && boundingBox === null) return; // location is set but bbox hasn't resolved yet
-        fetchProperties(currentPage, userId, boundingBox, filters.selectedTags, geoJson); // fetch the first page of properties when the component mounts, and whenever the user logs in or out
+        fetchProperties(currentPage, userId, boundingBox, filters, geoJson); // fetch the first page of properties when the component mounts, and whenever the user logs in or out
 
-    }, [fetchProperties, userChecked, userId, boundingBox, filters.selectedTags, geoJson]);
+    }, [fetchProperties, userChecked, userId, boundingBox, filters, geoJson]);
 
     return (
         <div className="bg-background min-h-screen w-full">
@@ -299,7 +300,7 @@ export default function PropertiesPage() {
 
             </div>
             <div className="flex flex-row gap-2 justify-center py-8 mb-6">
-                {currentPage > 1 ? <Button className="mx-auto bg-background hover:bg-midBlue text-highlight border-none" size="sm" onClick={() => fetchProperties(currentPage - 1, userId, boundingBox, filters.selectedTags, geoJson)} hidden={currentPage === 1}>
+                {currentPage > 1 ? <Button className="mx-auto bg-background hover:bg-midBlue text-highlight border-none" size="sm" onClick={() => fetchProperties(currentPage - 1, userId, boundingBox, filters, geoJson)} hidden={currentPage === 1}>
                     <ChevronLeft size={16} />
                     Previous
                 </Button> : (
@@ -330,7 +331,7 @@ export default function PropertiesPage() {
                                 return i + 1; // if total pages is 8 or less, show all page numbers
                             }
                         }).map((page) => (
-                            <Button key={page} variant="outline" className={page === currentPage ? "bg-highlight text-white border-none hover:bg-highlight hover:text-white" : "hover:bg-midBlue"} size="sm" onClick={() => fetchProperties(page, userId, boundingBox, filters.selectedTags, geoJson)} disabled={page === currentPage}>
+                            <Button key={page} variant="outline" className={page === currentPage ? "bg-highlight text-white border-none hover:bg-highlight hover:text-white" : "hover:bg-midBlue"} size="sm" onClick={() => fetchProperties(page, userId, boundingBox, filters, geoJson)} disabled={page === currentPage}>
                                 {page}
                             </Button>
                         ))}
@@ -348,7 +349,7 @@ export default function PropertiesPage() {
                 </div>
 
                 {currentPage < totalPages ? (
-                    <Button className="mx-auto bg-background hover:bg-midBlue text-highlight border-none" size="sm" onClick={() => fetchProperties(currentPage + 1, userId, boundingBox, filters.selectedTags, geoJson)} hidden={currentPage === totalPages}>
+                    <Button className="mx-auto bg-background hover:bg-midBlue text-highlight border-none" size="sm" onClick={() => fetchProperties(currentPage + 1, userId, boundingBox, filters, geoJson)} hidden={currentPage === totalPages}>
                         Next
                         <ChevronRight size={16} />
                     </Button>) :

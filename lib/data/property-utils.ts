@@ -3,6 +3,7 @@ import { Database } from "@/types/supabase";
 import type { UserPreferences } from "@/types/user";
 import type { BoundingBox } from "@/types/location";
 import type { Tag } from "@/types/tags";
+import { Filters } from "@/types/filters";
 
 type Property = Database["public"]["Tables"]["properties"]["Row"];
 
@@ -227,28 +228,33 @@ export async function loadSellerAddedInfo(propertyId: number) {
  * @param page Page number to fetch properties for - default is 1
  * @param page_size size of the page to fetch - default is 10
  * @param preferences Optional user preferences to use for filtering the properties
+ * @param boundingBox Bounding box to fetch properties within
+ * @param filters Filters to apply to the properties
+ * @param geoJson Optional GeoJSON string to use for spatial filtering of properties
  * @returns Promise resolving to an object containing the properties and total count of properties matching the search criteria, or null on error
  */
-export async function fetchPropertiesForPage(page: number = 1, page_size: number = 10, preferences?: UserPreferences | null, boundingBox?: BoundingBox | null, tags?: Tag[], geoJson?: string | null) {
-    const tagIds = tags?.map(tag => tag.id) ?? [];
-    return await fetchRankedPropertiesWithPreferences(page, page_size, preferences ?? null, boundingBox, tagIds, geoJson);
-}
+export async function fetchPropertiesForPage(page: number = 1, page_size: number = 10, preferences?: UserPreferences | null, boundingBox?: BoundingBox | null, filters?: Filters, geoJson?: string | null) {
+    const tagIds = filters?.selectedTags?.map(tag => tag.id) ?? [];
 
-/**
- * Fetch properties for a given search results page, ranked according to user preferences
- * @param page page number to fetch properties for - default is 1
- * @param page_size size of the page to fetch - default is 10
- * @param preferences User preferences to use for ranking the properties
- * @returns Promise resolving to an object containing the ranked properties and total count of properties matching the search criteria, or null on error
- */
-async function fetchRankedPropertiesWithPreferences(page: number, page_size: number, preferences: UserPreferences | null, boundingBox?: BoundingBox | null, tagIds?: number[], geoJson?: string | null) {
+    // making a copy so that modifying multiple times does not edit the original bounding box
+    let boundingBoxCopy: BoundingBox | null = boundingBox ? { ...boundingBox } : null;
+    if (filters?.milesRadius) {
+        const { latDegrees, longDegrees } = convertMilesToDegrees(filters.milesRadius);
+        if (boundingBoxCopy) {
+            boundingBoxCopy.minLatitude -= latDegrees;
+            boundingBoxCopy.maxLatitude += latDegrees;
+            boundingBoxCopy.minLongitude -= longDegrees;
+            boundingBoxCopy.maxLongitude += longDegrees;
+        }
+    }
+
     const supabase = createClient();
     const { data, error } = await supabase
         .rpc("fetch_ranked_properties", {
-            p_min_lat: boundingBox?.minLatitude ?? undefined,
-            p_max_lat: boundingBox?.maxLatitude ?? undefined,
-            p_min_long: boundingBox?.minLongitude ?? undefined,
-            p_max_long: boundingBox?.maxLongitude ?? undefined,
+            p_min_lat: boundingBoxCopy?.minLatitude ?? undefined,
+            p_max_lat: boundingBoxCopy?.maxLatitude ?? undefined,
+            p_min_long: boundingBoxCopy?.minLongitude ?? undefined,
+            p_max_long: boundingBoxCopy?.maxLongitude ?? undefined,
             p_preferred_num_bedrooms: preferences?.preferred_num_bedrooms ?? undefined,
             p_budget: preferences?.budget ?? undefined,
             p_preferred_property_types: preferences?.preferred_property_types ?? undefined,
@@ -264,4 +270,10 @@ async function fetchRankedPropertiesWithPreferences(page: number, page_size: num
     const properties = data?.map(({ total_count, ...property }) => property) ?? [];
 
     return { data: properties, count: total_count };
+}
+
+function convertMilesToDegrees(miles: number) {
+    const latMiles = miles / 69;
+    const longMiles = miles / (69 * Math.cos(56.2));  // approximate conversion, 56.2 is roughly the average latitude of Tayside/Fife
+    return { latDegrees: latMiles, longDegrees: longMiles };
 }
