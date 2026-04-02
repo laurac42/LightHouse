@@ -17,6 +17,7 @@ import type { BoundingBox } from "@/types/location";
 import type { Tag, TagCount } from "@/types/tags";
 import { fetchPropertyTags } from "@/lib/data/tag-utils";
 import type { Filters } from "@/types/filters";
+import { GeoJSON } from "geojson";
 
 type Property = Database["public"]["Tables"]["properties"]["Row"] & { images: string[], isFavourite?: boolean, tags?: TagCount[], weighted_score: number, recommended?: boolean };
 const PAGE_SIZE = 10; // number of properties to display per page
@@ -135,7 +136,7 @@ export default function PropertiesPage() {
     const [userId, setUserId] = useState<string | null>(null);
     const [userChecked, setUserChecked] = useState<Boolean>(false); // state to track whether we've checked if the user is logged in or not
     const [boundingBox, setBoundingBox] = useState<BoundingBox | null | undefined>(undefined); // undefined is before it is set, null is if there is no bounding box for the location (e.g. view all properties)
-    const [geoJson, setGeoJson] = useState<string | null>(null);
+    const [geoJson, setGeoJson] = useState<GeoJSON | null>(null);
     const [preferencesExist, setPreferencesExist] = useState<boolean>(false);
     const [errorMessage, setErrorMessage] = useState<string>("");
 
@@ -164,6 +165,7 @@ export default function PropertiesPage() {
     useEffect(() => {
         setErrorMessage("");
         setProperties([]);
+        setGeoJson(null);
         // fetch the bounding box for the location in the URL query parameters and set the location state to the location name from the bounding box, so that we can display it on the page
         const urlParams = new URLSearchParams(window.location.search);
         const locationParam = urlParams.get("location");
@@ -172,7 +174,7 @@ export default function PropertiesPage() {
             getPolygonBoundingBoxForLocation(locationParam)
                 .then((geoData) => {
                     if (geoData) {
-                        const typedGeoData = geoData as { geojson: string, minLat: string, maxLat: string, minLng: string, maxLng: string };
+                        const typedGeoData = geoData as { geojson: GeoJSON, minLat: string, maxLat: string, minLng: string, maxLng: string };
                         setBoundingBox({
                             minLatitude: parseFloat(typedGeoData.minLat),
                             maxLatitude: parseFloat(typedGeoData.maxLat),
@@ -187,7 +189,7 @@ export default function PropertiesPage() {
                     } else {
                         setErrorMessage("Could not find your location. Check your spelling or try a different location.");
                         setProperties([]); // clear properties if there was an error fetching the bounding box for the location, to avoid showing irrelevant properties for the previously searched location
-                        setBoundingBox(undefined);
+                        setBoundingBox(null);
                     }
                 })
                 .catch((error) => {
@@ -204,7 +206,7 @@ export default function PropertiesPage() {
      * @param id User ID for fetching personalised properties
      * @param selectedTags Selected tags for filtering properties
      */
-    const fetchProperties = useCallback(async (page: number = 1, id: string | null, box: BoundingBox | null | undefined, filters: Filters, geo: string | null) => {
+    const fetchProperties = useCallback(async (page: number = 1, id: string | null, box: BoundingBox | null | undefined, filters: Filters, geo: GeoJSON | null) => {
         try {
             // scroll to top
             setLoading(true);
@@ -220,6 +222,8 @@ export default function PropertiesPage() {
             if (box !== undefined) {
                 const { data, count } = await fetchPropertiesForPage(page, PAGE_SIZE, user_preferences, box, filters, geo);
                 setTotalProperties(count || 0);
+                console.log("new count: ", count);
+                console.log("properties: ", data);
 
                 setTotalPages(Math.ceil((count || 0) / PAGE_SIZE));
                 setCurrentPage(page);

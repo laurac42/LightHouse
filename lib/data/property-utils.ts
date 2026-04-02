@@ -2,8 +2,8 @@ import { createClient } from "@/lib/supabase/client";
 import { Database } from "@/types/supabase";
 import type { UserPreferences } from "@/types/user";
 import type { BoundingBox } from "@/types/location";
-import type { Tag } from "@/types/tags";
 import { Filters } from "@/types/filters";
+import { GeoJSON } from "geojson";
 
 type Property = Database["public"]["Tables"]["properties"]["Row"];
 
@@ -233,18 +233,16 @@ export async function loadSellerAddedInfo(propertyId: number) {
  * @param geoJson Optional GeoJSON string to use for spatial filtering of properties
  * @returns Promise resolving to an object containing the properties and total count of properties matching the search criteria, or null on error
  */
-export async function fetchPropertiesForPage(page: number = 1, page_size: number = 10, preferences?: UserPreferences | null, boundingBox?: BoundingBox | null, filters?: Filters, geoJson?: string | null) {
+export async function fetchPropertiesForPage(page: number = 1, page_size: number = 10, preferences?: UserPreferences | null, boundingBox?: BoundingBox | null, filters?: Filters, geoJson?: GeoJSON | null) {
     const tagIds = filters?.selectedTags?.map(tag => tag.id) ?? [];
 
     // making a copy so that modifying multiple times does not edit the original bounding box
     let boundingBoxCopy: BoundingBox | null = boundingBox ? { ...boundingBox } : null;
-    if (filters?.milesRadius) {
-        const { latDegrees, longDegrees } = convertMilesToDegrees(filters.milesRadius);
-        if (boundingBoxCopy) {
-            boundingBoxCopy.minLatitude -= latDegrees;
-            boundingBoxCopy.maxLatitude += latDegrees;
-            boundingBoxCopy.minLongitude -= longDegrees;
-            boundingBoxCopy.maxLongitude += longDegrees;
+
+    if (filters?.milesRadius && boundingBoxCopy) {
+        // if geojson, then that will be used anyway, so ignore the bounding box
+        if (!geoJson) { 
+            boundingBoxCopy = expandBoundingBox(boundingBoxCopy, filters, null);
         }
     }
 
@@ -261,7 +259,8 @@ export async function fetchPropertiesForPage(page: number = 1, page_size: number
             p_tag_ids: tagIds ?? undefined,
             page: page,
             page_size: page_size,
-            geo_json: geoJson ?? undefined,
+            geo_json: geoJson ? JSON.stringify(geoJson) : undefined,
+            p_search_radius_metres: (filters?.milesRadius && geoJson) ? filters.milesRadius * 1609.34 : undefined // convert miles to metres
         });
     if (error) {
         throw error;
@@ -272,8 +271,33 @@ export async function fetchPropertiesForPage(page: number = 1, page_size: number
     return { data: properties, count: total_count };
 }
 
+/**
+ * Convert a distance in miles to degrees of latitude and longitude for expanding the bounding box when a miles radius filter is applied, using an approximate conversion based on the average latitude of Tayside/Fife (56.2 degrees)
+ * @param miles number of miles to convert to degrees
+ * @returns Object containing the latitude and longitude in degrees
+ */
 function convertMilesToDegrees(miles: number) {
     const latMiles = miles / 69;
     const longMiles = miles / (69 * Math.cos(56.2));  // approximate conversion, 56.2 is roughly the average latitude of Tayside/Fife
     return { latDegrees: latMiles, longDegrees: longMiles };
 }
+
+/**
+ * Expand a bounding box by a specified radius in miles
+ * @param bbox Bounding box to expand
+ * @param filters Filters containing the miles radius
+ * @param geoJson Optional GeoJSON string for spatial filtering
+ * @returns Expanded bounding box, or the original bounding box if no miles radius filter is applied or if there is no bounding box
+ */
+function expandBoundingBox(bbox: BoundingBox, filters: Filters | undefined, geoJson: GeoJSON | null) {
+    if (!filters?.milesRadius || !bbox) { return bbox; }
+
+    const { latDegrees, longDegrees } = convertMilesToDegrees(filters.milesRadius);
+    if (bbox) {
+        bbox.minLatitude -= latDegrees;
+        bbox.maxLatitude += latDegrees;
+        bbox.minLongitude -= longDegrees;
+        bbox.maxLongitude += longDegrees;
+    }
+    return bbox;
+} 

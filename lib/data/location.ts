@@ -83,12 +83,12 @@ function fetchPolygonBoundingBox(location: string) {
             }
 
             return {
-                geojson: ukPolygonResults.length > 0 ? JSON.stringify(selectedResults[0].geojson) : null,
+                geojson: ukPolygonResults.length > 0 ? selectedResults[0].geojson : null,
                 minLat: Number(selectedResults[0].boundingbox[0]),
                 maxLat: Number(selectedResults[0].boundingbox[1]),
                 minLng: Number(selectedResults[0].boundingbox[2]),
                 maxLng: Number(selectedResults[0].boundingbox[3])
-            } as { geojson: string,  minLat: number, maxLat: number, minLng: number, maxLng: number };
+            } as { geojson: GeoJSON,  minLat: number, maxLat: number, minLng: number, maxLng: number };
         })
         .catch((error) => {
             console.error(error);
