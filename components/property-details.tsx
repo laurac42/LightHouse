@@ -1,6 +1,6 @@
 import { Database } from "@/types/supabase";
 import styles from '../app/public/properties/page.module.css';
-import { Home, Bed, Bath, Grid2X2, Landmark, Lightbulb, BookOpenText, Heart } from "lucide-react";
+import { Home, Bed, Bath, Grid2X2, Landmark, Lightbulb, Heart } from "lucide-react";
 import { useEffect, useState } from "react";
 import { loadSellerAddedInfo } from "@/lib/data/property-utils";
 import { toast } from "sonner";
@@ -67,11 +67,19 @@ export default function PropertyDetails({ params, page = "view" }: { params: { i
         <>
             {property && (
                 <div className="px-2 lg:px-4 py-4 col-start-1 col-span-2">
-                    <div className="flex flex-row justify-between gap-2 mb-4">
-                        <h1 className="text-3xl font-bold mb-4">{property.title}</h1>
-                        {page === "view" && (
-                            <Button onClick={handleSaveFavourite} variant={"link"} className="ml-2 mt-1 p-0 text-sm text-muted-foreground"><Heart className={`size-10 ${isFavourite ? 'fill-current text-red-500' : ''}`} /></Button>
-                        )}
+                    <div className="mb-4 flex flex-col gap-1">
+                        <div className="flex flex-row justify-between gap-2">
+                            <h1 className="text-3xl font-bold">{property.title}</h1>
+                            {page === "view" && (
+                                <Button onClick={handleSaveFavourite} variant={"link"} className="ml-2 mt-1 p-0 text-sm text-muted-foreground"><Heart className={`size-10 ${isFavourite ? 'fill-current text-red-500' : ''}`} /></Button>
+                            )}
+                        </div>
+                        <div className="mb-2">
+                            <p className="text-muted-foreground">{property.address_line_1}, {property.address_line_2 ? `${property.address_line_2}, ` : ""} {property.city} {property.post_code}</p>
+                        </div>
+                        <div className="text-2xl text-primary">
+                             <b> £{property.price.toLocaleString()}</b> <span className="text-lg">{property.price_type}</span>
+                        </div>
                     </div>
                     <hr />
                     <div className="grid grid-cols-2 lg:grid-cols-3 md:px-8 px-1 py-1 lg:py-2 text-md gap-2 lg:gap-4">

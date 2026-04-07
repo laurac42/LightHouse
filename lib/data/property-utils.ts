@@ -2,7 +2,8 @@ import { createClient } from "@/lib/supabase/client";
 import { Database } from "@/types/supabase";
 import type { UserPreferences } from "@/types/user";
 import type { BoundingBox } from "@/types/location";
-import type { Tag } from "@/types/tags";
+import { Filters } from "@/types/filters";
+import { GeoJSON } from "geojson";
 
 type Property = Database["public"]["Tables"]["properties"]["Row"];
 
@@ -227,42 +228,39 @@ export async function loadSellerAddedInfo(propertyId: number) {
  * @param page Page number to fetch properties for - default is 1
  * @param page_size size of the page to fetch - default is 10
  * @param preferences Optional user preferences to use for filtering the properties
+ * @param boundingBox Bounding box to fetch properties within
+ * @param filters Filters to apply to the properties
+ * @param geoJson Optional GeoJSON string to use for spatial filtering of properties
  * @returns Promise resolving to an object containing the properties and total count of properties matching the search criteria, or null on error
  */
-export async function fetchPropertiesForPage(page: number = 1, page_size: number = 10, preferences?: UserPreferences | null, boundingBox?: BoundingBox | null, tags?: Tag[]) {
-    const tagIds = tags?.map(tag => tag.id) ?? [];
-    if (preferences) {
-        console.log("preferences")
-        return await fetchRankedPropertiesWithPreferences(page, page_size, preferences, boundingBox, tagIds);
+export async function fetchPropertiesForPage(page: number = 1, page_size: number = 10, preferences?: UserPreferences | null, boundingBox?: BoundingBox | null, filters?: Filters, geoJson?: GeoJSON | null) {
+    const tagIds = filters?.selectedTags?.map(tag => tag.id) ?? [];
 
-    } else {
-        console.log("no preferences")
-        return await fetchRankedPropertiesWithoutPreferences(page, page_size, boundingBox);
+    // making a copy so that modifying multiple times does not edit the original bounding box
+    let boundingBoxCopy: BoundingBox | null = boundingBox ? { ...boundingBox } : null;
+
+    if (filters?.milesRadius && boundingBoxCopy) {
+        // if geojson, then that will be used anyway, so ignore the bounding box
+        if (!geoJson) { 
+            boundingBoxCopy = expandBoundingBox(boundingBoxCopy, filters, null);
+        }
     }
-}
 
-/**
- * Fetch properties for a given search results page, ranked according to user preferences
- * @param page page number to fetch properties for - default is 1
- * @param page_size size of the page to fetch - default is 10
- * @param preferences User preferences to use for ranking the properties
- * @returns Promise resolving to an object containing the ranked properties and total count of properties matching the search criteria, or null on error
- */
-async function fetchRankedPropertiesWithPreferences(page: number, page_size: number, preferences: UserPreferences, boundingBox?: BoundingBox | null, tagIds?: number[]) {
     const supabase = createClient();
-    console.log("fetching ranked properties: ", tagIds)
     const { data, error } = await supabase
         .rpc("fetch_ranked_properties", {
-            p_min_lat: boundingBox?.minLatitude ?? undefined,
-            p_max_lat: boundingBox?.maxLatitude ?? undefined,
-            p_min_long: boundingBox?.minLongitude ?? undefined,
-            p_max_long: boundingBox?.maxLongitude ?? undefined,
+            p_min_lat: boundingBoxCopy?.minLatitude ?? undefined,
+            p_max_lat: boundingBoxCopy?.maxLatitude ?? undefined,
+            p_min_long: boundingBoxCopy?.minLongitude ?? undefined,
+            p_max_long: boundingBoxCopy?.maxLongitude ?? undefined,
             p_preferred_num_bedrooms: preferences?.preferred_num_bedrooms ?? undefined,
             p_budget: preferences?.budget ?? undefined,
-            p_preferred_property_types: preferences.preferred_property_types ?? undefined,
+            p_preferred_property_types: preferences?.preferred_property_types ?? undefined,
             p_tag_ids: tagIds ?? undefined,
             page: page,
             page_size: page_size,
+            geo_json: geoJson ? JSON.stringify(geoJson) : undefined,
+            p_search_radius_metres: (filters?.milesRadius && geoJson) ? filters.milesRadius * 1609.34 : undefined // convert miles to metres
         });
     if (error) {
         throw error;
@@ -273,40 +271,33 @@ async function fetchRankedPropertiesWithPreferences(page: number, page_size: num
     return { data: properties, count: total_count };
 }
 
+/**
+ * Convert a distance in miles to degrees of latitude and longitude for expanding the bounding box when a miles radius filter is applied, using an approximate conversion based on the average latitude of Tayside/Fife (56.2 degrees)
+ * @param miles number of miles to convert to degrees
+ * @returns Object containing the latitude and longitude in degrees
+ */
+function convertMilesToDegrees(miles: number) {
+    const latMiles = miles / 69;
+    const longMiles = miles / (69 * Math.cos(56.2));  // approximate conversion, 56.2 is roughly the average latitude of Tayside/Fife
+    return { latDegrees: latMiles, longDegrees: longMiles };
+}
 
 /**
- * Fetch properties for a given search results page without using user preferences for ranking 
- * @param page page number to fetch properties for - default is 1
- * @param page_size size of the page to fetch - default is 10
- * @returns Promise resolving to an object containing the properties and total count of properties matching the search criteria, or null on error
+ * Expand a bounding box by a specified radius in miles
+ * @param bbox Bounding box to expand
+ * @param filters Filters containing the miles radius
+ * @param geoJson Optional GeoJSON string for spatial filtering
+ * @returns Expanded bounding box, or the original bounding box if no miles radius filter is applied or if there is no bounding box
  */
-async function fetchRankedPropertiesWithoutPreferences(page: number, page_size: number, boundingBox?: BoundingBox | null) {
-    const supabase = await createClient();
-    if (boundingBox) {
+function expandBoundingBox(bbox: BoundingBox, filters: Filters | undefined, geoJson: GeoJSON | null) {
+    if (!filters?.milesRadius || !bbox) { return bbox; }
 
-        const { data, error, count } = await supabase
-            .from("properties")
-            .select("*", { count: "exact" })
-            .or(`status.eq."under offer",status.eq."active"`)
-            .range((page - 1) * page_size, page * page_size - 1)
-            .lte("latitude", boundingBox.maxLatitude)
-            .gte("latitude", boundingBox.minLatitude)
-            .lte("longitude", boundingBox.maxLongitude)
-            .gte("longitude", boundingBox.minLongitude);
-
-        if (error) {
-            throw error;
-        }
-        return { data, count };
-    } else {
-        const { data, error, count } = await supabase
-            .from("properties")
-            .select("*", { count: "exact" })
-            .or(`status.eq."under offer",status.eq."active"`)
-            .range((page - 1) * page_size, page * page_size - 1);
-        if (error) {
-            throw error;
-        }
-        return { data, count };
+    const { latDegrees, longDegrees } = convertMilesToDegrees(filters.milesRadius);
+    if (bbox) {
+        bbox.minLatitude -= latDegrees;
+        bbox.maxLatitude += latDegrees;
+        bbox.minLongitude -= longDegrees;
+        bbox.maxLongitude += longDegrees;
     }
-}
+    return bbox;
+} 
