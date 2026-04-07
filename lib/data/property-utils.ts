@@ -245,8 +245,8 @@ export async function fetchPropertiesForPage(page: number = 1, page_size: number
             boundingBoxCopy = expandBoundingBox(boundingBoxCopy, filters, null);
         }
     }
-
-    console.log("min price and max price: ", filters?.minPrice, filters?.maxPrice);
+    
+    const propertyTypes = filters?.propertyTypes.length ? filters.propertyTypes.map((pt) => pt.toLowerCase()) : undefined;
 
     const supabase = createClient();
     const { data, error } = await supabase
@@ -269,6 +269,7 @@ export async function fetchPropertiesForPage(page: number = 1, page_size: number
             p_max_beds: filters?.maxBedrooms ?? 0,
             p_min_baths: filters?.minBathrooms ?? 0,
             p_max_baths: filters?.maxBathrooms ?? 0,
+            p_property_types: propertyTypes,
         });
     if (error) {
         throw error;

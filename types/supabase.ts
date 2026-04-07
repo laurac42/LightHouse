@@ -597,6 +597,62 @@ export type Database = {
               weighted_score: number
             }[]
           }
+        | {
+            Args: {
+              geo_json?: string
+              p_budget?: number
+              p_max_baths?: number
+              p_max_beds?: number
+              p_max_lat?: number
+              p_max_long?: number
+              p_max_price?: number
+              p_min_baths?: number
+              p_min_beds?: number
+              p_min_lat?: number
+              p_min_long?: number
+              p_min_price?: number
+              p_preferred_num_bedrooms?: number
+              p_preferred_property_types?: string[]
+              p_property_types?: string[]
+              p_search_radius_metres?: number
+              p_tag_ids?: number[]
+              page?: number
+              page_size?: number
+            }
+            Returns: {
+              added_at: string
+              address_line_1: string
+              address_line_2: string
+              agency_location_id: string
+              agent_id: string
+              city: string
+              council_tax_band: string
+              description: string
+              driveway: boolean
+              epc_rating: string
+              features: string[]
+              garden: boolean
+              has_garage: boolean
+              id: number
+              image_url: string
+              is_new_build: boolean
+              last_updated_at: string
+              latitude: number
+              longitude: number
+              num_bathrooms: number
+              num_bedrooms: number
+              post_code: string
+              price: number
+              price_type: string
+              property_type: string
+              seller_id: string
+              square_feet: number
+              status: string
+              title: string
+              total_count: number
+              weighted_score: number
+            }[]
+          }
       fetch_users_favourite_properties: {
         Args: never
         Returns: {
