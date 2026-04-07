@@ -64,101 +64,139 @@ export default function FilterBarOverlay({
                     <div className="flex-1 overflow-y-auto pr-1">
 
                         <div className="flex flex-col gap-4 pb-4">
-                        <hr  className="sm:hidden" />
-                        <div className="sm:hidden">
-                            <DropdownMenuLabel className="text-lg font-bold">Search Radius</DropdownMenuLabel>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button type="button" className="w-40 bg-white hover:bg-lightPink" variant="outline">{localFilters.milesRadius === null ? "This area only" : localFilters.milesRadius === 1 ? "Within 1 mile" : `Within ${localFilters.milesRadius} miles`}<ChevronDown /></Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent className="z-[104]">
-                                    <DropdownMenuGroup>
-                                        <DropdownMenuItem onClick={() => { if (localFilters.location) { updateLocalFilter("milesRadius", null); } else { toast.error("Select a location to add a search radius", {position: "top-right"}) } }}>This area only</DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => { if (localFilters.location) { updateLocalFilter("milesRadius", 1); } else { toast.error("Select a location to add a search radius", {position: "top-right"}) } }}>Within 1 mile</DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => { if (localFilters.location) { updateLocalFilter("milesRadius", 2); } else { toast.error("Select a location to add a search radius", {position: "top-right"}) } }}>Within 2 miles</DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => { if (localFilters.location) { updateLocalFilter("milesRadius", 5); } else { toast.error("Select a location to add a search radius", {position: "top-right"}) } }}>Within 5 miles</DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => { if (localFilters.location) { updateLocalFilter("milesRadius", 10); } else { toast.error("Select a location to add a search radius", {position: "top-right"}) } }}>Within 10 miles</DropdownMenuItem>
-                                    </DropdownMenuGroup>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </div>
-                        <hr />
+                            <hr className="sm:hidden" />
+                            <div className="sm:hidden">
+                                <DropdownMenuLabel className="text-lg font-bold">Search Radius</DropdownMenuLabel>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button type="button" className="w-50 bg-white hover:bg-lightPink" variant="outline">{localFilters.milesRadius === null ? "This area only" : localFilters.milesRadius === 1 ? "Within 1 mile" : `Within ${localFilters.milesRadius} miles`}<ChevronDown /></Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent className="z-[104]">
+                                        <DropdownMenuGroup>
+                                            <DropdownMenuItem onClick={() => { if (localFilters.location) { updateLocalFilter("milesRadius", null); } else { toast.error("Select a location to add a search radius", { position: "top-right" }) } }}>This area only</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => { if (localFilters.location) { updateLocalFilter("milesRadius", 1); } else { toast.error("Select a location to add a search radius", { position: "top-right" }) } }}>Within 1 mile</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => { if (localFilters.location) { updateLocalFilter("milesRadius", 2); } else { toast.error("Select a location to add a search radius", { position: "top-right" }) } }}>Within 2 miles</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => { if (localFilters.location) { updateLocalFilter("milesRadius", 5); } else { toast.error("Select a location to add a search radius", { position: "top-right" }) } }}>Within 5 miles</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => { if (localFilters.location) { updateLocalFilter("milesRadius", 10); } else { toast.error("Select a location to add a search radius", { position: "top-right" }) } }}>Within 10 miles</DropdownMenuItem>
+                                        </DropdownMenuGroup>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
+                            <hr className="sm:hidden" />
 
-                        {/* Tag prioritisation - allow users to select tags to prioritise in search results */}
-                        <div>
-                            <h3 className="text-lg font-bold mb-2">Prioritise by Tag</h3>
-
-                            {localFilters.selectedTags.length > 0 &&
-                                <h3 className="text-md font-semibold mb-2">Selected Tags</h3>
-                            }
-                            <div className="flex flex-wrap gap-1 max-h-48 overflow-y-auto mb-2">
-                                {localFilters.selectedTags.map((tag) => (
-                                    <Button
-                                        key={tag.id}
-                                        variant={"outline"}
-                                        className="inline-block bg-yellow hover:bg-yellowHover text-foreground text-xs px-2 py-1 rounded-xl mr-2 mb-2"
-                                        onClick={() => {
-                                            setAllTags([...allTags, tag]);
-                                            setLocalFilters((prev) => ({
-                                                ...prev,
-                                                selectedTags: prev.selectedTags.filter((t) => t.id !== tag.id),
-                                            }));
-                                        }}
-                                    >
-                                        {tag.name}
-                                    </Button>
-                                ))}
+                            <div className="sm:hidden">
+                                <DropdownMenuLabel className="text-lg font-bold">Price Range</DropdownMenuLabel>
+                                <div className="flex flex-row gap-2">
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="outline" className="bg-white hover:bg-lightPink">{localFilters.minPrice ? "£" + localFilters.minPrice.toLocaleString() : "Min Price"} <ChevronDown /></Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent className="z-[104]">
+                                            <DropdownMenuGroup>
+                                                {[100000, 150000, 200000, 250000, 300000, 350000, 400000, 450000, 500000].map((price, index) => (
+                                                    localFilters.maxPrice === null || (localFilters.maxPrice !== null && price < localFilters.maxPrice) ? (
+                                                        <DropdownMenuItem key={index} onClick={() => updateLocalFilter("minPrice", price)}>£{price.toLocaleString()}</DropdownMenuItem>
+                                                    ) : null
+                                                ))}
+                                            </DropdownMenuGroup>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                    <p className="my-auto">to</p>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="outline" className="bg-white hover:bg-lightPink">{localFilters.maxPrice ? "£" + localFilters.maxPrice.toLocaleString() : "Max Price"} <ChevronDown /></Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent className="z-[104]">
+                                            <DropdownMenuGroup>
+                                                {[100000, 150000, 200000, 250000, 300000, 350000, 400000, 450000, 500000].map((price, index) => (
+                                                    localFilters.minPrice === null || (localFilters.minPrice !== null && price > localFilters.minPrice) ? (
+                                                        <DropdownMenuItem key={index} onClick={() => updateLocalFilter("maxPrice", price)}>£{price.toLocaleString()}</DropdownMenuItem>
+                                                    ) : null
+                                                ))}
+                                            </DropdownMenuGroup>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
                             </div>
 
-                            {allTags.length > 0 && (
-                                <>
-                                    <h3 className="text-md font-semibold mb-2">All Tags</h3>
-                                    <div className="flex flex-wrap gap-1 max-h-48 overflow-y-auto">
-                                        {allTags.map((tag) => (
-                                            <Button
-                                                key={tag.id}
-                                                variant={"outline"}
-                                                className="inline-block bg-buttonColor hover:bg-buttonHover text-foreground text-xs px-2 py-1 rounded-xl mr-2 mb-2"
-                                                onClick={() => {
-                                                    setLocalFilters((prev) => ({
-                                                        ...prev,
-                                                        selectedTags: [...prev.selectedTags, tag],
-                                                    }));
-                                                    setAllTags(allTags.filter(t => t.id !== tag.id));
-                                                }}
-                                            >
-                                                {tag.name}
-                                            </Button>
-                                        ))}
+                            <hr />
 
-                                    </div>
-                                </>
-                            )}
-                        </div>
+
+                            {/* Tag prioritisation - allow users to select tags to prioritise in search results */}
+                            <div>
+                                <h3 className="text-lg font-bold mb-2">Prioritise by Tag</h3>
+
+                                {localFilters.selectedTags.length > 0 &&
+                                    <h3 className="text-md font-semibold mb-2">Selected Tags</h3>
+                                }
+                                <div className="flex flex-wrap gap-1 max-h-48 overflow-y-auto mb-2">
+                                    {localFilters.selectedTags.map((tag) => (
+                                        <Button
+                                            key={tag.id}
+                                            variant={"outline"}
+                                            className="inline-block bg-yellow hover:bg-yellowHover text-foreground text-xs px-2 py-1 rounded-xl mr-2 mb-2"
+                                            onClick={() => {
+                                                setAllTags([...allTags, tag]);
+                                                setLocalFilters((prev) => ({
+                                                    ...prev,
+                                                    selectedTags: prev.selectedTags.filter((t) => t.id !== tag.id),
+                                                }));
+                                            }}
+                                        >
+                                            {tag.name}
+                                        </Button>
+                                    ))}
+                                </div>
+
+                                {allTags.length > 0 && (
+                                    <>
+                                        <h3 className="text-md font-semibold mb-2">All Tags</h3>
+                                        <div className="flex flex-wrap gap-1 max-h-48 overflow-y-auto">
+                                            {allTags.map((tag) => (
+                                                <Button
+                                                    key={tag.id}
+                                                    variant={"outline"}
+                                                    className="inline-block bg-buttonColor hover:bg-buttonHover text-foreground text-xs px-2 py-1 rounded-xl mr-2 mb-2"
+                                                    onClick={() => {
+                                                        setLocalFilters((prev) => ({
+                                                            ...prev,
+                                                            selectedTags: [...prev.selectedTags, tag],
+                                                        }));
+                                                        setAllTags(allTags.filter(t => t.id !== tag.id));
+                                                    }}
+                                                >
+                                                    {tag.name}
+                                                </Button>
+                                            ))}
+
+                                        </div>
+                                    </>
+                                )}
+                            </div>
                         </div>
                     </div>
 
                     <div className="z-[103] h-10 mt-2 bg-navBar flex justify-between items-center w-full px-4">
-                            <Button variant={"link"} className="mx-4" onClick={() => {
-                                setAllTags([...allTags, ...localFilters.selectedTags]);
-                                setLocalFilters((prev) => ({
-                                    ...prev,
-                                    selectedTags: [],
-                                }));
-                            }}>
-                                Clear All
-                            </Button>
-                            <Button onClick={() => {
-                                setFilters((prev) => ({ ...prev, ...localFilters }));
-                                onClose();
-                            }} className="bg-highlight hover:bg-highlight/90 text-white mx-6">
-                                Apply Filters
-                            </Button>
+                        <Button variant={"link"} className="mx-4" onClick={() => {
+                            setAllTags([...allTags, ...localFilters.selectedTags]);
+                            setLocalFilters((prev) => ({
+                                ...prev,
+                                selectedTags: [],
+                            }));
+                        }}>
+                            Clear All
+                        </Button>
+                        <Button onClick={() => {
+                            setFilters((prev) => ({ ...prev, ...localFilters }));
+                            onClose();
+                        }} className="bg-highlight hover:bg-highlight/90 text-white mx-6">
+                            Apply Filters
+                        </Button>
                     </div>
 
                 </div>
 
-            </div>
+            </div >
 
         </>
     );
