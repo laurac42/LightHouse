@@ -12,7 +12,16 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox"
 import { toast } from "sonner";
+import {
+  Field,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+  FieldLegend,
+  FieldSet,
+} from "@/components/ui/field"
 
 type FilterBarOverlayProps = {
     isOpen: boolean;
@@ -214,7 +223,7 @@ export default function FilterBarOverlay({
                                                 }
                                             </DropdownMenuGroup>
                                         </DropdownMenuContent>
-                                    </DropdownMenu> 
+                                    </DropdownMenu>
                                     <p className="my-auto">Bathrooms</p>
                                 </div>
                             </div>
@@ -284,7 +293,7 @@ export default function FilterBarOverlay({
 
                                 {allTags.length > 0 && (
                                     <>
-                                        <h3 className="text-md font-semibold mb-2">All Tags</h3>
+                                        <h3 className="text-md font-semibold">All Tags</h3>
                                         <div className="flex flex-wrap gap-1 max-h-48 overflow-y-auto">
                                             {allTags.map((tag) => (
                                                 <Button
@@ -306,6 +315,63 @@ export default function FilterBarOverlay({
                                         </div>
                                     </>
                                 )}
+                            </div>
+
+                            <hr />
+                            {/* Has a: garden, garage, driveway */}
+                            <div>
+                                <FieldSet>
+                                    <FieldLegend variant="label">
+                                        <h3 className="text-lg font-bold mb-2">Show only properties with a: </h3>
+                                    </FieldLegend>
+                                    <FieldGroup className="flex flex-row gap-3">
+                                        <Field orientation="horizontal">
+                                            <Checkbox
+                                                id="garage"
+                                                name="garage"
+                                                checked={localFilters.garage === true}
+                                                onCheckedChange={() => updateLocalFilter("garage", !localFilters.garage)}
+                                                className="border border-2 border-foreground text-foreground data-[state=checked]:text-white data-[state=checked]:border-foreground data-[state=checked]:bg-highlight"
+                                            />
+                                            <FieldLabel
+                                                htmlFor="garage"
+                                                className="font-normal"
+                                            >
+                                                Garage
+                                            </FieldLabel>
+                                        </Field>
+                                        <Field orientation="horizontal">
+                                            <Checkbox
+                                                id="driveway"
+                                                name="driveway"
+                                                checked={localFilters.driveway === true}
+                                                onCheckedChange={() => updateLocalFilter("driveway", !localFilters.driveway)}
+                                                className="border border-2 border-foreground text-foreground data-[state=checked]:text-white data-[state=checked]:border-foreground data-[state=checked]:bg-highlight"
+                                            />
+                                            <FieldLabel
+                                                htmlFor="driveway"
+                                                className="font-normal"
+                                            >
+                                                Driveway
+                                            </FieldLabel>
+                                        </Field>
+                                        <Field orientation="horizontal">
+                                            <Checkbox
+                                                id="garden"
+                                                name="garden"
+                                                checked={localFilters.garden === true}
+                                                onCheckedChange={() => updateLocalFilter("garden", !localFilters.garden)}
+                                                className="border border-2 border-foreground text-foreground data-[state=checked]:text-white data-[state=checked]:border-foreground data-[state=checked]:bg-highlight"
+                                            />
+                                            <FieldLabel
+                                                htmlFor="garden"
+                                                className="font-normal"
+                                            >
+                                                Garden
+                                            </FieldLabel>
+                                        </Field>
+                                    </FieldGroup>
+                                </FieldSet>
                             </div>
                         </div>
                     </div>

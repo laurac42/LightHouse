@@ -11,4 +11,7 @@ export interface Filters {
     minBathrooms: number | null;
     maxBathrooms: number | null;
     propertyTypes: string[];
+    garage: boolean | null;
+    garden: boolean | null;
+    driveway: boolean | null;
 }
