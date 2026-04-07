@@ -222,9 +222,7 @@ export default function PropertiesPage() {
             if (box !== undefined) {
                 const { data, count } = await fetchPropertiesForPage(page, PAGE_SIZE, user_preferences, box, filters, geo);
                 setTotalProperties(count || 0);
-                console.log("new count: ", count);
-                console.log("properties: ", data);
-
+                
                 setTotalPages(Math.ceil((count || 0) / PAGE_SIZE));
                 setCurrentPage(page);
 
