@@ -8,7 +8,6 @@ import {
     DropdownMenuContent,
     DropdownMenuGroup,
     DropdownMenuItem,
-    DropdownMenuLabel,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Tag } from "@/types/tags";
@@ -125,10 +124,10 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent>
                                         <DropdownMenuGroup>
-                                            <DropdownMenuItem onClick={() => {updateLocalFilter("minPrice", null); updateFilters("minPrice", null);}}>No min</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => { updateLocalFilter("minPrice", null); updateFilters("minPrice", null); }}>No min</DropdownMenuItem>
                                             {[100000, 150000, 200000, 250000, 300000, 350000, 400000, 450000, 500000].map((price, index) => (
-                                                fils.minPrice === null || (fils.maxPrice !== null && price > fils.maxPrice) ? (
-                                                    <DropdownMenuItem key={index} onClick={() => {updateLocalFilter("minPrice", price); updateFilters("minPrice", price);} }>£{price.toLocaleString()}</DropdownMenuItem>
+                                                fils.maxPrice === null || (fils.maxPrice !== null && price < fils.maxPrice) ? (
+                                                    <DropdownMenuItem key={index} onClick={() => { updateLocalFilter("minPrice", price); updateFilters("minPrice", price); }}>£{price.toLocaleString()}</DropdownMenuItem>
                                                 ) : null
                                             ))}
                                         </DropdownMenuGroup>
@@ -141,136 +140,142 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent>
                                         <DropdownMenuGroup>
-                                            <DropdownMenuItem onClick={() => {updateLocalFilter("maxPrice", null); updateFilters("maxPrice", null);}}>No max</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => { updateLocalFilter("maxPrice", null); updateFilters("maxPrice", null); }}>No max</DropdownMenuItem>
                                             {[100000, 150000, 200000, 250000, 300000, 350000, 400000, 450000, 500000].map((price, index) => (
                                                 fils.minPrice === null || (fils.minPrice !== null && price > fils.minPrice) ? (
-                                                    <DropdownMenuItem key={index} onClick={() => {updateLocalFilter("maxPrice", price); updateFilters("maxPrice", price);}}>£{price.toLocaleString()}</DropdownMenuItem>
+                                                    <DropdownMenuItem key={index} onClick={() => { updateLocalFilter("maxPrice", price); updateFilters("maxPrice", price); }}>£{price.toLocaleString()}</DropdownMenuItem>
                                                 ) : null
                                             ))}
                                         </DropdownMenuGroup>
                                     </DropdownMenuContent>
-                            </DropdownMenu>
-                        </div>
-                    </DropdownMenuGroup>
-                </DropdownMenuContent>
-            </DropdownMenu>
+                                </DropdownMenu>
+                            </div>
+                        </DropdownMenuGroup>
+                    </DropdownMenuContent>
+                </DropdownMenu>
 
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="w-40 hidden md:flex">
-                        {!fils.minBedrooms && !fils.maxBedrooms ? "Num Bedrooms" :
-                            `${fils.minBedrooms && !fils.maxBedrooms ? fils.minBedrooms + " beds min" : ""}
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline" className="max-w-40 hidden md:flex">
+                            {!fils.minBedrooms && !fils.maxBedrooms ? "Num Bedrooms" :
+                                `${fils.minBedrooms && !fils.maxBedrooms ? fils.minBedrooms + " beds min" : ""}
                             ${fils.minBedrooms && fils.maxBedrooms ? fils.minBedrooms + "-" + fils.maxBedrooms + " beds" : ""}
                             ${fils.maxBedrooms && !fils.minBedrooms ? fils.maxBedrooms + " beds max" : ""}`}
-                        <ChevronDown />
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                    <DropdownMenuGroup>
-                        <div className="flex flex-row gap-2">
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" className="bg-white hover:bg-lightPink">
-                                        {fils.minBedrooms ? fils.minBedrooms + " Bedrooms" : "Min Bedrooms"} <ChevronDown /></Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                    <DropdownMenuGroup>
-                                        {[1, 2, 3, 4, 5, 6].map((bed, index) => (
-                                            <DropdownMenuLabel key={bed} onClick={() => updateLocalFilter("minBedrooms", bed)}>
-                                                {bed} Bed{index === 0 ? "" : "s"}
-                                            </DropdownMenuLabel>
-                                        ))}
-                                    </DropdownMenuGroup>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" className="bg-white hover:bg-lightPink">
-                                        {fils.maxBedrooms ? fils.maxBedrooms + " Bedrooms" : "Max Bedrooms"} <ChevronDown />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                    <DropdownMenuGroup>
-                                        {[1, 2, 3, 4, 5, 6].map((bed, index) => (
-                                            <DropdownMenuLabel key={bed} onClick={() => updateLocalFilter("maxBedrooms", bed)}>
-                                                {bed} Bed{index === 0 ? "" : "s"}
-                                            </DropdownMenuLabel>
-                                        ))}
-                                    </DropdownMenuGroup>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </div>
-                    </DropdownMenuGroup>
-                </DropdownMenuContent>
-            </DropdownMenu>
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="w-40 hidden lg:flex">
-                        {!fils.minBathrooms && !fils.maxBathrooms ? "Num Bathrooms" :
-                            `${fils.minBathrooms && !fils.maxBathrooms ? fils.minBathrooms + " baths min" : ""}
+                            <ChevronDown />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                        <DropdownMenuGroup>
+                            <div className="flex flex-row gap-2">
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="outline" className="bg-white hover:bg-lightPink">
+                                            {fils.minBedrooms ? fils.minBedrooms + " Bedrooms" : "Min Bedrooms"} <ChevronDown /></Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent>
+                                        <DropdownMenuGroup>
+                                            <DropdownMenuItem onClick={() => { updateLocalFilter("minBedrooms", null); updateFilters("minBedrooms", null); }}>No min</DropdownMenuItem>
+                                            {[1, 2, 3, 4, 5, 6].map((bed, index) => (
+                                                fils.maxBedrooms === null || (fils.maxBedrooms !== null && bed < fils.maxBedrooms) ? (
+                                                    <DropdownMenuItem key={bed} onClick={() => { updateLocalFilter("minBedrooms", bed); updateFilters("minBedrooms", bed); }}>
+                                                        {bed} Bed{index === 0 ? "" : "s"}
+                                                    </DropdownMenuItem>
+                                                ) : null
+                                            ))}
+                                        </DropdownMenuGroup>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="outline" className="bg-white hover:bg-lightPink">
+                                            {fils.maxBedrooms ? fils.maxBedrooms + " Bedrooms" : "Max Bedrooms"} <ChevronDown />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent>
+                                        <DropdownMenuGroup>
+                                            <DropdownMenuItem onClick={() => { updateLocalFilter("maxBedrooms", null); updateFilters("maxBedrooms", null); }}>No max</DropdownMenuItem>
+                                            {[1, 2, 3, 4, 5, 6].map((bed, index) => (
+                                                fils.minBedrooms === null || (fils.minBedrooms !== null && bed > fils.minBedrooms) ? (
+                                                    <DropdownMenuItem key={bed} onClick={() => { updateLocalFilter("maxBedrooms", bed); updateFilters("maxBedrooms", bed); }}>
+                                                        {bed} Bed{index === 0 ? "" : "s"}
+                                                    </DropdownMenuItem>
+                                                ) : null
+                                            ))}
+                                        </DropdownMenuGroup>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
+                        </DropdownMenuGroup>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline" className="w-40 hidden lg:flex">
+                            {!fils.minBathrooms && !fils.maxBathrooms ? "Num Bathrooms" :
+                                `${fils.minBathrooms && !fils.maxBathrooms ? fils.minBathrooms + " baths min" : ""}
                             ${fils.minBathrooms && fils.maxBathrooms ? fils.minBathrooms + "-" + fils.maxBathrooms + " baths" : ""}
                             ${fils.maxBathrooms && !fils.minBathrooms ? fils.maxBathrooms + " baths max" : ""}`}
-                        <ChevronDown />
+                            <ChevronDown />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                        <DropdownMenuGroup>
+                            <div className="flex flex-row gap-2">
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="outline" className="bg-white hover:bg-lightPink">
+                                            {fils.minBathrooms ? fils.minBathrooms + " Bathrooms" : "Min Bathrooms"} <ChevronDown />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent>
+                                        <DropdownMenuGroup>
+                                            {[1, 2, 3, 4, 5, 6].map((bath, index) => (
+                                                <DropdownMenuItem key={bath} onClick={() => updateLocalFilter("minBathrooms", bath)}>
+                                                    {bath} Bath{index === 0 ? "" : "s"}
+                                                </DropdownMenuItem>
+                                            ))}
+                                        </DropdownMenuGroup>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="outline" className="bg-white hover:bg-lightPink">
+                                            {fils.maxBathrooms ? fils.maxBathrooms + " Bathrooms" : "Max Bathrooms"} <ChevronDown />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent>
+                                        <DropdownMenuGroup>
+                                            {[1, 2, 3, 4, 5, 6].map((bath, index) => (
+                                                <DropdownMenuItem key={bath} onClick={() => updateLocalFilter("maxBathrooms", bath)}>
+                                                    {bath} Bath{index === 0 ? "" : "s"}
+                                                </DropdownMenuItem>
+                                            ))}
+                                        </DropdownMenuGroup>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
+                        </DropdownMenuGroup>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+                <div className="text-foreground cursor-pointer ml-auto" >
+                    <Button
+                        className="max-w-40 bg-white hover:bg-lightPink"
+                        onClick={() => setIsMoreFiltersOpen(!isMoreFiltersOpen)}
+                        variant={"outline"}
+                    >
+                        More Filters <ChevronDown />
                     </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                    <DropdownMenuGroup>
-                        <div className="flex flex-row gap-2">
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" className="bg-white hover:bg-lightPink">
-                                        {fils.minBathrooms ? fils.minBathrooms + " Bathrooms" : "Min Bathrooms"} <ChevronDown />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                    <DropdownMenuGroup>
-                                        {[1, 2, 3, 4, 5, 6].map((bath, index) => (
-                                            <DropdownMenuLabel key={bath} onClick={() => updateLocalFilter("minBathrooms", bath)}>
-                                                {bath} Bath{index === 0 ? "" : "s"}
-                                            </DropdownMenuLabel>
-                                        ))}
-                                    </DropdownMenuGroup>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" className="bg-white hover:bg-lightPink">
-                                        {fils.maxBathrooms ? fils.maxBathrooms + " Bathrooms" : "Max Bathrooms"} <ChevronDown />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                    <DropdownMenuGroup>
-                                        {[1, 2, 3, 4, 5, 6].map((bath, index) => (
-                                            <DropdownMenuLabel key={bath} onClick={() => updateLocalFilter("maxBathrooms", bath)}>
-                                                {bath} Bath{index === 0 ? "" : "s"}
-                                            </DropdownMenuLabel>
-                                        ))}
-                                    </DropdownMenuGroup>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </div>
-                    </DropdownMenuGroup>
-                </DropdownMenuContent>
-            </DropdownMenu>
-            <div className="text-foreground cursor-pointer ml-auto" >
-                <Button
-                    className="max-w-40 bg-white hover:bg-lightPink"
-                    onClick={() => setIsMoreFiltersOpen(!isMoreFiltersOpen)}
-                    variant={"outline"}
-                >
-                    More Filters <ChevronDown />
-                </Button>
-            </div>
+                </div>
 
-            <FilterBarOverlay
-                isOpen={isMoreFiltersOpen}
-                onClose={() => setIsMoreFiltersOpen(false)}
-                filters={filters}
-                setFilters={setFilters}
-                allTags={allTags}
-                setAllTags={setAllTags}
-            />
-        </div>
+                <FilterBarOverlay
+                    isOpen={isMoreFiltersOpen}
+                    onClose={() => setIsMoreFiltersOpen(false)}
+                    filters={filters}
+                    setFilters={setFilters}
+                    allTags={allTags}
+                    setAllTags={setAllTags}
+                />
+            </div>
         </div >
     );
 }

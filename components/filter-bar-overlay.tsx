@@ -96,7 +96,7 @@ export default function FilterBarOverlay({
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent className="z-[104]">
                                             <DropdownMenuGroup>
-                                                <DropdownMenuItem onClick={() => {updateLocalFilter("minPrice", null); }}>No Min</DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => { updateLocalFilter("minPrice", null); }}>No Min</DropdownMenuItem>
                                                 {[100000, 150000, 200000, 250000, 300000, 350000, 400000, 450000, 500000].map((price, index) => (
                                                     localFilters.maxPrice === null || (localFilters.maxPrice !== null && price < localFilters.maxPrice) ? (
                                                         <DropdownMenuItem key={index} onClick={() => updateLocalFilter("minPrice", price)}>£{price.toLocaleString()}</DropdownMenuItem>
@@ -112,7 +112,7 @@ export default function FilterBarOverlay({
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent className="z-[104]">
                                             <DropdownMenuGroup>
-                                            <DropdownMenuItem onClick={() => {updateLocalFilter("maxPrice", null); }}>No max</DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => { updateLocalFilter("maxPrice", null); }}>No max</DropdownMenuItem>
                                                 {[100000, 150000, 200000, 250000, 300000, 350000, 400000, 450000, 500000].map((price, index) => (
                                                     localFilters.minPrice === null || (localFilters.minPrice !== null && price > localFilters.minPrice) ? (
                                                         <DropdownMenuItem key={index} onClick={() => updateLocalFilter("maxPrice", price)}>£{price.toLocaleString()}</DropdownMenuItem>
@@ -126,6 +126,50 @@ export default function FilterBarOverlay({
 
                             <hr />
 
+                            {/** Num bedrooms */}
+                            <div>
+                                <DropdownMenuLabel className="text-lg font-bold">Number of Bedrooms</DropdownMenuLabel>
+                                <div className="flex flex-row gap-2">
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="outline" className="bg-white hover:bg-lightPink">
+                                                {localFilters.minBedrooms ? localFilters.minBedrooms + " Bedrooms" : "Min Bedrooms"} <ChevronDown /></Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent className="z-[104]">
+                                            <DropdownMenuGroup>
+                                                <DropdownMenuItem onClick={() => { updateLocalFilter("minBedrooms", null);}}>No min</DropdownMenuItem>
+                                                {[1, 2, 3, 4, 5, 6].map((bed, index) => (
+                                                    localFilters.maxBedrooms === null || (localFilters.maxBedrooms !== null && bed < localFilters.maxBedrooms) ? (
+                                                        <DropdownMenuItem key={bed} onClick={() => updateLocalFilter("minBedrooms", bed)}>
+                                                            {bed} Bed{index === 0 ? "" : "s"}
+                                                        </DropdownMenuItem>
+                                                    ) : null
+                                                ))}
+                                            </DropdownMenuGroup>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                    <p className="my-auto">to</p>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="outline" className="bg-white hover:bg-lightPink">
+                                                {localFilters.maxBedrooms ? localFilters.maxBedrooms + " Bedrooms" : "Max Bedrooms"} <ChevronDown />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent className="z-[104]">
+                                            <DropdownMenuGroup>
+                                                <DropdownMenuItem onClick={() => { updateLocalFilter("maxBedrooms", null); }}>No max</DropdownMenuItem>                                                                      
+                                                {[1, 2, 3, 4, 5, 6].map((bed, index) => (
+                                                    localFilters.minBedrooms === null || (localFilters.minBedrooms !== null && bed > localFilters.minBedrooms) ? (
+                                                        <DropdownMenuItem key={bed} onClick={() => updateLocalFilter("maxBedrooms", bed)}>
+                                                            {bed} Bed{index === 0 ? "" : "s"}
+                                                        </DropdownMenuItem>
+                                                    ) : null
+                                                ))}
+                                            </DropdownMenuGroup>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
+                            </div>
 
                             {/* Tag prioritisation - allow users to select tags to prioritise in search results */}
                             <div>
@@ -187,6 +231,11 @@ export default function FilterBarOverlay({
                             setLocalFilters((prev) => ({
                                 ...prev,
                                 selectedTags: [],
+                                minBedrooms: null,
+                                maxBedrooms: null,
+                                minPrice: null,
+                                maxPrice: null,
+                                milesRadius: null,
                             }));
                         }}>
                             Clear All
