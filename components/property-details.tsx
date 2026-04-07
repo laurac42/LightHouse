@@ -1,6 +1,6 @@
 import { Database } from "@/types/supabase";
 import styles from '../app/public/properties/page.module.css';
-import { Home, Bed, Bath, Grid2X2, Landmark, Lightbulb, Heart } from "lucide-react";
+import { Home, Bed, Bath, Grid2X2, Landmark, Lightbulb, Heart, Car, HousePlus, TreeDeciduous, Warehouse } from "lucide-react";
 import { useEffect, useState } from "react";
 import { loadSellerAddedInfo } from "@/lib/data/property-utils";
 import { toast } from "sonner";
@@ -12,6 +12,15 @@ import { PropertyTags } from "./property-tags";
 import { Card } from "./ui/card";
 
 type Property = Database["public"]["Tables"]["properties"]["Row"] & { isFavourite?: boolean };
+
+function timestamptzToLocalDate(timestamptz: string): string {
+  return new Date(timestamptz).toLocaleDateString("en-GB", {
+    timeZone: "Europe/London",  
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
 
 // page options are:
 // - view: view the property details as a buyer would see them
@@ -74,8 +83,9 @@ export default function PropertyDetails({ params, page = "view" }: { params: { i
                                 <Button onClick={handleSaveFavourite} variant={"link"} className="ml-2 mt-1 p-0 text-sm text-muted-foreground"><Heart className={`size-10 ${isFavourite ? 'fill-current text-red-500' : ''}`} /></Button>
                             )}
                         </div>
-                        <div className="mb-2">
+                        <div className="mb-2 justify-between flex flex-row gap-2 mt-1">
                             <p className="text-muted-foreground">{property.address_line_1}, {property.address_line_2 ? `${property.address_line_2}, ` : ""} {property.city} {property.post_code}</p>
+                            <p className="text-muted-foreground">{timestamptzToLocalDate(property.added_at)}</p>
                         </div>
                         <div className="text-2xl text-primary">
                              <b> £{property.price.toLocaleString()}</b> <span className="text-lg">{property.price_type}</span>
@@ -108,6 +118,23 @@ export default function PropertyDetails({ params, page = "view" }: { params: { i
                             <Landmark size={16} />
                             Council Tax: {property.council_tax_band ? property.council_tax_band.toUpperCase() : "N/A"}
                         </div>
+                        <div className="inline-flex items-center gap-1 font-bold">
+                            <HousePlus size={16} />
+                            New Build: {property.is_new_build ? "Yes" : "No"}
+                        </div>
+                        <div className="inline-flex items-center gap-1 font-bold">
+                            <Warehouse size={16} />
+                            Garage: {property.has_garage ? "Yes" : "No"}
+                        </div>
+                        <div className="inline-flex items-center gap-1 font-bold">
+                            <TreeDeciduous size={16} />
+                            Garden: {property.garden ? "Yes" : "No"}
+                        </div>
+                        <div className="inline-flex items-center gap-1 font-bold">
+                            <Car size={16} />
+                            Driveway: {property.driveway ? "Yes" : "No"}
+                        </div>
+
                     </div>
                     <hr />
 

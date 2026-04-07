@@ -6,7 +6,7 @@ import {
     CardTitle,
 } from "@/components/ui/card";;
 import { Database } from "@/types/supabase";
-import { Home, Bed, Bath, Grid2X2, Lightbulb, Landmark, Mail, Phone, Pencil, Heart } from "lucide-react";
+import { Home, Bed, Bath, Grid2X2, Lightbulb, Landmark, Mail, Phone, Pencil, Heart, HousePlus, TreeDeciduous, Warehouse, Car } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getAgencyDetails } from "@/lib/data/property-utils";
 import Link from 'next/link';
@@ -152,6 +152,31 @@ export default function PropertyCard({ property, images, page, editable = false,
                                             <Landmark size={16} />
                                             Council Tax: {property.council_tax_band ? property.council_tax_band.toUpperCase() : "N/A"}
                                         </div>
+                                        {property.is_new_build !== undefined &&  property.is_new_build && (
+                                            <div className="inline-flex items-center gap-1 font-bold">
+                                                <HousePlus size={16} />
+                                                New Build
+                                            </div>
+                                        )}
+                                        {property.garden !== undefined &&  property.garden && (
+                                        <div className="inline-flex items-center gap-1 font-bold">
+                                            <TreeDeciduous size={16} />
+                                            Garden
+                                        </div>
+                                        )}
+                                        {property.has_garage !== undefined &&  property.has_garage && (
+                                        <div className="inline-flex items-center gap-1 font-bold">
+                                            <Warehouse size={16} />
+                                            Garage
+                                        </div>
+                                        )}
+                                        {property.driveway !== undefined &&  property.driveway && (
+                                        <div className="inline-flex items-center gap-1 font-bold">
+                                            <Car size={16} />
+                                            Driveway
+                                        </div>
+                                        )}
+
                                     </div>
                                 </Link>) : (
                                 <div className="grid grid-cols-2 lg:grid-cols-3 md:px-8 px-1 py-1 lg:py-2 text-md gap-1 lg:gap-2">
@@ -170,8 +195,11 @@ export default function PropertyCard({ property, images, page, editable = false,
                                     <div className="inline-flex items-center gap-1">
                                         <b>EPC:</b> {property.epc_rating ? property.epc_rating.toUpperCase() : "N/A"}
                                     </div>
-                                    <div className="inline-flex items-center gap-1">
-                                        <b>Council Tax:</b> {property.council_tax_band ? property.council_tax_band.toUpperCase() : "N/A"}
+                                    <div className="inline-flex items-center gap-1 font-bold">
+                                        New Build: {property.is_new_build !== undefined ? (property.is_new_build ? "Yes" : "No") : "N/A"}
+                                    </div>
+                                    <div className="inline-flex items-center gap-1 font-bold">
+                                        Garden: {property.garden !== undefined ? (property.garden ? "Yes" : "No") : "N/A"}
                                     </div>
                                 </div>
                             )}
@@ -183,7 +211,7 @@ export default function PropertyCard({ property, images, page, editable = false,
                         </div>
 
                         {/** Tag display */}
-                        <div className="h-8 mb-2">
+                        <div className="max-h-8 mb-2">
                             {propertyTags.length > 0 && propertyTags.map((tag) => (
                                 <span key={tag.tag_id} className="inline-block bg-buttonColor text-foreground text-xs px-2 py-1 rounded-full mr-2 mb-2">
                                     {tag.name} ({tag.count})
