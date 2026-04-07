@@ -15,6 +15,7 @@ import { Tag } from "@/types/tags";
 import { fetchAllTags } from "@/lib/data/tag-utils";
 import FilterBarOverlay from "@/components/filter-bar-overlay";
 import type { Filters } from "@/types/filters";
+import { toast } from "sonner";
 
 type FilterBarProps = {
     filters: Filters;
@@ -90,17 +91,17 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
                 </InputGroup>
 
                 {/* Search Radius */}
-                <DropdownMenu modal={false}>
+                <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button className="w-40 bg-white hover:bg-lightPink hidden sm:flex" variant="outline">{fils.milesRadius === null ? "This area only" : fils.milesRadius === 1 ? "Within 1 mile" : `Within ${fils.milesRadius} miles`}<ChevronDown /></Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
                         <DropdownMenuGroup>
-                            <DropdownMenuItem onClick={() => { updateLocalFilter("milesRadius", null); updateFilters("milesRadius", null); }}>This area only</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => { updateLocalFilter("milesRadius", 1); updateFilters("milesRadius", 1); }}>Within 1 mile</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => { updateLocalFilter("milesRadius", 2); updateFilters("milesRadius", 2); }}>Within 2 miles</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => { updateLocalFilter("milesRadius", 5); updateFilters("milesRadius", 5); }}>Within 5 miles</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => { updateLocalFilter("milesRadius", 10); updateFilters("milesRadius", 10); }}>Within 10 miles</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => { if (fils.location) { updateLocalFilter("milesRadius", null); updateFilters("milesRadius", null); } else { toast.error("Select a location to add a search radius", {position: "top-right"}) } }}>This area only</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => { if (fils.location) { updateLocalFilter("milesRadius", 1); updateFilters("milesRadius", 1); } else { toast.error("Select a location to add a search radius", {position: "top-right"}) } }}>Within 1 mile</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => { if (fils.location) { updateLocalFilter("milesRadius", 2); updateFilters("milesRadius", 2); } else { toast.error("Select a location to add a search radius", {position: "top-right"}) } }}>Within 2 miles</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => { if (fils.location) { updateLocalFilter("milesRadius", 5); updateFilters("milesRadius", 5); } else { toast.error("Select a location to add a search radius", {position: "top-right"}) } }}>Within 5 miles</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => { if (fils.location) { updateLocalFilter("milesRadius", 10); updateFilters("milesRadius", 10); } else { toast.error("Select a location to add a search radius", {position: "top-right"}) } }}>Within 10 miles</DropdownMenuItem>
                         </DropdownMenuGroup>
                     </DropdownMenuContent>
                 </DropdownMenu>
