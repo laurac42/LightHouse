@@ -237,7 +237,7 @@ export default function ImageCarousel({ images, property, page, isModalOpen }: {
                                     {selectedImageIndex === -1 ? (
                                         <CarouselItem key="floorplan">
                                             <img
-                                                src={process.env.NEXT_PUBLIC_BUCKET_URL + 'properties/' + property.id + '/floorplan.png'}
+                                                src={process.env.NEXT_PUBLIC_BUCKET_URL + 'properties/' + property.id + '/' + images.find(imageUrl => imageUrl.toLowerCase().includes('floorplan'))}
                                                 alt="Floorplan"
                                                 className="w-full max-h-[90vh] object-contain"
                                             />
