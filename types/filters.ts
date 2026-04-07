@@ -10,4 +10,5 @@ export interface Filters {
     maxBedrooms: number | null;
     minBathrooms: number | null;
     maxBathrooms: number | null;
+    propertyTypes: string[];
 }

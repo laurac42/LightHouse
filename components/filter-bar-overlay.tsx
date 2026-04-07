@@ -217,6 +217,43 @@ export default function FilterBarOverlay({
                                 </div>
                             </div>
 
+                            {/* Property Type */}
+                            <div>
+                                <DropdownMenuLabel className="text-lg font-bold">Property Type</DropdownMenuLabel>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button
+                                            className="max-w-full bg-white hover:bg-lightPink hidden lg:flex items-center justify-between gap-2"
+                                            variant="outline"
+                                        >
+                                            <span className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
+                                                {localFilters.propertyTypes.length === 0 ? "All Property Types" : localFilters.propertyTypes.join(", ")}
+                                            </span>
+                                            <ChevronDown className="shrink-0" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent className="z-[104]">
+                                        <DropdownMenuGroup>
+                                            <DropdownMenuItem onClick={() => { updateLocalFilter("propertyTypes", []); }}>Show all</DropdownMenuItem>
+                                            {["Detached", "Semi-Detached", "Terraced", "Flat", "Bungalow", "Land", "Commercial"].map((type) => (
+                                                <DropdownMenuItem key={type} onClick={() => {
+                                                    if (localFilters.propertyTypes.includes(type)) {
+                                                        updateLocalFilter("propertyTypes", localFilters.propertyTypes.filter((t) => t !== type));
+                                                    } else {
+                                                        updateLocalFilter("propertyTypes", [...localFilters.propertyTypes, type]);
+                                                    }
+                                                }}>
+                                                    <input type="checkbox" checked={localFilters.propertyTypes.includes(type)} readOnly className="mr-2" />
+                                                    {type}
+                                                </DropdownMenuItem>
+                                            ))}
+                                        </DropdownMenuGroup>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
+
+                            <hr />
+
                             {/* Tag prioritisation - allow users to select tags to prioritise in search results */}
                             <div>
                                 <h3 className="text-lg font-bold mb-2">Prioritise by Tag</h3>

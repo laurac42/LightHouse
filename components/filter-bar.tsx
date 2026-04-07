@@ -92,7 +92,7 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
                 {/* Search Radius */}
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button className="w-35 bg-white hover:bg-lightPink hidden sm:flex" variant="outline">{fils.milesRadius === null ? "This area only" : fils.milesRadius === 1 ? "Within 1 mile" : `Within ${fils.milesRadius} miles`}<ChevronDown /></Button>
+                        <Button className="w-32 bg-white hover:bg-lightPink hidden sm:flex" variant="outline">{fils.milesRadius === null ? "This area only" : fils.milesRadius === 1 ? "Within 1 mile" : `Within ${fils.milesRadius} miles`}<ChevronDown /></Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
                         <DropdownMenuGroup>
@@ -263,6 +263,42 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
                         </DropdownMenuGroup>
                     </DropdownMenuContent>
                 </DropdownMenu>
+
+
+                {/* Property Type */}
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button
+                            className="max-w-48 bg-white hover:bg-lightPink hidden lg:flex items-center justify-between gap-2"
+                            variant="outline"
+                        >
+                            <span className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
+                                {fils.propertyTypes.length === 0 ? "All Property Types" : fils.propertyTypes.join(", ")}
+                            </span>
+                            <ChevronDown className="shrink-0" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                        <DropdownMenuGroup>
+                            <DropdownMenuItem onClick={() => { updateLocalFilter("propertyTypes", []); updateFilters("propertyTypes", []); }}>Show all</DropdownMenuItem>
+                            {["Detached", "Semi-Detached", "Terraced", "Flat", "Bungalow", "Land", "Commercial"].map((type) => (
+                                <DropdownMenuItem key={type} onClick={() => {
+                                    if (fils.propertyTypes.includes(type)) {
+                                        updateLocalFilter("propertyTypes", fils.propertyTypes.filter((t) => t !== type));
+                                        updateFilters("propertyTypes", fils.propertyTypes.filter((t) => t !== type));
+                                    } else {
+                                        updateLocalFilter("propertyTypes", [...fils.propertyTypes, type]);
+                                        updateFilters("propertyTypes", [...fils.propertyTypes, type]);
+                                    }
+                                }}>
+                                    <input type="checkbox" checked={fils.propertyTypes.includes(type)} readOnly className="mr-2" />
+                                    {type}
+                                </DropdownMenuItem>
+                            ))}
+                        </DropdownMenuGroup>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+
                 <div className="text-foreground cursor-pointer ml-auto" >
                     <Button
                         className="max-w-40 bg-white hover:bg-lightPink"

@@ -127,6 +127,7 @@ export default function PropertiesPage() {
         maxBedrooms: null,
         minBathrooms: null,
         maxBathrooms: null,
+        propertyTypes: [],
     });
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
