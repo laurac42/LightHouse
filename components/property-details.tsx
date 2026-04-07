@@ -13,6 +13,11 @@ import { Card } from "./ui/card";
 
 type Property = Database["public"]["Tables"]["properties"]["Row"] & { isFavourite?: boolean };
 
+/**
+ * Convert a timestamptz string to a local date string in the format "day month year" (e.g. "1 January 2022")
+ * @param timestamptz timestamptz string to convert
+ * @returns A local date string in the format "day month year"
+ */
 function timestamptzToLocalDate(timestamptz: string): string {
   return new Date(timestamptz).toLocaleDateString("en-GB", {
     timeZone: "Europe/London",  
@@ -85,7 +90,7 @@ export default function PropertyDetails({ params, page = "view" }: { params: { i
                         </div>
                         <div className="mb-2 justify-between flex flex-row gap-2 mt-1">
                             <p className="text-muted-foreground">{property.address_line_1}, {property.address_line_2 ? `${property.address_line_2}, ` : ""} {property.city} {property.post_code}</p>
-                            <p className="text-muted-foreground">{timestamptzToLocalDate(property.added_at)}</p>
+                            <p className="text-muted-foreground">Added on {timestamptzToLocalDate(property.added_at)}</p>
                         </div>
                         <div className="text-2xl text-primary">
                              <b> £{property.price.toLocaleString()}</b> <span className="text-lg">{property.price_type}</span>

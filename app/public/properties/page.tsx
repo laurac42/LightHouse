@@ -136,7 +136,7 @@ export default function PropertiesPage() {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [totalProperties, setTotalProperties] = useState(0);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [isMobile, setIsMobile] = useState(false);
     const [userId, setUserId] = useState<string | null>(null);
     const [userChecked, setUserChecked] = useState<Boolean>(false); // state to track whether we've checked if the user is logged in or not
@@ -168,6 +168,7 @@ export default function PropertiesPage() {
     }, []);
 
     useEffect(() => {
+        setLoading(true);
         setErrorMessage("");
         setProperties([]);
         setGeoJson(null);
@@ -175,6 +176,7 @@ export default function PropertiesPage() {
         const urlParams = new URLSearchParams(window.location.search);
         const locationParam = urlParams.get("location");
         if (locationParam) {
+            
             setFilters((prev) => ({ ...prev, location: locationParam }));
             getPolygonBoundingBoxForLocation(locationParam)
                 .then((geoData) => {
@@ -199,6 +201,7 @@ export default function PropertiesPage() {
                 })
                 .catch((error) => {
                     console.error("Error getting bounding box for location: ", error);
+                    setLoading(false); 
                 });
         } else {
             setBoundingBox(null); // if there is no location query parameter, fetch all properties
@@ -268,6 +271,8 @@ export default function PropertiesPage() {
     useEffect(() => {
         if (!userChecked || boundingBox === undefined) return; // don't fetch properties until we've checked if the user is logged in or not, so that we can fetch personalised properties for logged in users
         if (filters.location && boundingBox === null) return; // location is set but bbox hasn't resolved yet
+        
+        setLoading(true);
         fetchProperties(currentPage, userId, boundingBox, filters, geoJson); // fetch the first page of properties when the component mounts, and whenever the user logs in or out
 
     }, [fetchProperties, userChecked, userId, boundingBox, filters, geoJson]);
