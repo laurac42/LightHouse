@@ -44,11 +44,14 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
         }));
     };
 
-    const handleSelectedTagsChange: React.Dispatch<React.SetStateAction<Tag[]>> = (value) => {
-        const nextTags = typeof value === "function" ? value(fils.selectedTags) : value;
-        updateLocalFilter("selectedTags", nextTags);
-        updateFilters("selectedTags", nextTags);
-    };
+    // toggle scrolling on main page when more filters is opened/closed
+    useEffect(() => {
+        if (isMoreFiltersOpen) {
+            document.body.classList.add('overflow-hidden');
+        } else {
+            document.body.classList.remove('overflow-hidden');
+        }
+    }, [isMoreFiltersOpen]);
 
     useEffect(() => {
         async function loadTags() {
@@ -86,7 +89,8 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
                     <InputGroupButton size="sm" className="text-md text-foreground bg-white hover:bg-lightPink md:w-10 h-full"><X /></InputGroupButton>
                 </InputGroup>
 
-                <DropdownMenu>
+                {/* Search Radius */}
+                <DropdownMenu modal={false}>
                     <DropdownMenuTrigger asChild>
                         <Button className="w-40 bg-white hover:bg-lightPink hidden sm:flex" variant="outline">{fils.milesRadius === null ? "This area only" : fils.milesRadius === 1 ? "Within 1 mile" : `Within ${fils.milesRadius} miles`}<ChevronDown /></Button>
                     </DropdownMenuTrigger>
@@ -100,6 +104,7 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
                         </DropdownMenuGroup>
                     </DropdownMenuContent>
                 </DropdownMenu>
+
                 <DropdownMenu >
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline" className="w-50 hidden sm:flex bg-white hover:bg-lightPink">
@@ -243,7 +248,7 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
                 </DropdownMenu>
                 <div className="text-foreground cursor-pointer ml-auto" >
                     <Button
-                        className="w-40 bg-white hover:bg-lightPink"
+                        className="max-w-40 bg-white hover:bg-lightPink"
                         onClick={() => setIsMoreFiltersOpen(!isMoreFiltersOpen)}
                         variant={"outline"}
                     >
@@ -254,8 +259,8 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
                 <FilterBarOverlay
                     isOpen={isMoreFiltersOpen}
                     onClose={() => setIsMoreFiltersOpen(false)}
-                    selectedTags={filters.selectedTags}
-                    setSelectedTags={handleSelectedTagsChange}
+                    filters={filters}
+                    setFilters={setFilters}
                     allTags={allTags}
                     setAllTags={setAllTags}
                 />
