@@ -245,7 +245,7 @@ export async function fetchPropertiesForPage(page: number = 1, page_size: number
             boundingBoxCopy = expandBoundingBox(boundingBoxCopy, filters, null);
         }
     }
-    
+
     const propertyTypes = filters?.propertyTypes.length ? filters.propertyTypes.map((pt) => pt.toLowerCase()) : undefined;
 
     const supabase = createClient();
@@ -270,6 +270,10 @@ export async function fetchPropertiesForPage(page: number = 1, page_size: number
             p_min_baths: filters?.minBathrooms ?? 0,
             p_max_baths: filters?.maxBathrooms ?? 0,
             p_property_types: propertyTypes,
+            p_has_garage: filters?.garage ?? undefined,
+            p_has_garden: filters?.garden ?? undefined,
+            p_has_driveway: filters?.driveway ?? undefined,
+            p_only_new_builds: filters?.new_build ?? undefined,
         });
     if (error) {
         throw error;

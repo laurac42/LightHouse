@@ -128,6 +128,10 @@ export default function PropertiesPage() {
         minBathrooms: null,
         maxBathrooms: null,
         propertyTypes: [],
+        garage: null,
+        garden: null,
+        driveway: null,
+        new_build: null,
     });
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);

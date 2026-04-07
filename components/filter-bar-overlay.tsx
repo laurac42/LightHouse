@@ -318,13 +318,13 @@ export default function FilterBarOverlay({
                             </div>
 
                             <hr />
-                            {/* Has a: garden, garage, driveway */}
+                            {/* Has a: garden, garage, driveway, new_build */}
                             <div>
                                 <FieldSet>
                                     <FieldLegend variant="label">
-                                        <h3 className="text-lg font-bold mb-2">Show only properties with a: </h3>
+                                        <h3 className="text-lg font-bold mb-2">Must Have</h3>
                                     </FieldLegend>
-                                    <FieldGroup className="flex flex-row gap-3">
+                                    <FieldGroup className="flex md:flex-row gap-3">
                                         <Field orientation="horizontal">
                                             <Checkbox
                                                 id="garage"
@@ -335,7 +335,7 @@ export default function FilterBarOverlay({
                                             />
                                             <FieldLabel
                                                 htmlFor="garage"
-                                                className="font-normal"
+                                                className="font-normal text-md"
                                             >
                                                 Garage
                                             </FieldLabel>
@@ -368,6 +368,21 @@ export default function FilterBarOverlay({
                                                 className="font-normal"
                                             >
                                                 Garden
+                                            </FieldLabel>
+                                        </Field>
+                                        <Field orientation="horizontal">
+                                            <Checkbox
+                                                id="new_build"
+                                                name="new_build"
+                                                checked={localFilters.new_build === true}
+                                                onCheckedChange={() => updateLocalFilter("new_build", !localFilters.new_build)}
+                                                className="border border-2 border-foreground text-foreground data-[state=checked]:text-white data-[state=checked]:border-foreground data-[state=checked]:bg-highlight"
+                                            />
+                                            <FieldLabel
+                                                htmlFor="new_build"
+                                                className="font-normal"
+                                            >
+                                                New Build
                                             </FieldLabel>
                                         </Field>
                                     </FieldGroup>

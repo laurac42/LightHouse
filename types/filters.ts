@@ -14,4 +14,5 @@ export interface Filters {
     garage: boolean | null;
     garden: boolean | null;
     driveway: boolean | null;
+    new_build: boolean | null;
 }
