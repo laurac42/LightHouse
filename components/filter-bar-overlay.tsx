@@ -64,8 +64,10 @@ export default function FilterBarOverlay({
                     <div className="flex-1 overflow-y-auto pr-1">
 
                         <div className="flex flex-col gap-4 pb-4">
-                            <hr className="sm:hidden" />
-                            <div className="sm:hidden">
+                            <hr />
+
+                            {/** Search Radius */}
+                            <div>
                                 <DropdownMenuLabel className="text-lg font-bold">Search Radius</DropdownMenuLabel>
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
@@ -82,9 +84,10 @@ export default function FilterBarOverlay({
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                             </div>
-                            <hr className="sm:hidden" />
+                            <hr />
 
-                            <div className="sm:hidden">
+                            {/** Price Range */}
+                            <div>
                                 <DropdownMenuLabel className="text-lg font-bold">Price Range</DropdownMenuLabel>
                                 <div className="flex flex-row gap-2">
                                     <DropdownMenu>
@@ -93,6 +96,7 @@ export default function FilterBarOverlay({
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent className="z-[104]">
                                             <DropdownMenuGroup>
+                                                <DropdownMenuItem onClick={() => {updateLocalFilter("minPrice", null); }}>No Min</DropdownMenuItem>
                                                 {[100000, 150000, 200000, 250000, 300000, 350000, 400000, 450000, 500000].map((price, index) => (
                                                     localFilters.maxPrice === null || (localFilters.maxPrice !== null && price < localFilters.maxPrice) ? (
                                                         <DropdownMenuItem key={index} onClick={() => updateLocalFilter("minPrice", price)}>£{price.toLocaleString()}</DropdownMenuItem>
@@ -108,6 +112,7 @@ export default function FilterBarOverlay({
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent className="z-[104]">
                                             <DropdownMenuGroup>
+                                            <DropdownMenuItem onClick={() => {updateLocalFilter("maxPrice", null); }}>No max</DropdownMenuItem>
                                                 {[100000, 150000, 200000, 250000, 300000, 350000, 400000, 450000, 500000].map((price, index) => (
                                                     localFilters.minPrice === null || (localFilters.minPrice !== null && price > localFilters.minPrice) ? (
                                                         <DropdownMenuItem key={index} onClick={() => updateLocalFilter("maxPrice", price)}>£{price.toLocaleString()}</DropdownMenuItem>

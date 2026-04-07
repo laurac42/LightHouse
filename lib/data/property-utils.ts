@@ -246,6 +246,8 @@ export async function fetchPropertiesForPage(page: number = 1, page_size: number
         }
     }
 
+    console.log("min price and max price: ", filters?.minPrice, filters?.maxPrice);
+
     const supabase = createClient();
     const { data, error } = await supabase
         .rpc("fetch_ranked_properties", {
@@ -260,7 +262,9 @@ export async function fetchPropertiesForPage(page: number = 1, page_size: number
             page: page,
             page_size: page_size,
             geo_json: geoJson ? JSON.stringify(geoJson) : undefined,
-            p_search_radius_metres: (filters?.milesRadius && geoJson) ? filters.milesRadius * 1609.34 : undefined // convert miles to metres
+            p_search_radius_metres: (filters?.milesRadius && geoJson) ? filters.milesRadius * 1609.34 : undefined, // convert miles to metres
+            p_min_price: filters?.minPrice ?? 0,
+            p_max_price: filters?.maxPrice ?? 0,
         });
     if (error) {
         throw error;

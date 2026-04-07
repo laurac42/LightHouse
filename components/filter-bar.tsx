@@ -125,9 +125,10 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent>
                                         <DropdownMenuGroup>
+                                            <DropdownMenuItem onClick={() => {updateLocalFilter("minPrice", null); updateFilters("minPrice", null);}}>No min</DropdownMenuItem>
                                             {[100000, 150000, 200000, 250000, 300000, 350000, 400000, 450000, 500000].map((price, index) => (
-                                                fils.maxPrice === null || (fils.maxPrice !== null && price < fils.maxPrice) ? (
-                                                    <DropdownMenuItem key={index} onClick={() => updateLocalFilter("minPrice", price)}>£{price.toLocaleString()}</DropdownMenuItem>
+                                                fils.minPrice === null || (fils.maxPrice !== null && price > fils.maxPrice) ? (
+                                                    <DropdownMenuItem key={index} onClick={() => {updateLocalFilter("minPrice", price); updateFilters("minPrice", price);} }>£{price.toLocaleString()}</DropdownMenuItem>
                                                 ) : null
                                             ))}
                                         </DropdownMenuGroup>
@@ -140,9 +141,10 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent>
                                         <DropdownMenuGroup>
+                                            <DropdownMenuItem onClick={() => {updateLocalFilter("maxPrice", null); updateFilters("maxPrice", null);}}>No max</DropdownMenuItem>
                                             {[100000, 150000, 200000, 250000, 300000, 350000, 400000, 450000, 500000].map((price, index) => (
                                                 fils.minPrice === null || (fils.minPrice !== null && price > fils.minPrice) ? (
-                                                    <DropdownMenuItem key={index} onClick={() => updateLocalFilter("maxPrice", price)}>£{price.toLocaleString()}</DropdownMenuItem>
+                                                    <DropdownMenuItem key={index} onClick={() => {updateLocalFilter("maxPrice", price); updateFilters("maxPrice", price);}}>£{price.toLocaleString()}</DropdownMenuItem>
                                                 ) : null
                                             ))}
                                         </DropdownMenuGroup>
