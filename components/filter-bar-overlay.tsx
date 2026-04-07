@@ -390,7 +390,7 @@ export default function FilterBarOverlay({
                             </div>
 
                             <hr />
-                            
+
                             {/* Square feet */}
                             <div>
                                 <DropdownMenuLabel className="text-lg font-bold">Square Feet</DropdownMenuLabel>
@@ -438,6 +438,102 @@ export default function FilterBarOverlay({
                                 </div>
                             </div>
                             <hr />
+
+                            {/* Council Tax */}
+                            <div>
+                                <DropdownMenuLabel className="text-lg font-bold">Council Tax Band</DropdownMenuLabel>
+                                <div className="flex flex-row gap-2">
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="outline" className="bg-white hover:bg-lightPink">
+                                                {localFilters.min_council_tax_band ? localFilters.min_council_tax_band : "Min"} <ChevronDown />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent className="z-[104]">
+                                            <DropdownMenuGroup>
+                                                <DropdownMenuItem onClick={() => { updateLocalFilter("min_council_tax_band", null); }}>No min</DropdownMenuItem>
+                                                {['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'].map((band, index) => (
+                                                    localFilters.max_council_tax_band === null || (localFilters.max_council_tax_band !== null && band < localFilters.max_council_tax_band) ? (
+                                                        <DropdownMenuItem key={band} onClick={() => { updateLocalFilter("min_council_tax_band", band); }}>
+                                                            {band}
+                                                        </DropdownMenuItem>
+                                                    ) : null
+                                                ))}
+                                            </DropdownMenuGroup>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                    <p className="my-auto">to</p>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="outline" className="bg-white hover:bg-lightPink">
+                                                {localFilters.max_council_tax_band ? localFilters.max_council_tax_band : "Max"} <ChevronDown />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent className="z-[104]">
+                                            <DropdownMenuGroup>
+                                                <DropdownMenuItem onClick={() => { updateLocalFilter("max_council_tax_band", null); }}>No max</DropdownMenuItem>
+                                                {['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'].map((band, index) => (
+                                                    localFilters.min_council_tax_band === null || (localFilters.min_council_tax_band !== null && band > localFilters.min_council_tax_band) ? (
+                                                        <DropdownMenuItem key={band} onClick={() => { updateLocalFilter("max_council_tax_band", band); }}>
+                                                            {band}
+                                                        </DropdownMenuItem>
+                                                    ) : null))
+                                                }
+                                            </DropdownMenuGroup>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
+                            </div>
+
+                            <hr />
+
+                            {/* EPC Rating */}
+                            <div>
+                                <DropdownMenuLabel className="text-lg font-bold">EPC Rating</DropdownMenuLabel>
+                                <div className="flex flex-row gap-2">
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="outline" className="bg-white hover:bg-lightPink">
+                                                {localFilters.min_epc_rating ? localFilters.min_epc_rating : "Min"} <ChevronDown />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent className="z-[104]">
+                                            <DropdownMenuGroup>
+                                                <DropdownMenuItem onClick={() => { updateLocalFilter("min_epc_rating", null); }}>No min</DropdownMenuItem>
+                                                {['A', 'B', 'C', 'D', 'E', 'F', 'G'].map((rating) => (
+                                                    localFilters.max_epc_rating === null || (localFilters.max_epc_rating !== null && rating < localFilters.max_epc_rating) ? (
+                                                        <DropdownMenuItem key={rating} onClick={() => { updateLocalFilter("min_epc_rating", rating); }}>
+                                                            {rating}
+                                                        </DropdownMenuItem>
+                                                    ) : null
+                                                ))}
+                                            </DropdownMenuGroup>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                    <p className="my-auto">to</p>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="outline" className="bg-white hover:bg-lightPink">
+                                                {localFilters.max_epc_rating ? localFilters.max_epc_rating : "Max"} <ChevronDown />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent className="z-[104]">
+                                            <DropdownMenuGroup>
+                                                <DropdownMenuItem onClick={() => { updateLocalFilter("max_epc_rating", null); }}>No max</DropdownMenuItem>
+                                                {['A', 'B', 'C', 'D', 'E', 'F', 'G'].map((rating) => (
+                                                    localFilters.min_epc_rating === null || (localFilters.min_epc_rating !== null && rating > localFilters.min_epc_rating) ? (
+                                                        <DropdownMenuItem key={rating} onClick={() => { updateLocalFilter("max_epc_rating", rating); }}>
+                                                            {rating}
+                                                        </DropdownMenuItem>
+                                                    ) : null))
+                                                }
+                                            </DropdownMenuGroup>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
+                            </div>
+
+                            <hr />
                         </div>
                     </div>
 
@@ -478,7 +574,7 @@ export default function FilterBarOverlay({
                         </Button>
                     </div>
 
-                </div>
+                </div >
 
             </div >
 

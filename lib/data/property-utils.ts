@@ -276,6 +276,12 @@ export async function fetchPropertiesForPage(page: number = 1, page_size: number
             p_only_new_builds: filters?.new_build ?? false,
             p_min_sqft: filters?.min_sqft ?? undefined,
             p_max_sqft: filters?.max_sqft ?? undefined,
+            p_epc_min: filters?.min_epc_rating ?? undefined,
+            p_epc_max: filters?.max_epc_rating ?? undefined,
+            p_council_tax_min: filters?.min_council_tax_band ?? undefined,
+            p_council_tax_max: filters?.max_council_tax_band ?? undefined,
+            p_include_under_offer: filters?.include_under_offer ?? false,
+            p_include_new_builds: filters?.include_new_builds ?? false,
         });
     if (error) {
         throw error;
