@@ -23,7 +23,7 @@ export default function Page() {
             toast.error("Please enter a location to search.", {position: "top-right"});
             return;
         }
-        router.push(`/public/properties?location=${encodeURIComponent(location.trim())}`);
+        router.push(`/public/filters?location=${encodeURIComponent(location.trim())}`);
     }
 
     return (
