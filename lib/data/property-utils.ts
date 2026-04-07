@@ -273,7 +273,9 @@ export async function fetchPropertiesForPage(page: number = 1, page_size: number
             p_has_garage: filters?.garage ?? undefined,
             p_has_garden: filters?.garden ?? undefined,
             p_has_driveway: filters?.driveway ?? undefined,
-            p_only_new_builds: filters?.new_build ?? undefined,
+            p_only_new_builds: filters?.new_build ?? false,
+            p_min_sqft: filters?.min_sqft ?? undefined,
+            p_max_sqft: filters?.max_sqft ?? undefined,
         });
     if (error) {
         throw error;

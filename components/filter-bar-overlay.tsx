@@ -15,12 +15,12 @@ import { ChevronDown } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox"
 import { toast } from "sonner";
 import {
-  Field,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-  FieldLegend,
-  FieldSet,
+    Field,
+    FieldDescription,
+    FieldGroup,
+    FieldLabel,
+    FieldLegend,
+    FieldSet,
 } from "@/components/ui/field"
 
 type FilterBarOverlayProps = {
@@ -388,6 +388,56 @@ export default function FilterBarOverlay({
                                     </FieldGroup>
                                 </FieldSet>
                             </div>
+
+                            <hr />
+                            
+                            {/* Square feet */}
+                            <div>
+                                <DropdownMenuLabel className="text-lg font-bold">Square Feet</DropdownMenuLabel>
+                                <div className="flex flex-row gap-2">
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="outline" className="bg-white hover:bg-lightPink">
+                                                {localFilters.min_sqft ? localFilters.min_sqft : "Min"} <ChevronDown />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent className="z-[104]">
+                                            <DropdownMenuGroup>
+                                                <DropdownMenuItem onClick={() => { updateLocalFilter("min_sqft", null); }}>No min</DropdownMenuItem>
+                                                {[500, 600, 700, 800, 900, 1000, 1250, 1500, 2000, 2500, 3000].map((sqft, index) => (
+                                                    localFilters.max_sqft === null || (localFilters.max_sqft !== null && sqft < localFilters.max_sqft) ? (
+                                                        <DropdownMenuItem key={sqft} onClick={() => { updateLocalFilter("min_sqft", sqft); }}>
+                                                            {sqft} sqft
+                                                        </DropdownMenuItem>
+                                                    ) : null
+                                                ))}
+                                            </DropdownMenuGroup>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                    <p className="my-auto">to</p>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="outline" className="bg-white hover:bg-lightPink">
+                                                {localFilters.max_sqft ? localFilters.max_sqft : "Max"} <ChevronDown />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent className="z-[104]">
+                                            <DropdownMenuGroup>
+                                                <DropdownMenuItem onClick={() => { updateLocalFilter("max_sqft", null); }}>No max</DropdownMenuItem>
+                                                {[500, 600, 700, 800, 900, 1000, 1250, 1500, 2000, 2500, 3000].map((sqft, index) => (
+                                                    localFilters.min_sqft === null || (localFilters.min_sqft !== null && sqft > localFilters.min_sqft) ? (
+                                                        <DropdownMenuItem key={sqft} onClick={() => { updateLocalFilter("max_sqft", sqft); }}>
+                                                            {sqft} sqft
+                                                        </DropdownMenuItem>
+                                                    ) : null))
+                                                }
+                                            </DropdownMenuGroup>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                    <p className="my-auto">Square Feet</p>
+                                </div>
+                            </div>
+                            <hr />
                         </div>
                     </div>
 
@@ -404,6 +454,18 @@ export default function FilterBarOverlay({
                                 minPrice: null,
                                 maxPrice: null,
                                 milesRadius: null,
+                                garage: null,
+                                driveway: null,
+                                garden: null,
+                                new_build: null,
+                                min_sqft: null,
+                                max_sqft: null,
+                                min_epc_rating: null,
+                                max_epc_rating: null,
+                                min_council_tax_band: null,
+                                max_council_tax_band: null,
+                                include_under_offer: true,
+                                include_new_builds: true,
                             }));
                         }}>
                             Clear All

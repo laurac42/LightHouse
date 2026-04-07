@@ -132,6 +132,14 @@ export default function PropertiesPage() {
         garden: null,
         driveway: null,
         new_build: null,
+        min_sqft: null,
+        max_sqft: null,
+        min_epc_rating: null,
+        max_epc_rating: null,
+        min_council_tax_band: null,
+        max_council_tax_band: null,
+        include_under_offer: true,
+        include_new_builds: true,
     });
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);

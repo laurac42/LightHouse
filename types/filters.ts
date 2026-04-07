@@ -15,4 +15,12 @@ export interface Filters {
     garden: boolean | null;
     driveway: boolean | null;
     new_build: boolean | null;
+    min_sqft: number | null;
+    max_sqft: number | null;
+    min_epc_rating: string | null;
+    max_epc_rating: string | null;
+    min_council_tax_band: string | null;
+    max_council_tax_band: string | null;
+    include_under_offer: boolean;
+    include_new_builds: boolean;
 }
