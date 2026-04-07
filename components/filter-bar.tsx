@@ -156,7 +156,7 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
 
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="max-w-40 hidden md:flex">
+                        <Button variant="outline" className="max-w-40 hidden md:flex bg-white hover:bg-lightPink">
                             {!fils.minBedrooms && !fils.maxBedrooms ? "Num Bedrooms" :
                                 `${fils.minBedrooms && !fils.maxBedrooms ? fils.minBedrooms + " beds min" : ""}
                             ${fils.minBedrooms && fils.maxBedrooms ? fils.minBedrooms + "-" + fils.maxBedrooms + " beds" : ""}
@@ -210,7 +210,7 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
                 </DropdownMenu>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="w-40 hidden lg:flex">
+                        <Button variant="outline" className="max-w-40 hidden lg:flex bg-white hover:bg-lightPink">
                             {!fils.minBathrooms && !fils.maxBathrooms ? "Num Bathrooms" :
                                 `${fils.minBathrooms && !fils.maxBathrooms ? fils.minBathrooms + " baths min" : ""}
                             ${fils.minBathrooms && fils.maxBathrooms ? fils.minBathrooms + "-" + fils.maxBathrooms + " baths" : ""}
@@ -229,10 +229,13 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent>
                                         <DropdownMenuGroup>
+                                            <DropdownMenuItem onClick={() => { updateLocalFilter("minBathrooms", null); updateFilters("minBathrooms", null); }}>No min</DropdownMenuItem>
                                             {[1, 2, 3, 4, 5, 6].map((bath, index) => (
-                                                <DropdownMenuItem key={bath} onClick={() => updateLocalFilter("minBathrooms", bath)}>
-                                                    {bath} Bath{index === 0 ? "" : "s"}
-                                                </DropdownMenuItem>
+                                                fils.maxBathrooms === null || (fils.maxBathrooms !== null && bath < fils.maxBathrooms) ? (
+                                                    <DropdownMenuItem key={bath} onClick={() => { updateLocalFilter("minBathrooms", bath); updateFilters("minBathrooms", bath); }}>
+                                                        {bath} Bathroom{index === 0 ? "" : "s"}
+                                                    </DropdownMenuItem>
+                                                ) : null
                                             ))}
                                         </DropdownMenuGroup>
                                     </DropdownMenuContent>
@@ -245,11 +248,14 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent>
                                         <DropdownMenuGroup>
+                                            <DropdownMenuItem onClick={() => { updateLocalFilter("maxBathrooms", null); updateFilters("maxBathrooms", null); }}>No max</DropdownMenuItem>
                                             {[1, 2, 3, 4, 5, 6].map((bath, index) => (
-                                                <DropdownMenuItem key={bath} onClick={() => updateLocalFilter("maxBathrooms", bath)}>
-                                                    {bath} Bath{index === 0 ? "" : "s"}
-                                                </DropdownMenuItem>
-                                            ))}
+                                                fils.minBathrooms === null || (fils.minBathrooms !== null && bath > fils.minBathrooms) ? (
+                                                    <DropdownMenuItem key={bath} onClick={() => { updateLocalFilter("maxBathrooms", bath); updateFilters("maxBathrooms", bath); }}>
+                                                        {bath} Bathroom{index === 0 ? "" : "s"}
+                                                    </DropdownMenuItem>
+                                                ) : null))
+                                            }
                                         </DropdownMenuGroup>
                                     </DropdownMenuContent>
                                 </DropdownMenu>

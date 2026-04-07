@@ -267,6 +267,8 @@ export async function fetchPropertiesForPage(page: number = 1, page_size: number
             p_max_price: filters?.maxPrice ?? 0,
             p_min_beds: filters?.minBedrooms ?? 0,
             p_max_beds: filters?.maxBedrooms ?? 0,
+            p_min_baths: filters?.minBathrooms ?? 0,
+            p_max_baths: filters?.maxBathrooms ?? 0,
         });
     if (error) {
         throw error;

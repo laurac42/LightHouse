@@ -137,7 +137,7 @@ export default function FilterBarOverlay({
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent className="z-[104]">
                                             <DropdownMenuGroup>
-                                                <DropdownMenuItem onClick={() => { updateLocalFilter("minBedrooms", null);}}>No min</DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => { updateLocalFilter("minBedrooms", null); }}>No min</DropdownMenuItem>
                                                 {[1, 2, 3, 4, 5, 6].map((bed, index) => (
                                                     localFilters.maxBedrooms === null || (localFilters.maxBedrooms !== null && bed < localFilters.maxBedrooms) ? (
                                                         <DropdownMenuItem key={bed} onClick={() => updateLocalFilter("minBedrooms", bed)}>
@@ -157,7 +157,7 @@ export default function FilterBarOverlay({
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent className="z-[104]">
                                             <DropdownMenuGroup>
-                                                <DropdownMenuItem onClick={() => { updateLocalFilter("maxBedrooms", null); }}>No max</DropdownMenuItem>                                                                      
+                                                <DropdownMenuItem onClick={() => { updateLocalFilter("maxBedrooms", null); }}>No max</DropdownMenuItem>
                                                 {[1, 2, 3, 4, 5, 6].map((bed, index) => (
                                                     localFilters.minBedrooms === null || (localFilters.minBedrooms !== null && bed > localFilters.minBedrooms) ? (
                                                         <DropdownMenuItem key={bed} onClick={() => updateLocalFilter("maxBedrooms", bed)}>
@@ -165,6 +165,52 @@ export default function FilterBarOverlay({
                                                         </DropdownMenuItem>
                                                     ) : null
                                                 ))}
+                                            </DropdownMenuGroup>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
+                            </div>
+
+                            <hr />
+                            {/** Num bathrooms */}
+                            <div>
+                                <DropdownMenuLabel className="text-lg font-bold">Number of Bathrooms</DropdownMenuLabel>
+                                <div className="flex flex-row gap-2">
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="outline" className="bg-white hover:bg-lightPink">
+                                                {localFilters.minBathrooms ? localFilters.minBathrooms + " Bathrooms" : "Min Bathrooms"} <ChevronDown />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent className="z-[104]">
+                                            <DropdownMenuGroup>
+                                                <DropdownMenuItem onClick={() => { updateLocalFilter("minBathrooms", null); }}>No min</DropdownMenuItem>
+                                                {[1, 2, 3, 4, 5, 6].map((bath, index) => (
+                                                    localFilters.maxBathrooms === null || (localFilters.maxBathrooms !== null && bath < localFilters.maxBathrooms) ? (
+                                                        <DropdownMenuItem key={bath} onClick={() => { updateLocalFilter("minBathrooms", bath); }}>
+                                                            {bath} Bathroom{index === 0 ? "" : "s"}
+                                                        </DropdownMenuItem>
+                                                    ) : null
+                                                ))}
+                                            </DropdownMenuGroup>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="outline" className="bg-white hover:bg-lightPink">
+                                                {localFilters.maxBathrooms ? localFilters.maxBathrooms + " Bathrooms" : "Max Bathrooms"} <ChevronDown />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent className="z-[104]">
+                                            <DropdownMenuGroup>
+                                                <DropdownMenuItem onClick={() => { updateLocalFilter("maxBathrooms", null); }}>No max</DropdownMenuItem>
+                                                {[1, 2, 3, 4, 5, 6].map((bath, index) => (
+                                                    localFilters.minBathrooms === null || (localFilters.minBathrooms !== null && bath > localFilters.minBathrooms) ? (
+                                                        <DropdownMenuItem key={bath} onClick={() => { updateLocalFilter("maxBathrooms", bath); }}>
+                                                            {bath} Bathroom{index === 0 ? "" : "s"}
+                                                        </DropdownMenuItem>
+                                                    ) : null))
+                                                }
                                             </DropdownMenuGroup>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
@@ -233,6 +279,8 @@ export default function FilterBarOverlay({
                                 selectedTags: [],
                                 minBedrooms: null,
                                 maxBedrooms: null,
+                                minBathrooms: null,
+                                maxBathrooms: null,
                                 minPrice: null,
                                 maxPrice: null,
                                 milesRadius: null,

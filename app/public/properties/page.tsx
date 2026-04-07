@@ -280,7 +280,7 @@ export default function PropertiesPage() {
                         </div>
                     ) : properties.length === 0 ? (
                         <div className="mx-4 flex items-center justify-center h-64">
-                            <p className="text-2xl text-gray-500">No properties found{filters.location ? ` in ${filters.location}` : ""}.</p>
+                            <p className="text-2xl text-gray-500 max-w-lg">No properties found{filters.location ? ` in ${filters.location}` : ""} with your chosen filters. Try adjusting your search criteria and try again.</p>
                         </div>
                     ) : (
                         <div className="pt-2 px-6 text-highlight">
