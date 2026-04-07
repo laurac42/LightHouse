@@ -534,6 +534,51 @@ export default function FilterBarOverlay({
                             </div>
 
                             <hr />
+
+                            {/* Include new builds and under offer */}
+                            <div>
+                                <FieldSet>
+                                    <FieldLegend variant="label">
+                                        <h3 className="text-lg font-bold mb-2">Include</h3>
+                                    </FieldLegend>
+                                    <FieldGroup className="flex md:flex-row gap-3">
+                                        <Field orientation="horizontal">
+                                            <Checkbox
+                                                id="under_offer"
+                                                name="under_offer"
+                                                checked={localFilters.include_under_offer === true}
+                                                onCheckedChange={() => updateLocalFilter("include_under_offer", !localFilters.include_under_offer)}
+                                                className="border border-2 border-foreground text-foreground data-[state=checked]:text-white data-[state=checked]:border-foreground data-[state=checked]:bg-highlight"
+                                            />
+                                            <FieldLabel
+                                                htmlFor="under_offer"
+                                                className="font-normal"
+                                            >
+                                                Under Offer
+                                            </FieldLabel>
+                                        </Field>
+                                        <Field orientation="horizontal">
+                                            <Checkbox
+                                                id="include_new_build"
+                                                name="new_build"
+                                                checked={localFilters.include_new_builds === true}
+                                                onCheckedChange={() => updateLocalFilter("include_new_builds", !localFilters.include_new_builds )}
+                                                className="border border-2 border-foreground text-foreground data-[state=checked]:text-white data-[state=checked]:border-foreground data-[state=checked]:bg-highlight"
+                                            />
+                                            <FieldLabel
+                                                htmlFor="include_new_build"
+                                                className="font-normal"
+                                            >
+                                                New Builds
+                                            </FieldLabel>
+                                        </Field>
+                                    </FieldGroup>
+                                </FieldSet>
+                            </div>
+
+                            <hr />
+
+
                         </div>
                     </div>
 
