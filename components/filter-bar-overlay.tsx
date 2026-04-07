@@ -51,7 +51,7 @@ export default function FilterBarOverlay({
         <>
             <div>
                 <div className="fixed inset-0 bg-black/50 z-[101]" onClick={onClose} />
-                <div className="fixed top-0 right-0 h-screen w-3/4 lg:w-1/2 bg-navBar flex flex-col p-6 z-[102] shadow-lg">
+                <div className="fixed top-0 right-0 h-screen w-4/5 lg:w-3/4 bg-navBar flex flex-col p-6 z-[102] shadow-lg">
                     <div className="flex flex-row items-center mb-4 justify-between">
                         <div className="flex flex-row items-center">
                             <p className="text-lg font-bold">More Filters</p>
@@ -63,8 +63,7 @@ export default function FilterBarOverlay({
 
                     <div className="flex-1 overflow-y-auto pr-1">
 
-                        <div className="flex flex-col gap-4 pb-4">
-                            <hr />
+                        <div className="flex flex-col gap-4 pb-4 mx-0 sm:mx-4 md:mx-8 lg:mx-12">
 
                             {/** Search Radius */}
                             <div>
@@ -133,7 +132,7 @@ export default function FilterBarOverlay({
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                             <Button variant="outline" className="bg-white hover:bg-lightPink">
-                                                {localFilters.minBedrooms ? localFilters.minBedrooms + " Bedrooms" : "Min Bedrooms"} <ChevronDown /></Button>
+                                                {localFilters.minBedrooms ? localFilters.minBedrooms : "Min"} <ChevronDown /></Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent className="z-[104]">
                                             <DropdownMenuGroup>
@@ -152,7 +151,7 @@ export default function FilterBarOverlay({
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                             <Button variant="outline" className="bg-white hover:bg-lightPink">
-                                                {localFilters.maxBedrooms ? localFilters.maxBedrooms + " Bedrooms" : "Max Bedrooms"} <ChevronDown />
+                                                {localFilters.maxBedrooms ? localFilters.maxBedrooms : "Max"} <ChevronDown />
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent className="z-[104]">
@@ -168,6 +167,7 @@ export default function FilterBarOverlay({
                                             </DropdownMenuGroup>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
+                                    <p className="my-auto">Bedrooms</p>
                                 </div>
                             </div>
 
@@ -179,7 +179,7 @@ export default function FilterBarOverlay({
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                             <Button variant="outline" className="bg-white hover:bg-lightPink">
-                                                {localFilters.minBathrooms ? localFilters.minBathrooms + " Bathrooms" : "Min Bathrooms"} <ChevronDown />
+                                                {localFilters.minBathrooms ? localFilters.minBathrooms : "Min"} <ChevronDown />
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent className="z-[104]">
@@ -195,10 +195,11 @@ export default function FilterBarOverlay({
                                             </DropdownMenuGroup>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
+                                    <p className="my-auto">to</p>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                             <Button variant="outline" className="bg-white hover:bg-lightPink">
-                                                {localFilters.maxBathrooms ? localFilters.maxBathrooms + " Bathrooms" : "Max Bathrooms"} <ChevronDown />
+                                                {localFilters.maxBathrooms ? localFilters.maxBathrooms : "Max"} <ChevronDown />
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent className="z-[104]">
@@ -213,7 +214,8 @@ export default function FilterBarOverlay({
                                                 }
                                             </DropdownMenuGroup>
                                         </DropdownMenuContent>
-                                    </DropdownMenu>
+                                    </DropdownMenu> 
+                                    <p className="my-auto">Bathrooms</p>
                                 </div>
                             </div>
 
