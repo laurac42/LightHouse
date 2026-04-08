@@ -1,5 +1,5 @@
 import { Database } from "@/types/supabase";
-import styles from '../app/public/properties/page.module.css';
+import styles from '../app/properties/page.module.css';
 import { Home, Bed, Bath, Grid2X2, Landmark, Lightbulb, Heart, Car, HousePlus, TreeDeciduous, Warehouse } from "lucide-react";
 import { useEffect, useState } from "react";
 import { loadSellerAddedInfo } from "@/lib/data/property-utils";

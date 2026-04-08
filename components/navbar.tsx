@@ -65,9 +65,8 @@ export default function Navbar() {
                                 </div>
                                 <X onClick={() => setIsMenuOpen(false)} />
                             </div>
-                            <a href="/public/home" className="text-foreground text-lg">Home</a>
-                            <a href="/public/properties" className="text-foreground text-lg">Buy</a>
-                            <a href="#" className="text-foreground text-lg">Sell</a>
+                            <a href="/" className="text-foreground text-lg">Home</a>
+                            <a href="/properties" className="text-foreground text-lg">Buy</a>
                             <a href="#" className="text-foreground text-lg">Estate Agents</a>
                             {isLoggedIn && userIsAdmin && (
                                 <a href="/admin/portal" className="text-foreground text-lg">Admin Portal</a>
@@ -80,7 +79,7 @@ export default function Navbar() {
                             )}
                         </div>
                     )}
-                    <Link href="/public/home">
+                    <Link href="/">
                         <div className="pl-4 flex flex-row items-center">
                             <img src="/images/logo.png" alt="LightHouse Logo" className="w-11 h-11"></img>
                             <p className="text-4xl font-extrabold font-fuggles">L</p>
@@ -88,7 +87,7 @@ export default function Navbar() {
                         </div>
                     </Link>
                     <div className="flex flex-row gap-6">
-                        <a href="/public/properties" className="hidden md:flex text-foreground hover:text-foregroundHover hover:underline">Buy</a>
+                        <a href="/properties" className="hidden md:flex text-foreground hover:text-foregroundHover hover:underline">Buy</a>
                         <a href="/" className="hidden md:flex text-foreground hover:text-foregroundHover hover:underline">Sell</a>
                         <a href="/" className="hidden md:flex text-foreground hover:text-foregroundHover hover:underline">Estate Agents</a>
                     </div>

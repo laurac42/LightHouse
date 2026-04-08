@@ -109,7 +109,7 @@ export default function FiltersPage() {
         if (filters.new_build === true) params.set("new_build", "true");
 
         const query = params.toString();
-        router.push(query ? `/public/properties?${query}` : "/public/properties");
+        router.push(query ? `/properties?${query}` : "/properties");
     }
 
 

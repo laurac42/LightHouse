@@ -39,11 +39,11 @@ function PropertyDetailsPage({ params }: { params: Promise<{ id: number }> }) {
                 const user = data?.claims;
                 const seller = await isSeller(user?.user_metadata?.sub);
                 if (!seller) {
-                    router.push("/public/home");
+                    router.push("/");
                 }
             } catch (error) {
                 console.error("Error validating seller access:", error);
-                router.push("/public/home");
+                router.push("/");
             }
         }
         checkSeller();

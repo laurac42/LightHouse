@@ -45,7 +45,7 @@ export default function PersonalDetails() {
         if (status === "error") {
           router.push("/");
         } else if (status === "onboarded") {
-          router.push("/public/home");
+          router.push("/");
         }
 
         const agent = await isEstateAgent();
@@ -92,7 +92,7 @@ export default function PersonalDetails() {
         await addBuyerProfile(user.user.id);
         router.push("/onboarding/buyer-profile");
       } else {
-        router.push("/public/home");
+        router.push("/");
       }
     } catch (error) {
       setError(error instanceof Error ? error.message : "An error occurred");
