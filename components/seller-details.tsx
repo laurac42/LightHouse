@@ -92,7 +92,6 @@ export default function SellerDetails({ property, reason, description, page }: {
                         <p className="text-foreground-muted text-xs">Reason for selling: </p>
                         <p>{updatedReason}</p>
                         <hr className='my-4' />
-                        <h1 className="text-lg font-bold">Images Uploaded by the Seller</h1>
                         <SellerImages id={property.id} editing={editing} onDeletedImagesChange={null} />
                     </div>)}
             </div>
