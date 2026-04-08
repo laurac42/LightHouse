@@ -21,7 +21,8 @@ import {
     FieldLabel,
     FieldLegend,
     FieldSet,
-} from "@/components/ui/field"
+} from "@/components/ui/field";
+import { useRouter } from "next/navigation";
 
 type FilterBarOverlayProps = {
     isOpen: boolean;
@@ -42,6 +43,7 @@ export default function FilterBarOverlay({
 }: FilterBarOverlayProps) {
 
     const [localFilters, setLocalFilters] = useState<Filters>(filters);
+    const router = useRouter();
 
     useEffect(() => {
         setLocalFilters(filters);
@@ -562,7 +564,7 @@ export default function FilterBarOverlay({
                                                 id="include_new_build"
                                                 name="new_build"
                                                 checked={localFilters.include_new_builds === true}
-                                                onCheckedChange={() => updateLocalFilter("include_new_builds", !localFilters.include_new_builds )}
+                                                onCheckedChange={() => updateLocalFilter("include_new_builds", !localFilters.include_new_builds)}
                                                 className="border border-2 border-foreground text-foreground data-[state=checked]:text-white data-[state=checked]:border-foreground data-[state=checked]:bg-highlight"
                                             />
                                             <FieldLabel
@@ -588,6 +590,7 @@ export default function FilterBarOverlay({
                             setLocalFilters((prev) => ({
                                 ...prev,
                                 selectedTags: [],
+                                propertyTypes: [],
                                 minBedrooms: null,
                                 maxBedrooms: null,
                                 minBathrooms: null,
@@ -612,8 +615,46 @@ export default function FilterBarOverlay({
                             Clear All
                         </Button>
                         <Button onClick={() => {
-                            setFilters((prev) => ({ ...prev, ...localFilters }));
-                            onClose();
+                            const updated = { ...filters, ...localFilters };
+                            setFilters(updated);
+
+                            // set url params
+                            const params = new URLSearchParams();
+
+                            const setOrDelete = (key: string, value: any) => {
+                                if (value === null || value === undefined || value === "") {
+                                    params.delete(String(key))
+                                } else {
+                                    params.set(String(key), String(value))
+                                }
+                            }
+
+                            setOrDelete("location", updated.location);
+                            setOrDelete("milesRadius", updated.milesRadius);
+                            setOrDelete("minPrice", updated.minPrice);
+                            setOrDelete("maxPrice", updated.maxPrice);
+                            setOrDelete("minBedrooms", updated.minBedrooms);
+                            setOrDelete("maxBedrooms", updated.maxBedrooms);
+                            setOrDelete("minBathrooms", updated.minBathrooms);
+                            setOrDelete("maxBathrooms", updated.maxBathrooms);
+                            setOrDelete("propertyTypes", updated.propertyTypes);
+                            setOrDelete("garage", updated.garage);
+                            setOrDelete("garden", updated.garden);
+                            setOrDelete("driveway", updated.driveway);
+                            setOrDelete("new_build", updated.new_build);
+                            setOrDelete("min_sqft", updated.min_sqft);
+                            setOrDelete("max_sqft", updated.max_sqft);
+                            setOrDelete("min_epc_rating", updated.min_epc_rating);
+                            setOrDelete("max_epc_rating", updated.max_epc_rating);
+                            setOrDelete("min_council_tax_band", updated.min_council_tax_band);
+                            setOrDelete("max_council_tax_band", updated.max_council_tax_band);
+                            setOrDelete("include_under_offer", updated.include_under_offer);
+                            setOrDelete("include_new_builds", updated.include_new_builds);
+
+                            router.replace(`?${params.toString()}`);
+
+                            onClose()
+
                         }} className="bg-highlight hover:bg-highlight/90 text-white mx-6">
                             Apply Filters
                         </Button>

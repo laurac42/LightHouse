@@ -1,3 +1,4 @@
+
 import { InputGroup, InputGroupButton, InputGroupInput } from "@/components/ui/input-group";
 import { X, ChevronDown } from "lucide-react";
 import { useEffect } from "react";
@@ -15,6 +16,7 @@ import { fetchAllTags } from "@/lib/data/tag-utils";
 import FilterBarOverlay from "@/components/filter-bar-overlay";
 import type { Filters } from "@/types/filters";
 import { toast } from "sonner";
+import { useRouter, useSearchParams } from "next/navigation";
 
 type FilterBarProps = {
     filters: Filters;
@@ -25,13 +27,26 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
     const [fils, setFils] = useState<Filters>(filters);
     const [isMoreFiltersOpen, setIsMoreFiltersOpen] = useState<boolean>(false);
     const [allTags, setAllTags] = useState<Tag[]>([]);
+    const router = useRouter();
+    const searchParams = useSearchParams();
 
+    // update filters by updating the url parameters
     const updateFilters = <K extends keyof Filters>(key: K, value: Filters[K]) => {
         setFilters((prev) => ({
             ...prev,
             [key]: value,
         }));
-    };
+        
+        const params = new URLSearchParams(searchParams.toString())
+
+        if (value === null || value === undefined || value === "") {
+            params.delete(String(key))
+        } else {
+            params.set(String(key), String(value))
+        }
+
+        router.replace(`?${params.toString()}`)
+    }
 
     useEffect(() => {
         setFils(filters);

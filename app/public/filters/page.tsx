@@ -25,6 +25,7 @@ import {
     FieldSet,
 } from "@/components/ui/field";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useRouter } from "next/navigation";  
 
 export default function FiltersPage() {
     const [filters, setFilters] = useState<Filters>({
@@ -52,6 +53,7 @@ export default function FiltersPage() {
         include_new_builds: true,
     });
     const [isMobile, setIsMobile] = useState(false);
+    const router = useRouter();
 
     const updateMedia = useCallback(() => {
         setIsMobile(window.innerWidth < 850);
@@ -78,6 +80,37 @@ export default function FiltersPage() {
             [key]: value,
         }));
     };
+
+    /**
+     * Apply filters by passing them into the url parameters on the search results page
+     */
+    function applyFilters() {
+        const params = new URLSearchParams();
+        const location = filters.location.trim();
+
+        if (location) params.set("location", location);
+        if (filters.selectedTags.length > 0) params.set("selectedTags", filters.selectedTags.join(","));
+        if (filters.milesRadius !== null) params.set("milesRadius", String(filters.milesRadius));
+
+        if (filters.minPrice !== null) params.set("minPrice", String(filters.minPrice));
+        if (filters.maxPrice !== null) params.set("maxPrice", String(filters.maxPrice));
+
+        if (filters.minBedrooms !== null) params.set("minBedrooms", String(filters.minBedrooms));
+        if (filters.maxBedrooms !== null) params.set("maxBedrooms", String(filters.maxBedrooms));
+
+        if (filters.minBathrooms !== null) params.set("minBathrooms", String(filters.minBathrooms));
+        if (filters.maxBathrooms !== null) params.set("maxBathrooms", String(filters.maxBathrooms));
+
+        if (filters.propertyTypes.length > 0) params.set("propertyTypes", filters.propertyTypes.join(","));
+
+        if (filters.garage === true) params.set("garage", "true");
+        if (filters.garden === true) params.set("garden", "true");
+        if (filters.driveway === true) params.set("driveway", "true");
+        if (filters.new_build === true) params.set("new_build", "true");
+
+        const query = params.toString();
+        router.push(query ? `/public/properties?${query}` : "/public/properties");
+    }
 
 
 
@@ -538,6 +571,7 @@ export default function FiltersPage() {
                     </Card>
 
                     <Button
+                        onClick={applyFilters}
                         className="col-start-2 md:col-start-3 w-full bg-buttonColor hover:bg-buttonHover text-foreground text-lg font-bold mt-2 h-12">
                         Apply Filters
                     </Button>
