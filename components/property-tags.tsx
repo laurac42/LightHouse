@@ -1,6 +1,6 @@
 "use client";
 import type { Tag, TagCount } from "@/types/tags";
-import styles from '../app/public/properties/page.module.css';
+import styles from '../app/properties/page.module.css';
 import { ArrowBigUp, ChevronDown, ChevronUp, Plus, EllipsisVertical, Flag } from "lucide-react";
 import { Button } from "./ui/button";
 import { useEffect, useState, useCallback } from "react";

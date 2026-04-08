@@ -21,7 +21,10 @@ export default function NavbarDropdown() {
         const supabase = createClient();
         await supabase.auth.signOut();
 
-        if (!pathname.startsWith("/public")) {
+        const publicRoutes = ["/", "/properties", "/filters"];
+
+        const isPublicRoute = pathname === "/" || publicRoutes.some(route => pathname.startsWith(route));
+        if (isPublicRoute) {
             router.push("/auth/login");
         } else {
             // refresh the page to update the UI for logged out state

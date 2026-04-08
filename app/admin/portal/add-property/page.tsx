@@ -19,13 +19,13 @@ export default function AdminPortalPage() {
                 const user = data?.claims;
                 const admin = await isAdmin();
                 if (!admin) {
-                    router.push("/public/home");
+                    router.push("/");
                     return;
                 }
                 setUser(user?.user_metadata?.sub || null);
             } catch (error) {
                 console.error("Error validating admin access:", error);
-                router.push("/public/home");
+                router.push("/");
             }
         }
 

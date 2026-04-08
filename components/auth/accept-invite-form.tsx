@@ -51,7 +51,7 @@ export function AcceptInviteForm({
             } else {
                 // redireect to home if tokens not found
                 setError("Invalid invite link. Please check your email for the correct link or contact support.");
-                redirect("/public/home");
+                redirect("/");
             }
         };
 

@@ -56,11 +56,11 @@ export default function SellerPropertiesPage() {
                 setUser(user);
                 const seller = await isSeller(user?.metadata?.sub);
                 if (!seller) {
-                    router.push("/public/home");
+                    router.push("/");
                 }
             } catch (error) {
                 console.error("Error validating seller access:", error);
-                router.push("/public/home");
+                router.push("/");
             }
         }
 

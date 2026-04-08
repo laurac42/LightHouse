@@ -18,16 +18,16 @@ export function EditProperty({ params }: { params: Promise<{ id: number }> }) {
             try {
                 const user = await validateUser();
                 if (!user) {
-                    router.push("/public/home");
+                    router.push("/");
                     return;
                 }
                 const estateAgent = await isEstateAgent();
                 if (!estateAgent) {
-                    router.push("/public/home");
+                    router.push("/");
                 }
             } catch (error) {
                 console.error("Error validating estate agent access:", error);
-                router.push("/public/home");
+                router.push("/");
             }
         }
 

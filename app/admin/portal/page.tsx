@@ -22,11 +22,11 @@ export default function AdminPortalPage() {
             try {
                 const admin = await isAdmin();
                 if (!admin) {
-                    router.push("/public/home");
+                    router.push("/");
                 }
             } catch (error) {
                 console.error("Error validating admin access:", error);
-                router.push("/public/home");
+                router.push("/");
             }
         }
 

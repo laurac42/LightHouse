@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import Navbar from "@/components/navbar";
 import Link from "next/link";
-import { PropertyDetailsPage } from "@/app/public/properties/[id]/page";
+import { PropertyDetailsPage } from "@/app/properties/[id]/page";
 import { MoveLeft } from "lucide-react";
 
 // Separate component to allow use of suspense for loading state while fetching property details and agency details
