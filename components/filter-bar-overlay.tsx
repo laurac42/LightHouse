@@ -332,7 +332,7 @@ export default function FilterBarOverlay({
                                                 id="garage"
                                                 name="garage"
                                                 checked={localFilters.garage === true}
-                                                onCheckedChange={() => updateLocalFilter("garage", !localFilters.garage)}
+                                                onCheckedChange={() => updateLocalFilter("garage", localFilters.garage ? null : true)}
                                                 className="border border-2 border-foreground text-foreground data-[state=checked]:text-white data-[state=checked]:border-foreground data-[state=checked]:bg-highlight"
                                             />
                                             <FieldLabel
@@ -347,7 +347,7 @@ export default function FilterBarOverlay({
                                                 id="driveway"
                                                 name="driveway"
                                                 checked={localFilters.driveway === true}
-                                                onCheckedChange={() => updateLocalFilter("driveway", !localFilters.driveway)}
+                                                onCheckedChange={() => updateLocalFilter("driveway", localFilters.driveway ? null : true)}
                                                 className="border border-2 border-foreground text-foreground data-[state=checked]:text-white data-[state=checked]:border-foreground data-[state=checked]:bg-highlight"
                                             />
                                             <FieldLabel
@@ -362,7 +362,7 @@ export default function FilterBarOverlay({
                                                 id="garden"
                                                 name="garden"
                                                 checked={localFilters.garden === true}
-                                                onCheckedChange={() => updateLocalFilter("garden", !localFilters.garden)}
+                                                onCheckedChange={() => updateLocalFilter("garden", localFilters.garden ? null : true)}
                                                 className="border border-2 border-foreground text-foreground data-[state=checked]:text-white data-[state=checked]:border-foreground data-[state=checked]:bg-highlight"
                                             />
                                             <FieldLabel
@@ -377,7 +377,7 @@ export default function FilterBarOverlay({
                                                 id="new_build"
                                                 name="new_build"
                                                 checked={localFilters.new_build === true}
-                                                onCheckedChange={() => updateLocalFilter("new_build", !localFilters.new_build)}
+                                                onCheckedChange={() => updateLocalFilter("new_build", localFilters.new_build ? null : true)}
                                                 className="border border-2 border-foreground text-foreground data-[state=checked]:text-white data-[state=checked]:border-foreground data-[state=checked]:bg-highlight"
                                             />
                                             <FieldLabel
