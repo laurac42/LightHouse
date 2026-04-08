@@ -246,6 +246,8 @@ export async function fetchPropertiesForPage(page: number = 1, page_size: number
         }
     }
 
+    const propertyTypes = filters?.propertyTypes.length ? filters.propertyTypes.map((pt) => pt.toLowerCase()) : undefined;
+
     const supabase = createClient();
     const { data, error } = await supabase
         .rpc("fetch_ranked_properties", {
@@ -260,7 +262,26 @@ export async function fetchPropertiesForPage(page: number = 1, page_size: number
             page: page,
             page_size: page_size,
             geo_json: geoJson ? JSON.stringify(geoJson) : undefined,
-            p_search_radius_metres: (filters?.milesRadius && geoJson) ? filters.milesRadius * 1609.34 : undefined // convert miles to metres
+            p_search_radius_metres: (filters?.milesRadius && geoJson) ? filters.milesRadius * 1609.34 : undefined, // convert miles to metres
+            p_min_price: filters?.minPrice ?? 0,
+            p_max_price: filters?.maxPrice ?? 0,
+            p_min_beds: filters?.minBedrooms ?? 0,
+            p_max_beds: filters?.maxBedrooms ?? 0,
+            p_min_baths: filters?.minBathrooms ?? 0,
+            p_max_baths: filters?.maxBathrooms ?? 0,
+            p_property_types: propertyTypes,
+            p_has_garage: filters?.garage ?? undefined,
+            p_has_garden: filters?.garden ?? undefined,
+            p_has_driveway: filters?.driveway ?? undefined,
+            p_only_new_builds: filters?.new_build ?? false,
+            p_min_sqft: filters?.min_sqft ?? undefined,
+            p_max_sqft: filters?.max_sqft ?? undefined,
+            p_epc_min: filters?.min_epc_rating ?? undefined,
+            p_epc_max: filters?.max_epc_rating ?? undefined,
+            p_council_tax_min: filters?.min_council_tax_band ?? undefined,
+            p_council_tax_max: filters?.max_council_tax_band ?? undefined,
+            p_include_under_offer: filters?.include_under_offer ?? false,
+            p_include_new_builds: filters?.include_new_builds ?? false,
         });
     if (error) {
         throw error;

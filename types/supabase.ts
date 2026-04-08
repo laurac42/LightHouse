@@ -496,12 +496,31 @@ export type Database = {
         Args: {
           geo_json?: string
           p_budget?: number
+          p_council_tax_max?: string
+          p_council_tax_min?: string
+          p_epc_max?: string
+          p_epc_min?: string
+          p_has_driveway?: boolean
+          p_has_garage?: boolean
+          p_has_garden?: boolean
+          p_include_new_builds?: boolean
+          p_include_under_offer?: boolean
+          p_max_baths?: number
+          p_max_beds?: number
           p_max_lat?: number
           p_max_long?: number
+          p_max_price?: number
+          p_max_sqft?: number
+          p_min_baths?: number
+          p_min_beds?: number
           p_min_lat?: number
           p_min_long?: number
+          p_min_price?: number
+          p_min_sqft?: number
+          p_only_new_builds?: boolean
           p_preferred_num_bedrooms?: number
           p_preferred_property_types?: string[]
+          p_property_types?: string[]
           p_search_radius_metres?: number
           p_tag_ids?: number[]
           page?: number

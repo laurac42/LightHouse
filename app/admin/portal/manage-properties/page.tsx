@@ -19,7 +19,6 @@ import { Button } from "@/components/ui/button";
 import PropertyCard from "@/components/property-card";
 import { loadAllAgencies, loadAgencyLocations } from "@/lib/data/agency-utils";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { createClient } from "@/lib/supabase/client";
 
 type Property = Database["public"]["Tables"]["properties"]["Row"];
 type PropertyWithImages = Property & { images: string[] };

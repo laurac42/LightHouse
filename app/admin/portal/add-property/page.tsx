@@ -1,16 +1,8 @@
 'use client';
 import Navbar from "@/components/navbar";
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card";
 import PortalMenu from "@/components/portal-menu";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { validateUser } from "@/lib/auth/user";
 import { isAdmin } from "@/lib/auth/role";
 import AddPropertyForm from "@/components/add-property-form";
 import { createClient } from "@/lib/supabase/client";
