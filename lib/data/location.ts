@@ -31,7 +31,6 @@ export function getLatitudeLongitudeFromPostcode(postcode: string) {
             return { latitude: result.result.latitude, longitude: result.result.longitude } as { latitude: number, longitude: number };
         })
         .catch((error) => {
-            console.error(error);
             return null;
         });
 }

@@ -14,3 +14,14 @@ export type AddressLatandLong = {
     latitude: number | null;
     longitude: number | null;
 }
+
+export type PersonalLocationAddress = {
+    id: string;
+    address_line_1: string;
+    address_line_2?: string | null;
+    city: string;
+    post_code: string;
+    latitude: number | null;
+    longitude: number | null;
+    nickname: string;
+}
