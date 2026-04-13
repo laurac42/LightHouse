@@ -1,3 +1,5 @@
+import { Database } from "./supabase";
+
 export type Address = {
     address_line_1: string;
     address_line_2: string | null;
@@ -14,3 +16,14 @@ export type AddressLatandLong = {
     latitude: number | null;
     longitude: number | null;
 }
+
+export type PersonalLocationAddress = {
+    address_line_1: string | undefined;
+    address_line_2?: string | null;
+    city: string;
+    post_code: string;
+    nickname: string;
+    travel_mode: string;
+}
+
+export type UserLocation = Database["public"]["Tables"]["user_locations"]["Row"];

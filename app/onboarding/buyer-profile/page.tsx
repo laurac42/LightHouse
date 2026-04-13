@@ -97,7 +97,7 @@ export default function BuyerProfile() {
             if (updateError) {
                 throw new Error(updateError.message);
             }
-            router.push("/");
+            router.push("/onboarding/locations");
         } catch (error) {
             setError(error instanceof Error ? error.message : "An unexpected error occurred. Please try again.");
             console.error("Error in handleDetailsSubmit:", error);

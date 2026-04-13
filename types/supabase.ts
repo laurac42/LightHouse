@@ -415,6 +415,56 @@ export type Database = {
         }
         Relationships: []
       }
+      user_locations: {
+        Row: {
+          address_line_1: string | null
+          address_line_2: string | null
+          city: string | null
+          created_at: string
+          id: string
+          latitude: number
+          longitude: number
+          nickname: string
+          post_code: string
+          travel_mode: string
+          user_id: string | null
+        }
+        Insert: {
+          address_line_1?: string | null
+          address_line_2?: string | null
+          city?: string | null
+          created_at?: string
+          id?: string
+          latitude: number
+          longitude: number
+          nickname: string
+          post_code: string
+          travel_mode: string
+          user_id?: string | null
+        }
+        Update: {
+          address_line_1?: string | null
+          address_line_2?: string | null
+          city?: string | null
+          created_at?: string
+          id?: string
+          latitude?: number
+          longitude?: number
+          nickname?: string
+          post_code?: string
+          travel_mode?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_locations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           granted_at: string

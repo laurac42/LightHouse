@@ -29,8 +29,8 @@ export default function EditProfilePreferences({
 }: EditProfilePreferencesProps) {
     return (
         <>
-            {userDetails?.user_goals.includes('buying') ? (
-                <div className="flex flex-col gap-4 w-full ml-8">
+            {userDetails?.user_goals?.includes('buying') ? (
+                <div className="flex flex-col gap-4 w-full ml-4">
                     <div className="flex flex-row justify-between items-center">
                         <h2 className="text-2xl">Buyer Preferences</h2>
                         <Button onClick={onToggleEdit} className="w-1/3 md:w-1/4 ml-auto bg-buttonColor text-foreground hover:bg-buttonHover">{editing ? 'Save Changes' : 'Edit Details'}</Button>

@@ -2,6 +2,7 @@ import type { User } from "@/types/user";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Field, FieldGroup, FieldLabel, FieldLegend, FieldSet } from "@/components/ui/field";
+import { useEffect, useState } from "react";
 
 type EditProfileGoalsProps = {
     userDetails?: User;
@@ -22,19 +23,21 @@ export default function EditProfileGoals({
     setEditing,
     saveChanges,
 }: EditProfileGoalsProps) {
+
     return (
         <div className="flex flex-col gap-4 md:w-1/2">
             <FieldSet>
                 <FieldLegend variant="label">
                     What are you using LightHouse for?
                 </FieldLegend>
+
                 <FieldGroup className="gap-3">
                     <Field orientation="horizontal">
                         <Checkbox
                             className="border-foreground text-foreground data-[state=checked]:text-white data-[state=checked]:border-foreground data-[state=checked]:bg-highlight"
                             id="buying-checkbox"
                             name="buying-checkbox"
-                            checked={userDetails?.user_goals.includes("buying")}
+                            checked={userDetails?.user_goals?.includes("buying")}
                             onCheckedChange={(checked) => {
                                 const updatedGoals = checked
                                     ? [...(userDetails?.user_goals || []), "buying"]
@@ -51,7 +54,7 @@ export default function EditProfileGoals({
                             className="border-foreground text-foreground data-[state=checked]:text-white data-[state=checked]:border-foreground data-[state=checked]:bg-highlight"
                             id="selling-checkbox"
                             name="selling-checkbox"
-                            checked={userDetails?.user_goals.includes("selling")}
+                            checked={userDetails?.user_goals?.includes("selling")}
                             onCheckedChange={(checked) => {
                                 const updatedGoals = checked
                                     ? [...(userDetails?.user_goals || []), "selling"]
@@ -68,7 +71,7 @@ export default function EditProfileGoals({
                             className="border-foreground text-foreground data-[state=checked]:text-white data-[state=checked]:border-foreground data-[state=checked]:bg-highlight"
                             id="browsing-checkbox"
                             name="browsing-checkbox"
-                            checked={userDetails?.user_goals.includes("browsing")}
+                            checked={userDetails?.user_goals?.includes("browsing")}
                             onCheckedChange={(checked) => {
                                 const updatedGoals = checked
                                     ? [...(userDetails?.user_goals || []), "browsing"]

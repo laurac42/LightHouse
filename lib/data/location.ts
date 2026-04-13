@@ -1,6 +1,8 @@
 import { GeoJSON } from "geojson";
 const myHeaders = new Headers();
 myHeaders.append("Accept", "application/json");
+import { createClient } from "@/lib/supabase/client";
+import { PersonalLocationAddress, UserLocation } from "@/types/address";
 
 const requestOptions: RequestInit = {
     method: "GET",
@@ -31,7 +33,6 @@ export function getLatitudeLongitudeFromPostcode(postcode: string) {
             return { latitude: result.result.latitude, longitude: result.result.longitude } as { latitude: number, longitude: number };
         })
         .catch((error) => {
-            console.error(error);
             return null;
         });
 }
@@ -45,7 +46,7 @@ let lastRequestTime = 0;
  * @param location location to get the polygon and bounding box for
  * @returns An object containing the GeoJSON polygon and bounding box for the location
  */
-export function getPolygonBoundingBoxForLocation(location: string)  {
+export function getPolygonBoundingBoxForLocation(location: string) {
 
     // ensure that not more than one request per second is made to the Nominatim API to avoid being rate limited
     const now = Date.now();
@@ -88,10 +89,76 @@ function fetchPolygonBoundingBox(location: string) {
                 maxLat: Number(selectedResults[0].boundingbox[1]),
                 minLng: Number(selectedResults[0].boundingbox[2]),
                 maxLng: Number(selectedResults[0].boundingbox[3])
-            } as { geojson: GeoJSON,  minLat: number, maxLat: number, minLng: number, maxLng: number };
+            } as { geojson: GeoJSON, minLat: number, maxLat: number, minLng: number, maxLng: number };
         })
         .catch((error) => {
             console.error(error);
             return null;
         });
+}
+
+/**
+ * Add a new personal location 
+ * @param userId Id of the user 
+ * @param location New location to add
+ * @param latitude Latitude of the new location
+ * @param longitude Longitide of the new location
+ * @returns The new location
+ */
+export async function addPersonalLocation(userId: string, location: PersonalLocationAddress, latitude: number, longitude: number) {
+    const supabase = createClient();
+    if (!userId) {
+        throw new Error("User ID is required to add a personal location");
+    }
+    const { data, error } = await supabase
+        .from("user_locations")
+        .insert({
+            nickname: location.nickname,
+            user_id: userId,
+            address_line_1: location.address_line_1,
+            address_line_2: location.address_line_2,
+            city: location.city,
+            post_code: location.post_code,
+            travel_mode: location.travel_mode,
+            latitude: latitude,
+            longitude: longitude
+        })
+        .select()
+        .single();
+    if (error) {
+        throw new Error(`Error adding personal location: ${error.message}`);
+    }
+    return data;
+}
+
+
+/**
+ * Edit an exisiting personal location
+ * @param location Location to be edited
+ * @returns Returns the edited location if successful
+ */
+export async function editPersonalLocation(location: UserLocation) {
+    const supabase = createClient();
+    if (!location.user_id) {
+        throw new Error("User ID is required to edit a personal location");
+    }
+    const { data, error } = await supabase
+        .from("user_locations")
+        .update({
+            nickname: location.nickname,
+            address_line_1: location.address_line_1,
+            address_line_2: location.address_line_2,
+            city: location.city,
+            post_code: location.post_code,
+            travel_mode: location.travel_mode,
+            latitude: location.latitude,
+            longitude: location.longitude
+        })
+        .eq("id", location.id)
+        .eq("user_id", location.user_id)
+        .select();
+    if (error) {
+        throw new Error(`Error editing personal location: ${error.message}`);
+    }
+    return data;
 }
