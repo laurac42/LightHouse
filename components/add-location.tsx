@@ -14,11 +14,10 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { CarFront, Footprints, Bike, TrainFront } from "lucide-react";
-import { useState } from "react";
 import type { PersonalLocationAddress } from "@/types/address";
 import { Input } from "@/components/ui/input";
 
-export default function AddLocation({ currentLocation, setCurrentLocation, errorMessage }: { currentLocation: Partial<PersonalLocationAddress> | null; setCurrentLocation: React.Dispatch<React.SetStateAction<Partial<PersonalLocationAddress> | null>>; errorMessage: string }) {
+export default function AddLocation({ currentLocation, setCurrentLocation }: { currentLocation: Partial<PersonalLocationAddress> | null; setCurrentLocation: React.Dispatch<React.SetStateAction<Partial<PersonalLocationAddress> | null>>; }) {
 
     return (
         <FieldSet className="w-full">
