@@ -52,6 +52,7 @@ export function parseFiltersFromSearchParams(params: SearchParamReader): Filters
     const maxCouncilTaxBandParam = params.get("max_council_tax_band");
     const includeUnderOfferParam = params.get("include_under_offer");
     const includeNewBuildsParam = params.get("include_new_builds");
+    const selectedTagsParam = params.get("selectedTags");
 
     return {
         ...DEFAULT_FILTERS,
@@ -76,5 +77,6 @@ export function parseFiltersFromSearchParams(params: SearchParamReader): Filters
         max_council_tax_band: maxCouncilTaxBandParam || null,
         include_under_offer: includeUnderOfferParam ? includeUnderOfferParam === "false" : true,
         include_new_builds: includeNewBuildsParam ? includeNewBuildsParam === "false" : true,
+        selectedTags: selectedTagsParam ? selectedTagsParam.split(",").map(id => ({ id: parseInt(id), name: "", is_seed: false })) : [],
     };
 }

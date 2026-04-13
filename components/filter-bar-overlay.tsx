@@ -56,14 +56,11 @@ export default function FilterBarOverlay({
     useEffect(() => {   
         const storedUserLocationsAndDistances = localStorage.getItem("userLocationsAndDistances");
         if (storedUserLocationsAndDistances) {
-            console.log("Loading user locations and distances from local storage:", JSON.parse(storedUserLocationsAndDistances));
             setLocalFilters((prev) => ({
                 ...prev,
                 userLocationsAndDistances: JSON.parse(storedUserLocationsAndDistances),
             }));
-        } else {
-            console.log("No user locations and distances found in local storage");
-        }
+        } 
     },[isOpen]);
 
 
@@ -719,6 +716,7 @@ export default function FilterBarOverlay({
                             setOrDelete("max_council_tax_band", updated.max_council_tax_band);
                             setOrDelete("include_under_offer", updated.include_under_offer);
                             setOrDelete("include_new_builds", updated.include_new_builds);
+                            setOrDelete("selectedTags", updated.selectedTags.map(tag => tag.id).join(","));
 
                             router.replace(`?${params.toString()}`);
 

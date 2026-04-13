@@ -236,6 +236,7 @@ export async function loadSellerAddedInfo(propertyId: number) {
 export async function fetchPropertiesForPage(page: number = 1, page_size: number = 10, preferences?: UserPreferences | null, boundingBox?: BoundingBox | null, filters?: Filters, geoJson?: GeoJSON | null) {
     const tagIds = filters?.selectedTags?.map(tag => tag.id) ?? [];
 
+    console.log("Fetching properties for page with filters:", { page, page_size, preferences, boundingBox, filters, geoJson });
     // making a copy so that modifying multiple times does not edit the original bounding box
     let boundingBoxCopy: BoundingBox | null = boundingBox ? { ...boundingBox } : null;
 

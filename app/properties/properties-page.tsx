@@ -148,6 +148,17 @@ export default function PropertiesPage() {
         setFilters(parseFiltersFromSearchParams(searchParams));
     }, [searchParams]);
 
+    // apply local storage filters 
+    useEffect(() => {
+        const storedUserLocationsAndDistances = localStorage.getItem("userLocationsAndDistances");
+        if (storedUserLocationsAndDistances) {
+            setFilters((prev) => ({
+                ...prev,
+                userLocationsAndDistances: JSON.parse(storedUserLocationsAndDistances),
+            }));
+        }
+    }, []);
+
     useEffect(() => {
         window.addEventListener("resize", updateMedia);
         return () => window.removeEventListener("resize", updateMedia);
@@ -220,8 +231,11 @@ export default function PropertiesPage() {
                             setErrorMessage("Unable to fetch locations: " + response.error.message);
                         } else {
                             setBuyerLocations(response.data);
+                            // set the locations to be shown on cards as default
+                            setShowDistanceFromLocation(response.data);
                         }
                     });
+
             } catch (error) {
                 setErrorMessage("Unable to fetch locations: " + error);
             }
