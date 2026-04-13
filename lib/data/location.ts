@@ -2,7 +2,7 @@ import { GeoJSON } from "geojson";
 const myHeaders = new Headers();
 myHeaders.append("Accept", "application/json");
 import { createClient } from "@/lib/supabase/client";
-import { PersonalLocationAddress } from "@/types/address";
+import { PersonalLocationAddress, UserLocation } from "@/types/address";
 
 const requestOptions: RequestInit = {
     method: "GET",
@@ -97,13 +97,19 @@ function fetchPolygonBoundingBox(location: string) {
         });
 }
 
+/**
+ * Add a new personal location 
+ * @param userId Id of the user 
+ * @param location New location to add
+ * @param latitude Latitude of the new location
+ * @param longitude Longitide of the new location
+ * @returns 
+ */
 export async function addPersonalLocation(userId: string, location: PersonalLocationAddress, latitude: number, longitude: number) {
     const supabase = createClient();
     if (!userId) {
         throw new Error("User ID is required to add a personal location");
     }
-    console.log("nickname: ", location.nickname);
-    console.log("all location data: ", location)
     const { data, error } = await supabase
         .from("user_locations")
         .insert({
@@ -119,6 +125,38 @@ export async function addPersonalLocation(userId: string, location: PersonalLoca
         });
     if (error) {
         throw new Error(`Error adding personal location: ${error.message}`);
+    }
+    return data;
+}
+
+
+/**
+ * Edit an exisiting personal location
+ * @param location Location to be edited
+ * @returns Returns the edited location if successful
+ */
+export async function editPersonalLocation(location: UserLocation) {
+    const supabase = createClient();
+    if (!location.user_id) {
+        throw new Error("User ID is required to edit a personal location");
+    }
+    const { data, error } = await supabase
+        .from("user_locations")
+        .update({
+            nickname: location.nickname,
+            address_line_1: location.address_line_1,
+            address_line_2: location.address_line_2,
+            city: location.city,
+            post_code: location.post_code,
+            travel_mode: location.travel_mode,
+            latitude: location.latitude,
+            longitude: location.longitude
+        })
+        .eq("id", location.id)
+        .eq("user_id", location.user_id)
+        .select();
+    if (error) {
+        throw new Error(`Error editing personal location: ${error.message}`);
     }
     return data;
 }

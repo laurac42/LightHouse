@@ -1,40 +1,57 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { updateUserDetails } from "@/lib/auth/user";
 import { Label } from "@/components/ui/label";
 import EditLocations from "@/components/edit-locations";
 import ProfilePageShell from "@/components/profile-page-shell";
 import { useProfileData } from "@/hooks/use-profile-data";
+import type { UserLocation } from "@/types/address";
+import { createClient } from "@/lib/supabase/client";
 
 export default function ProfileLocationsPage() {
     const { userDetails, setUserDetails, isAdminOrAgent } = useProfileData();
     const [editing, setEditing] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string>("");
     const [successMessage, setSuccessMessage] = useState<string>("");
+    const [buyerLocations, setBuyerLocations] = useState<UserLocation[] | null>(null);
+    const supabase = createClient();
 
-    /**
-     * Gets the initials of the user to display in the profile avatar. If the user's first or last name is missing, it will return an empty string for that part.
-     * @returns The firsta and last initial of the user
-     */
-    function getInitials() {
-        if (!userDetails) return "";
-        const firstInitial = userDetails.first_name ? userDetails.first_name.charAt(0).toUpperCase() : "";
-        const lastInitial = userDetails.last_name ? userDetails.last_name.charAt(0).toUpperCase() : "";
-        return firstInitial + lastInitial;
-    }
-
-    async function saveChanges() {
-        try {
-            setErrorMessage("");
-            setSuccessMessage("");
-            if (userDetails) {
-                await updateUserDetails(userDetails);
+    // fetch the user's locations from db
+    useEffect(() => {
+        async function fetchLocations() {
+            if (!userDetails?.id) return;
+            try {
+                await supabase
+                    .from("user_locations")
+                    .select("*")
+                    .eq("user_id", userDetails.id)
+                    .then((response) => {
+                        if (response.error) {
+                            setErrorMessage("Unable to fetch locations: " + response.error.message);
+                        } else {
+                            setBuyerLocations(response.data);
+                        }
+                    });
+            } catch (error) {
+                setErrorMessage("Unable to fetch locations: " + error);
             }
-            setSuccessMessage("User goals successfully updated");
-        } catch (error) {
-            setErrorMessage("Unable to update goals: " + error);
         }
+
+        fetchLocations();
+    }, [userDetails?.id, ]);
+
+    async function saveLocations() {
+        // try {
+        //     setErrorMessage("");
+        //     setSuccessMessage("");
+        //     if (userPreferences) {
+        //         await updateUserPreferences(userPreferences);
+        //     }
+        //     setSuccessMessage("User preferences successfully updated");
+        // } catch (error) {
+        //     setErrorMessage("Unable to update preferences: " + error);
+        // }
     }
 
     return (
@@ -47,12 +64,8 @@ export default function ProfileLocationsPage() {
 
                 <EditLocations
                     userDetails={userDetails}
-                    setUserDetails={setUserDetails}
-                    errorMessage={errorMessage}
-                    successMessage={successMessage}
-                    editing={editing}
-                    setEditing={setEditing}
-                    saveChanges={saveChanges}
+                    userLocations={buyerLocations}
+                    setUserLocations={setBuyerLocations}
                 />
             </div>
         </ProfilePageShell>
