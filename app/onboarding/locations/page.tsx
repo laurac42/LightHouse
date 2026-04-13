@@ -11,7 +11,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
     Field,
     FieldDescription,
@@ -30,6 +29,8 @@ import {
 import { useRouter } from "next/navigation";
 import type { PersonalLocationAddress } from "@/types/address";
 import { getLatitudeLongitudeFromPostcode } from "@/lib/data/location";
+import { CarFront, Bike, TrainFront, Footprints } from "lucide-react";
+
 
 export default function PersonalLocations() {
     const router = useRouter();
@@ -101,10 +102,10 @@ export default function PersonalLocations() {
                                                         </SelectTrigger>
                                                         <SelectContent>
                                                             <SelectGroup>
-                                                                <SelectItem value="engineering">Driving</SelectItem>
-                                                                <SelectItem value="design">Walking</SelectItem>
-                                                                <SelectItem value="marketing">Cycling</SelectItem>
-                                                                <SelectItem value="sales">Public Transport</SelectItem>
+                                                                <SelectItem value="driving"><span className="flex inline-flex items-center gap-2">Driving <CarFront /></span></SelectItem>
+                                                                <SelectItem value="walking"><span className="flex inline-flex items-center gap-2">Walking <Footprints /></span></SelectItem>
+                                                                <SelectItem value="cycling"><span className="flex inline-flex items-center gap-2">Cycling <Bike /></span></SelectItem>
+                                                                <SelectItem value="public_transport"><span className="flex inline-flex items-center gap-2">Public Transport <TrainFront /></span></SelectItem>
                                                             </SelectGroup>
                                                         </SelectContent>
                                                     </Select>
@@ -136,6 +137,11 @@ export default function PersonalLocations() {
                                         </Button>
                                     </div>
                                 )}
+                                {!successMessage &&
+                                    <div className="flex justify-end">
+                                        <Button onClick={() => router.push("/")} className="text-sm text-foreground bg-gray-300 hover:bg-gray-400 shadow-md mt-4 w-1/3 flex">Skip this step</Button>
+                                    </div>
+                                }
                                 {errorMessage && <p className="text-sm text-red-500 pt-4">{errorMessage}</p>}
 
                             </CardContent>
