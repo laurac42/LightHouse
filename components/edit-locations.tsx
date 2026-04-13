@@ -18,9 +18,10 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { CarFront, Footprints, Bike, TrainFront } from "lucide-react";
+import { CarFront, Footprints, Bike, TrainFront, Trash2 } from "lucide-react";
 import { getLatitudeLongitudeFromPostcode, editPersonalLocation, addPersonalLocation } from "@/lib/data/location";
 import AddLocation from "./add-location";
+import ConfirmLocationDeletion from "./dialogs/confirm-location-deletion";
 
 type EditProfileLocationsProps = {
     userDetails?: User;
@@ -41,7 +42,8 @@ export default function EditProfileLocations({
     const [adding, setAdding] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
     const [locationToAdd, setLocationToAdd] = useState<Partial<PersonalLocationAddress> | null>(null);
-
+    const [confirmDelete, setConfirmDelete] = useState<boolean>(false);
+    const [locationIdToDelete, setLocationIdToDelete] = useState<string>("");
     // save changes of a location being edited
     async function saveChanges() {
         try {
@@ -79,8 +81,6 @@ export default function EditProfileLocations({
     // add a new location
     async function addLocation() {
         try {
-
-
             if (!locationToAdd?.address_line_1 || !locationToAdd.city || !locationToAdd.post_code || !locationToAdd.nickname) {
                 setErrorMessage("Please fill in all required fields (Address Line 1, City, Post Code, Nickname)");
                 return;
@@ -107,7 +107,7 @@ export default function EditProfileLocations({
                 if (!prevLocations) return [newLocation];
                 return [...prevLocations, newLocation];
             });
-            
+
             setLoading(false);
             setAdding(false);
         } catch (error) {
@@ -124,6 +124,7 @@ export default function EditProfileLocations({
                 <Button className="w-1/3 md:w-1/4 ml-auto bg-buttonColor text-foreground hover:bg-buttonHover" disabled={editing !== ""} onClick={() => setAdding(true)}>Add New Location</Button>
             </div>
             <p>View and edit your locations</p>
+            <ConfirmLocationDeletion confirm={confirmDelete} setConfirm={setConfirmDelete} locationId={locationIdToDelete} locations={userLocations} setUserLocations={setUserLocations}/>
 
             {!adding ? (
                 userLocations && userLocations.length > 0 ? (
@@ -195,7 +196,12 @@ export default function EditProfileLocations({
                                         <p>{location.address_line_1}</p>
                                         {location.address_line_2 && <p>{location.address_line_2}</p>}
                                         <p>{location.city}, {location.post_code}</p>
-                                        <p>Travel Mode: {location.travel_mode === "bicycling" ? "cycling" : location.travel_mode === "transit" ? "public transport" : location.travel_mode}</p>
+                                        <div className="flex justify-between">
+                                            <p>Travel Mode: {location.travel_mode === "bicycling" ? "cycling" : location.travel_mode === "transit" ? "public transport" : location.travel_mode}</p>
+                                            <Button className="bg-transparent hover:bg-red-200" onClick={() => { setConfirmDelete(true); setLocationIdToDelete(location.id); }}>
+                                                <Trash2 className="size-6 text-red-500"/>
+                                            </Button>
+                                        </div>
                                     </>
                                 )}
                             </div>
