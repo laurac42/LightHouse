@@ -24,4 +24,5 @@ export type PersonalLocationAddress = {
     latitude: number | null;
     longitude: number | null;
     nickname: string;
+    travel_mode: string;
 }

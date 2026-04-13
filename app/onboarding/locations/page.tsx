@@ -17,9 +17,16 @@ import {
     FieldDescription,
     FieldGroup,
     FieldLabel,
-    FieldLegend,
     FieldSet,
-} from "@/components/ui/field"
+} from "@/components/ui/field";
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { useRouter } from "next/navigation";
 import type { PersonalLocationAddress } from "@/types/address";
 import { getLatitudeLongitudeFromPostcode } from "@/lib/data/location";
@@ -74,41 +81,60 @@ export default function PersonalLocations() {
                                         </div>
                                     </div>
                                 ) : (
-                                <div>
-                                    <Label className="py-2 text-xl" htmlFor="address">Add a Location</Label>
+                                    <div>
+                                        <Label className="py-2 text-xl" htmlFor="address">Add a Location</Label>
 
-                                    <FieldSet className="w-full">
-                                        <FieldGroup>
-                                            <Field>
-                                                <FieldLabel htmlFor="nickname">Nickname</FieldLabel>
-                                                <Input id="nickname" type="text" placeholder="e.g. Work or Mum's House" />
-                                                <FieldDescription>
-                                                    Choose a nickname to help you identify this location, e.g. "Work" or "Mum's House".
-                                                </FieldDescription>
-                                            </Field>
-                                            <Field>
-                                                <FieldLabel htmlFor="address_line_1">Address Line 1</FieldLabel>
-                                                <Input id="address_line_1" type="text" value={currentLocation?.address_line_1 || ""} placeholder="123 Main Street" onChange={(e) => setCurrentLocation({ ...currentLocation, address_line_1: e.target.value })} />
-                                            </Field>
-                                            <Field>
-                                                <FieldLabel htmlFor="address_line_2">Address Line 2</FieldLabel>
-                                                <Input id="address_line_2" type="text" value={currentLocation?.address_line_2 || ""} placeholder="Flat, etc." onChange={(e) => setCurrentLocation({ ...currentLocation, address_line_2: e.target.value })} />
-                                            </Field>
-                                            <Field>
-                                                <FieldLabel htmlFor="city ">City</FieldLabel>
-                                                <Input id="city" type="text" value={currentLocation?.city || ""} placeholder="e.g. Dundee" onChange={(e) => setCurrentLocation({ ...currentLocation, city: e.target.value })} />
-                                            </Field>
-                                            <Field>
-                                                <FieldLabel htmlFor="post_code">Post Code</FieldLabel>
-                                                <Input id="post_code" type="text" value={currentLocation?.post_code || ""} placeholder="e.g. DD1..." onChange={(e) => setCurrentLocation({ ...currentLocation, post_code: e.target.value })} />
-                                            </Field>
-                                        </FieldGroup>
-                                    </FieldSet>
+                                        <FieldSet className="w-full">
+                                            <FieldGroup>
+                                                <Field>
+                                                    <FieldLabel htmlFor="nickname">Nickname</FieldLabel>
+                                                    <Input id="nickname" type="text" placeholder="e.g. Work or Mum's House" />
+                                                    <FieldDescription>
+                                                        Choose a nickname to help you identify this location, e.g. "Work" or "Mum's House".
+                                                    </FieldDescription>
+                                                </Field>
+                                                <Field>
+                                                    <FieldLabel htmlFor="travel_mode">Travel Mode</FieldLabel>
+                                                    <Select>
+                                                        <SelectTrigger>
+                                                            <SelectValue placeholder="Choose travel mode" />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectGroup>
+                                                                <SelectItem value="engineering">Driving</SelectItem>
+                                                                <SelectItem value="design">Walking</SelectItem>
+                                                                <SelectItem value="marketing">Cycling</SelectItem>
+                                                                <SelectItem value="sales">Public Transport</SelectItem>
+                                                            </SelectGroup>
+                                                        </SelectContent>
+                                                    </Select>
+                                                    <FieldDescription>
+                                                        How do you want to travel to this location?
+                                                    </FieldDescription>
+                                                </Field>
+                                                <Field>
+                                                    <FieldLabel htmlFor="address_line_1">Address Line 1</FieldLabel>
+                                                    <Input id="address_line_1" type="text" value={currentLocation?.address_line_1 || ""} placeholder="123 Main Street" onChange={(e) => setCurrentLocation({ ...currentLocation, address_line_1: e.target.value })} />
+                                                </Field>
+                                                <Field>
+                                                    <FieldLabel htmlFor="address_line_2">Address Line 2</FieldLabel>
+                                                    <Input id="address_line_2" type="text" value={currentLocation?.address_line_2 || ""} placeholder="Flat, etc." onChange={(e) => setCurrentLocation({ ...currentLocation, address_line_2: e.target.value })} />
+                                                </Field>
+                                                <Field>
+                                                    <FieldLabel htmlFor="city ">City</FieldLabel>
+                                                    <Input id="city" type="text" value={currentLocation?.city || ""} placeholder="e.g. Dundee" onChange={(e) => setCurrentLocation({ ...currentLocation, city: e.target.value })} />
+                                                </Field>
+                                                <Field>
+                                                    <FieldLabel htmlFor="post_code">Post Code</FieldLabel>
+                                                    <Input id="post_code" type="text" value={currentLocation?.post_code || ""} placeholder="e.g. DD1..." onChange={(e) => setCurrentLocation({ ...currentLocation, post_code: e.target.value })} />
+                                                </Field>
+                                            </FieldGroup>
+                                        </FieldSet>
 
-                                    <Button type="button" onClick={addLocation} className="w-full mt-6 text-md text-foreground bg-buttonColor hover:bg-buttonHover shadow-md" disabled={loading}>
-                                        {loading ? "Adding..." : "Add Location"}
-                                    </Button>
-                                </div>
+                                        <Button type="button" onClick={addLocation} className="w-full mt-6 text-md text-foreground bg-buttonColor hover:bg-buttonHover shadow-md" disabled={loading}>
+                                            {loading ? "Adding..." : "Add Location"}
+                                        </Button>
+                                    </div>
                                 )}
                                 {errorMessage && <p className="text-sm text-red-500 pt-4">{errorMessage}</p>}
 
