@@ -84,7 +84,7 @@ export default function PersonalLocations() {
                                         <div>
                                             <Label className="py-2 text-xl" htmlFor="address">Add a Location</Label>
 
-                                            <AddLocation currentLocation={currentLocation} setCurrentLocation={setCurrentLocation} errorMessage={errorMessage} />
+                                            <AddLocation currentLocation={currentLocation} setCurrentLocation={setCurrentLocation} />
 
                                             <Button type="button" onClick={addLocation} className="w-full mt-6 text-md text-foreground bg-buttonColor hover:bg-buttonHover shadow-md" disabled={loading}>
                                                 {loading ? "Adding..." : "Add Location"}
