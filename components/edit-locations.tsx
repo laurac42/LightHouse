@@ -1,12 +1,9 @@
-import type { Dispatch, SetStateAction, ChangeEvent } from "react";
-import type { User, UserPreferences } from "@/types/user";
+import type { Dispatch, SetStateAction } from "react";
+import type { User } from "@/types/user";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
-import { Field, FieldGroup, FieldLabel, FieldLegend, FieldSet } from "@/components/ui/field";
-import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group";
+import { Field } from "@/components/ui/field";
 import { PersonalLocationAddress, UserLocation } from "@/types/address";
 import { SquarePen } from "lucide-react";
 import { useState } from "react";

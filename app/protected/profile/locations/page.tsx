@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { updateUserDetails } from "@/lib/auth/user";
-import { Label } from "@/components/ui/label";
 import EditLocations from "@/components/edit-locations";
 import ProfilePageShell from "@/components/profile-page-shell";
 import { useProfileData } from "@/hooks/use-profile-data";
