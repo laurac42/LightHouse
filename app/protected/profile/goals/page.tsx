@@ -13,6 +13,10 @@ export default function ProfileGoalsPage() {
     const [errorMessage, setErrorMessage] = useState<string>("");
     const [successMessage, setSuccessMessage] = useState<string>("");
 
+    /**
+     * Gets the initials of the user to display in the profile avatar. If the user's first or last name is missing, it will return an empty string for that part.
+     * @returns The firsta and last initial of the user
+     */
     function getInitials() {
         if (!userDetails) return "";
         const firstInitial = userDetails.first_name ? userDetails.first_name.charAt(0).toUpperCase() : "";

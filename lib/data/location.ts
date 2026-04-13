@@ -1,6 +1,8 @@
 import { GeoJSON } from "geojson";
 const myHeaders = new Headers();
 myHeaders.append("Accept", "application/json");
+import { createClient } from "@/lib/supabase/client";
+import { PersonalLocationAddress } from "@/types/address";
 
 const requestOptions: RequestInit = {
     method: "GET",
@@ -44,7 +46,7 @@ let lastRequestTime = 0;
  * @param location location to get the polygon and bounding box for
  * @returns An object containing the GeoJSON polygon and bounding box for the location
  */
-export function getPolygonBoundingBoxForLocation(location: string)  {
+export function getPolygonBoundingBoxForLocation(location: string) {
 
     // ensure that not more than one request per second is made to the Nominatim API to avoid being rate limited
     const now = Date.now();
@@ -87,10 +89,36 @@ function fetchPolygonBoundingBox(location: string) {
                 maxLat: Number(selectedResults[0].boundingbox[1]),
                 minLng: Number(selectedResults[0].boundingbox[2]),
                 maxLng: Number(selectedResults[0].boundingbox[3])
-            } as { geojson: GeoJSON,  minLat: number, maxLat: number, minLng: number, maxLng: number };
+            } as { geojson: GeoJSON, minLat: number, maxLat: number, minLng: number, maxLng: number };
         })
         .catch((error) => {
             console.error(error);
             return null;
         });
+}
+
+export async function addPersonalLocation(userId: string, location: PersonalLocationAddress, latitude: number, longitude: number) {
+    const supabase = createClient();
+    if (!userId) {
+        throw new Error("User ID is required to add a personal location");
+    }
+    console.log("nickname: ", location.nickname);
+    console.log("all location data: ", location)
+    const { data, error } = await supabase
+        .from("user_locations")
+        .insert({
+            nickname: location.nickname,
+            user_id: userId,
+            address_line_1: location.address_line_1,
+            address_line_2: location.address_line_2,
+            city: location.city,
+            post_code: location.post_code,
+            travel_mode: location.travel_mode,
+            latitude: latitude,
+            longitude: longitude
+        });
+    if (error) {
+        throw new Error(`Error adding personal location: ${error.message}`);
+    }
+    return data;
 }

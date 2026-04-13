@@ -15,6 +15,7 @@ export default function ProfileSectionNav({ isAdminOrAgent }: ProfileSectionNavP
         { label: "Profile", href: "/protected/profile" },
         { label: "Goals", href: "/protected/profile/goals", hidden: isAdminOrAgent },
         { label: "Preferences", href: "/protected/profile/preferences", hidden: isAdminOrAgent },
+        { label: "My Locations", href: "/protected/profile/locations", hidden: isAdminOrAgent },
     ].filter((section) => !section.hidden);
 
     return (

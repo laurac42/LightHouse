@@ -422,6 +422,8 @@ export type Database = {
           city: string | null
           created_at: string
           id: string
+          latitude: number
+          longitude: number
           nickname: string
           post_code: string
           travel_mode: string
@@ -432,7 +434,9 @@ export type Database = {
           address_line_2?: string | null
           city?: string | null
           created_at?: string
-          id: string
+          id?: string
+          latitude: number
+          longitude: number
           nickname: string
           post_code: string
           travel_mode: string
@@ -444,6 +448,8 @@ export type Database = {
           city?: string | null
           created_at?: string
           id?: string
+          latitude?: number
+          longitude?: number
           nickname?: string
           post_code?: string
           travel_mode?: string
