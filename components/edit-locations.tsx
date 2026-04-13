@@ -7,7 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Field, FieldGroup, FieldLabel, FieldLegend, FieldSet } from "@/components/ui/field";
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group";
-import { UserLocation } from "@/types/address";
+import { PersonalLocationAddress, UserLocation } from "@/types/address";
 import { SquarePen } from "lucide-react";
 import { useState } from "react";
 import {
@@ -19,7 +19,8 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { CarFront, Footprints, Bike, TrainFront } from "lucide-react";
-import { getLatitudeLongitudeFromPostcode, editPersonalLocation } from "@/lib/data/location";
+import { getLatitudeLongitudeFromPostcode, editPersonalLocation, addPersonalLocation } from "@/lib/data/location";
+import AddLocation from "./add-location";
 
 type EditProfileLocationsProps = {
     userDetails?: User;
@@ -37,7 +38,11 @@ export default function EditProfileLocations({
     const [errorMessage, setErrorMessage] = useState<string>("");
     const [successMessage, setSuccessMessage] = useState<string>("");
     const [postcodeChanged, setPostcodeChanged] = useState<boolean>(false);
+    const [adding, setAdding] = useState<boolean>(false);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [locationToAdd, setLocationToAdd] = useState<Partial<PersonalLocationAddress> | null>(null);
 
+    // save changes of a location being edited
     async function saveChanges() {
         try {
             setErrorMessage("");
@@ -66,20 +71,62 @@ export default function EditProfileLocations({
                     return prevLocations.map((loc) => (loc.id === locationBeingEdited?.id ? (data[0] as UserLocation) : loc));
                 });
             }
-            } catch (error) {
-                setErrorMessage("Unable to update location: " + error);
-            }
+        } catch (error) {
+            setErrorMessage("Unable to update location: " + error);
         }
+    }
+
+    // add a new location
+    async function addLocation() {
+        try {
+
+
+            if (!locationToAdd?.address_line_1 || !locationToAdd.city || !locationToAdd.post_code || !locationToAdd.nickname) {
+                setErrorMessage("Please fill in all required fields (Address Line 1, City, Post Code, Nickname)");
+                return;
+            }
+            if (!userDetails?.id) {
+                setErrorMessage("Unable to add new location. Please check you are logged in to your account.")
+                return;
+            }
+
+            setErrorMessage("");
+            setSuccessMessage("");
+            setLoading(true);
+            const coordinates = await getLatitudeLongitudeFromPostcode(locationToAdd.post_code);
+            if (!coordinates) {
+                setErrorMessage("Postcode not found. Please check the postcode and try again.");
+                setLoading(false);
+                return;
+            }
+
+            const newLocation = await addPersonalLocation(userDetails?.id, locationToAdd as PersonalLocationAddress, coordinates.latitude, coordinates.longitude);
+
+            // update user locations for instant page refresh
+            setUserLocations((prevLocations) => {
+                if (!prevLocations) return [newLocation];
+                return [...prevLocations, newLocation];
+            });
+            
+            setLoading(false);
+            setAdding(false);
+        } catch (error) {
+            setErrorMessage("Unable to add location: " + error);
+            setLoading(false);
+            return;
+        }
+    }
 
     return (
-            <div className="flex flex-col gap-4 w-full pl-4">
-                <div className="flex flex-row justify-between items-center">
-                    <h2 className="text-2xl">Your Locations</h2>
-                    <Button className="w-1/3 md:w-1/4 ml-auto bg-buttonColor text-foreground hover:bg-buttonHover">Add New Location</Button>
-                </div>
-                <p>View and edit your locations</p>
+        <div className="flex flex-col gap-4 w-full pl-4">
+            <div className="flex flex-row justify-between items-center">
+                <h2 className="text-2xl">Your Locations</h2>
+                <Button className="w-1/3 md:w-1/4 ml-auto bg-buttonColor text-foreground hover:bg-buttonHover" disabled={editing !== ""} onClick={() => setAdding(true)}>Add New Location</Button>
+            </div>
+            <p>View and edit your locations</p>
 
-                {userLocations && userLocations.length > 0 ? (
+            {!adding ? (
+                userLocations && userLocations.length > 0 ? (
                     <div className="flex flex-col gap-4">
                         {userLocations.map((location) => (
                             <div key={location.id} className="border rounded-md p-4">
@@ -88,7 +135,7 @@ export default function EditProfileLocations({
                                     {editing === location.id ? (
                                         <Button className="flex inline-flex bg-buttonColor hover:bg-buttonHover text-foreground" onClick={saveChanges}>Save</Button>
                                     ) : (
-                                        <Button className="flex inline-flex bg-buttonColor hover:bg-buttonHover text-foreground" disabled={editing !== "" && editing !== location.id} onClick={() => {setEditing(location.id); setLocationBeingEdited(location);}}>Edit <SquarePen /></Button>
+                                        <Button className="flex inline-flex bg-buttonColor hover:bg-buttonHover text-foreground" disabled={editing !== "" && editing !== location.id} onClick={() => { setEditing(location.id); setLocationBeingEdited(location); }}>Edit <SquarePen /></Button>
                                     )}
                                 </div>
                                 {editing === location.id ? (
@@ -155,8 +202,17 @@ export default function EditProfileLocations({
                         ))}
                     </div>
                 ) : (
-                    <p>You have not added any locations yet.</p>
-                )}
-            </div>
-        );
-    }
+                    <div>
+                        <p>You have not added any locations yet.</p>
+                    </div>
+                )
+            ) : (
+                <div className="p-2">
+                    <AddLocation currentLocation={locationToAdd} setCurrentLocation={setLocationToAdd} />
+                    <Button className="w-full mt-6 text-md text-foreground bg-buttonColor hover:bg-buttonHover shadow-md" disabled={loading} onClick={addLocation}>{loading ? "Adding Location ..." : "Add Location"}</Button>
+                    {errorMessage && <p className="text-red-600">{errorMessage}</p>}
+                </div>
+            )}
+        </div>
+    );
+}

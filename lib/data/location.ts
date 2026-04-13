@@ -103,7 +103,7 @@ function fetchPolygonBoundingBox(location: string) {
  * @param location New location to add
  * @param latitude Latitude of the new location
  * @param longitude Longitide of the new location
- * @returns 
+ * @returns The new location
  */
 export async function addPersonalLocation(userId: string, location: PersonalLocationAddress, latitude: number, longitude: number) {
     const supabase = createClient();
@@ -122,7 +122,9 @@ export async function addPersonalLocation(userId: string, location: PersonalLoca
             travel_mode: location.travel_mode,
             latitude: latitude,
             longitude: longitude
-        });
+        })
+        .select()
+        .single();
     if (error) {
         throw new Error(`Error adding personal location: ${error.message}`);
     }
