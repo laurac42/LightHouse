@@ -22,6 +22,7 @@ import { GeoJSON } from "geojson";
 import { UserLocation } from "@/types/address";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Checkbox } from "@/components/ui/checkbox";
+import { DEFAULT_FILTERS, parseFiltersFromSearchParams } from "@/lib/filters/url-filters";
 
 type Property = Database["public"]["Tables"]["properties"]["Row"] & { images: string[], isFavourite?: boolean, tags?: TagCount[], weighted_score: number, recommended?: boolean };
 const PAGE_SIZE = 10; // number of properties to display per page
@@ -123,30 +124,7 @@ export default function PropertiesPage() {
     const supabase = createClient();
 
     const [properties, setProperties] = useState<Property[]>([]);
-    const [filters, setFilters] = useState<Filters>({
-        location: "",
-        selectedTags: [],
-        milesRadius: null,
-        minPrice: null,
-        maxPrice: null,
-        minBedrooms: null,
-        maxBedrooms: null,
-        minBathrooms: null,
-        maxBathrooms: null,
-        propertyTypes: [],
-        garage: null,
-        garden: null,
-        driveway: null,
-        new_build: null,
-        min_sqft: null,
-        max_sqft: null,
-        min_epc_rating: null,
-        max_epc_rating: null,
-        min_council_tax_band: null,
-        max_council_tax_band: null,
-        include_under_offer: true,
-        include_new_builds: true,
-    });
+    const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [totalProperties, setTotalProperties] = useState(0);
@@ -158,7 +136,7 @@ export default function PropertiesPage() {
     const [geoJson, setGeoJson] = useState<GeoJSON | null>(null);
     const [preferencesExist, setPreferencesExist] = useState<boolean>(false);
     const [errorMessage, setErrorMessage] = useState<string>("");
-    const [buyerLocations, setBuyerLocations] = useState<UserLocation[] | null>(null);
+    const [buyerLocations, setBuyerLocations] = useState<UserLocation[]>([]);
     const [showDistanceFromLocation, setShowDistanceFromLocation] = useState<UserLocation[]>([]);
 
     const updateMedia = useCallback(() => {
@@ -167,76 +145,7 @@ export default function PropertiesPage() {
 
     // Read and apply filter parameters from URL
     useEffect(() => {
-        const location = searchParams.get("location");
-        const milesRadiusParam = searchParams.get("milesRadius");
-        const minPriceParam = searchParams.get("minPrice");
-        const maxPriceParam = searchParams.get("maxPrice");
-        const minBedroomsParam = searchParams.get("minBedrooms");
-        const maxBedroomsParam = searchParams.get("maxBedrooms");
-        const minBathroomsParam = searchParams.get("minBathrooms");
-        const maxBathroomsParam = searchParams.get("maxBathrooms");
-        const propertyTypesParam = searchParams.get("propertyTypes");
-        const garageParam = searchParams.get("garage");
-        const gardenParam = searchParams.get("garden");
-        const drivewayParam = searchParams.get("driveway");
-        const newBuildParam = searchParams.get("new_build");
-        const minSqftParam = searchParams.get("min_sqft");
-        const maxSqftParam = searchParams.get("max_sqft");
-        const minEpcRatingParam = searchParams.get("min_epc_rating");
-        const maxEpcRatingParam = searchParams.get("max_epc_rating");
-        const minCouncilTaxBandParam = searchParams.get("min_council_tax_band");
-        const maxCouncilTaxBandParam = searchParams.get("max_council_tax_band");
-        const includeUnderOfferParam = searchParams.get("include_under_offer");
-        const includeNewBuildsParam = searchParams.get("include_new_builds");
-
-        console.log("new filters from URL: ", {
-            location,
-            milesRadius: milesRadiusParam,
-            minPrice: minPriceParam,
-            maxPrice: maxPriceParam,
-            minBedrooms: minBedroomsParam,
-            maxBedrooms: maxBedroomsParam,
-            minBathrooms: minBathroomsParam,
-            maxBathrooms: maxBathroomsParam,
-            propertyTypes: propertyTypesParam,
-            garage: garageParam,
-            garden: gardenParam,
-            driveway: drivewayParam,
-            new_build: newBuildParam,
-            min_sqft: minSqftParam,
-            max_sqft: maxSqftParam,
-            min_epc_rating: minEpcRatingParam,
-            max_epc_rating: maxEpcRatingParam,
-            min_council_tax_band: minCouncilTaxBandParam,
-            max_council_tax_band: maxCouncilTaxBandParam,
-            include_under_offer: includeUnderOfferParam,
-            include_new_builds: includeNewBuildsParam
-        });
-
-        setFilters({
-            location: location || "",
-            selectedTags: [],
-            milesRadius: milesRadiusParam ? parseInt(milesRadiusParam) : null,
-            minPrice: minPriceParam ? parseInt(minPriceParam) : null,
-            maxPrice: maxPriceParam ? parseInt(maxPriceParam) : null,
-            minBedrooms: minBedroomsParam ? parseInt(minBedroomsParam) : null,
-            maxBedrooms: maxBedroomsParam ? parseInt(maxBedroomsParam) : null,
-            minBathrooms: minBathroomsParam ? parseInt(minBathroomsParam) : null,
-            maxBathrooms: maxBathroomsParam ? parseInt(maxBathroomsParam) : null,
-            propertyTypes: propertyTypesParam ? propertyTypesParam.split(",") : [],
-            garage: garageParam ? garageParam === "true" : null,
-            garden: gardenParam ? gardenParam === "true" : null,
-            driveway: drivewayParam ? drivewayParam === "true" : null,
-            new_build: newBuildParam ? newBuildParam === "true" : null,
-            min_sqft: minSqftParam ? parseInt(minSqftParam) : null,
-            max_sqft: maxSqftParam ? parseInt(maxSqftParam) : null,
-            min_epc_rating: minEpcRatingParam || null,
-            max_epc_rating: maxEpcRatingParam || null,
-            min_council_tax_band: minCouncilTaxBandParam || null,
-            max_council_tax_band: maxCouncilTaxBandParam || null,
-            include_under_offer: includeUnderOfferParam ? includeUnderOfferParam === "true" : false,
-            include_new_builds: includeNewBuildsParam ? includeNewBuildsParam === "true" : false,
-        })
+        setFilters(parseFiltersFromSearchParams(searchParams));
     }, [searchParams]);
 
     useEffect(() => {
@@ -392,7 +301,7 @@ export default function PropertiesPage() {
     return (
         <div className="bg-background min-h-screen w-full">
             <Navbar />
-            <FilterBar filters={filters} setFilters={setFilters} />
+            <FilterBar locations={buyerLocations} />
             {loading ? (
                 <div className="flex items-center justify-center h-64">
                     <p className="text-2xl text-gray-500">Loading properties...</p>

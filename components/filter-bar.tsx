@@ -17,40 +17,55 @@ import FilterBarOverlay from "@/components/filter-bar-overlay";
 import type { Filters } from "@/types/filters";
 import { toast } from "sonner";
 import { useRouter, useSearchParams } from "next/navigation";
+import type { UserLocation } from "@/types/address";
+import { parseFiltersFromSearchParams } from "@/lib/filters/url-filters";
 
 type FilterBarProps = {
-    filters: Filters;
-    setFilters: React.Dispatch<React.SetStateAction<Filters>>;
+    locations: UserLocation[];
 }
 
-export default function FilterBar({ filters, setFilters }: FilterBarProps) {
-    const [fils, setFils] = useState<Filters>(filters);
+export default function FilterBar({ locations }: FilterBarProps) {
+    const searchParams = useSearchParams();
+    const router = useRouter();
+
+    const [fils, setFils] = useState<Filters>(() => parseFiltersFromSearchParams(searchParams));
     const [isMoreFiltersOpen, setIsMoreFiltersOpen] = useState<boolean>(false);
     const [allTags, setAllTags] = useState<Tag[]>([]);
-    const router = useRouter();
-    const searchParams = useSearchParams();
 
     // update filters by updating the url parameters
     const updateFilters = <K extends keyof Filters>(key: K, value: Filters[K]) => {
-        setFilters((prev) => ({
-            ...prev,
-            [key]: value,
-        }));
-        
-        const params = new URLSearchParams(searchParams.toString())
+        setFils((prev) => ({ ...prev, [key]: value }));
 
-        if (value === null || value === undefined || value === "") {
-            params.delete(String(key))
-        } else {
-            params.set(String(key), String(value))
+        const params = new URLSearchParams(searchParams.toString());
+
+        if (key === "include_under_offer" || key === "include_new_builds") {
+            if (value === false) {
+                params.set(String(key), String(value));
+            } else {
+                params.delete(String(key));
+            }
+            router.replace(`?${params.toString()}`);
+            return;
         }
 
-        router.replace(`?${params.toString()}`)
+        if (key === "propertyTypes" && Array.isArray(value) && value.length === 0) {
+            params.delete(String(key));
+            router.replace(`?${params.toString()}`);
+            return;
+        }
+
+        if (value === null || value === undefined || value === "") {
+            params.delete(String(key));
+        } else {
+            params.set(String(key), String(value));
+        }
+
+        router.replace(`?${params.toString()}`);
     }
 
     useEffect(() => {
-        setFils(filters);
-    }, [filters]);
+        setFils(parseFiltersFromSearchParams(searchParams));
+    }, [searchParams]);
 
     const updateLocalFilter = <K extends keyof Filters>(key: K, value: Filters[K]) => {
         setFils((prev) => ({
@@ -94,10 +109,6 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
                                 const value = (e.target as HTMLInputElement).value;
                                 updateLocalFilter("location", value);
                                 updateFilters("location", value);
-                                // set url params
-                                const params = new URLSearchParams(window.location.search);
-                                params.set("location", value);
-                                window.history.replaceState({}, "", `${window.location.pathname}?${params.toString()}`);
                             }
                         }}
                     />
@@ -119,7 +130,8 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
                         </DropdownMenuGroup>
                     </DropdownMenuContent>
                 </DropdownMenu>
-
+                
+                {/* Price Range */}
                 <DropdownMenu >
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline" className="max-w-45 hidden sm:flex bg-white hover:bg-lightPink">
@@ -168,7 +180,8 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
                         </DropdownMenuGroup>
                     </DropdownMenuContent>
                 </DropdownMenu>
-
+                
+                {/* Bedrooms */}
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline" className="max-w-40 hidden md:flex bg-white hover:bg-lightPink">
@@ -223,6 +236,8 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
                         </DropdownMenuGroup>
                     </DropdownMenuContent>
                 </DropdownMenu>
+
+                {/* Bathrooms */}
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline" className="max-w-40 hidden lg:flex bg-white hover:bg-lightPink">
@@ -327,10 +342,9 @@ export default function FilterBar({ filters, setFilters }: FilterBarProps) {
                 <FilterBarOverlay
                     isOpen={isMoreFiltersOpen}
                     onClose={() => setIsMoreFiltersOpen(false)}
-                    filters={filters}
-                    setFilters={setFilters}
                     allTags={allTags}
                     setAllTags={setAllTags}
+                    locations={locations}
                 />
             </div>
         </div >

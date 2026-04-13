@@ -79,10 +79,6 @@ export default function PropertyCard({ property, images, page, editable = false,
         });
     }, [property.id]);
 
-    useEffect(() => {
-
-    })
-
     // handle saving favourite
     async function handleSaveFavourite() {
         try {
