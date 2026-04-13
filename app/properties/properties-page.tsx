@@ -19,6 +19,9 @@ import type { Tag, TagCount } from "@/types/tags";
 import { fetchPropertyTags } from "@/lib/data/tag-utils";
 import type { Filters } from "@/types/filters";
 import { GeoJSON } from "geojson";
+import { UserLocation } from "@/types/address";
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Checkbox } from "@/components/ui/checkbox";
 
 type Property = Database["public"]["Tables"]["properties"]["Row"] & { images: string[], isFavourite?: boolean, tags?: TagCount[], weighted_score: number, recommended?: boolean };
 const PAGE_SIZE = 10; // number of properties to display per page
@@ -117,6 +120,7 @@ async function fetchFavouritesForProperties(propertiesList: Property[], userId: 
 
 export default function PropertiesPage() {
     const searchParams = useSearchParams();
+    const supabase = createClient();
 
     const [properties, setProperties] = useState<Property[]>([]);
     const [filters, setFilters] = useState<Filters>({
@@ -154,6 +158,8 @@ export default function PropertiesPage() {
     const [geoJson, setGeoJson] = useState<GeoJSON | null>(null);
     const [preferencesExist, setPreferencesExist] = useState<boolean>(false);
     const [errorMessage, setErrorMessage] = useState<string>("");
+    const [buyerLocations, setBuyerLocations] = useState<UserLocation[] | null>(null);
+    const [showDistanceFromLocation, setShowDistanceFromLocation] = useState<UserLocation[]>([]);
 
     const updateMedia = useCallback(() => {
         setIsMobile(window.innerWidth < 768);
@@ -292,6 +298,28 @@ export default function PropertiesPage() {
         }
     }, [filters.location]);
 
+    useEffect(() => {
+        async function fetchLocations() {
+            if (!userId) return;
+            try {
+                await supabase
+                    .from("user_locations")
+                    .select("*")
+                    .eq("user_id", userId)
+                    .then((response) => {
+                        if (response.error) {
+                            setErrorMessage("Unable to fetch locations: " + response.error.message);
+                        } else {
+                            setBuyerLocations(response.data);
+                        }
+                    });
+            } catch (error) {
+                setErrorMessage("Unable to fetch locations: " + error);
+            }
+        }
+        fetchLocations();
+    }, [userId]);
+
     /**
      * Fetch properties and property images for a given search results page
      * @param page Page number to fetch properties for - default is 1
@@ -383,18 +411,41 @@ export default function PropertiesPage() {
                     ) : (
                         <div className="pt-2 px-6 text-highlight">
                             <p>Showing properties {currentPage * PAGE_SIZE - (PAGE_SIZE - 1)} - {Math.min(currentPage * PAGE_SIZE, totalProperties)} of {totalProperties} properties {filters.location ? `in ${filters.location}` : ""}</p>
+                            {buyerLocations && buyerLocations.length > 0 &&
+                                <div className="mt-2 mb-4 flex flex-row items-center gap-3">
+                                    <p className="whitespace-nowrap">Show distance from: </p>
+                                    <FieldGroup className="flex flex-row">
+                                        {buyerLocations?.map((location, index) => (
+                                            <Field orientation="horizontal" key={index}>
+                                                <Checkbox className="border-foreground text-foreground data-[state=checked]:text-white data-[state=checked]:border-foreground data-[state=checked]:bg-highlight" id={`${index}-checkbox`} name={`${index}-checkbox`} checked={showDistanceFromLocation.includes(location)} onCheckedChange={(checked) => {
+                                                    if (checked === true) {
+                                                        setShowDistanceFromLocation([...showDistanceFromLocation, location]);
+                                                    } else {
+                                                        setShowDistanceFromLocation(showDistanceFromLocation.filter((l) => l !== location));
+                                                    }
+                                                }} />
+                                                <FieldLabel htmlFor={`${index}-checkbox`} className="font-normal">
+                                                    {location.nickname}
+                                                </FieldLabel>
+                                            </Field>
+                                        ))}
+                                    </FieldGroup>
+                                </div>
+                            }
+
                         </div>
                     )
                     }
                 </>
-            )}
+            )
+            }
             <div className="flex w-full items-center justify-center pt-4 px-6 md:px-10 md:pt-8">
                 <div className="w-full max-w-4xl">
                     {(!loading && ((preferencesExist || filters.selectedTags.length > 0) && properties.length > 0 && errorMessage === "")) &&
                         <p className="pb-2 text-highlight">Properties are ordered by your {preferencesExist && filters.selectedTags.length > 0 ? (<><a href="/protected/profile" className="hover:underline"><b>preferences</b></a> and selected tags</>) : preferencesExist ? (<a href="/protected/profile" className="hover:underline"><b>preferences</b></a>) : <>selected tags</>}</p>
                     }
                     {properties.map((property) => (
-                        <PropertyCard key={property.id} property={property} images={property.images} page="properties" />
+                        <PropertyCard key={property.id} property={property} images={property.images} page="properties" locationsForDistance={showDistanceFromLocation} />
                     ))}
                 </div>
 
@@ -456,6 +507,6 @@ export default function PropertiesPage() {
                     <div className="mx-auto w-[100px]" />
                 }
             </div>
-        </div>
+        </div >
     );
 }

@@ -6,7 +6,7 @@ import {
     CardTitle,
 } from "@/components/ui/card";;
 import { Database } from "@/types/supabase";
-import { Home, Bed, Bath, Grid2X2, Lightbulb, Landmark, Mail, Phone, Pencil, Heart, HousePlus, TreeDeciduous, Warehouse, Car } from "lucide-react";
+import { Home, Bed, Bath, Grid2X2, Lightbulb, Landmark, Mail, Phone, Pencil, Heart, HousePlus, TreeDeciduous, Warehouse, Car, Footprints, TrainFront, Bike } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getAgencyDetails } from "@/lib/data/property-utils";
 import Link from 'next/link';
@@ -19,6 +19,8 @@ import { validateUser } from "@/lib/auth/user";
 import { toast } from "sonner";
 import { fetchPropertyTags } from "@/lib/data/tag-utils";
 import { TagCount } from "@/types/tags";
+import { UserLocation } from "@/types/address";
+import { fetchDistanceBetweenPropertyAndLocation } from "@/lib/data/location";
 
 type Property = Database["public"]["Tables"]["properties"]["Row"] & { isFavourite?: boolean, recommended?: boolean };
 
@@ -26,10 +28,11 @@ type Property = Database["public"]["Tables"]["properties"]["Row"] & { isFavourit
 // properties - for listing properties on the main page
 // manage - for managing properties in the dashboard
 // favourites - for listing properties in the user's favourites page
-export default function PropertyCard({ property, images, page, editable = false, seller = false }: { property: Property; images: string[]; page: string; editable?: boolean; seller?: boolean }) {
+export default function PropertyCard({ property, images, page, editable = false, seller = false, locationsForDistance }: { property: Property; images: string[]; page: string; editable?: boolean; seller?: boolean; locationsForDistance: UserLocation[] }) {
     const [agencyDetails, setAgencyDetails] = useState<AgencyLocationDetails | null>(null);
     const [isFavourite, setIsFavourite] = useState(property.isFavourite || false);
     const [propertyTags, setPropertyTags] = useState<TagCount[]>([]);
+    const [distances, setDistances] = useState<{ [key: string]: number }>({});
 
     useEffect(() => {
         if (property.agency_location_id) {
@@ -38,6 +41,29 @@ export default function PropertyCard({ property, images, page, editable = false,
             });
         }
     }, []);
+
+    useEffect(() => {
+        if (locationsForDistance.length > 0) {
+            locationsForDistance.forEach((location) => {
+                fetch('/api/distance-matrix', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        lat1: property.latitude ?? 0,
+                        long1: property.longitude ?? 0,
+                        lat2: location.latitude,
+                        long2: location.longitude,
+                        travel_mode: location.travel_mode
+                    })
+                }).then(response => response.json()).then(data => {
+                    console.log("Distance from " + location.nickname + ": " + data.distance);
+                    setDistances(prev => ({ ...prev, [location.id]: data.distance }));
+                }).catch(error => console.error("Error fetching distance:", error));
+            });
+        }
+    }, [property.id, locationsForDistance]);
 
     useEffect(() => {
         fetchPropertyTags(property.id, undefined).then((tags) => {
@@ -52,6 +78,10 @@ export default function PropertyCard({ property, images, page, editable = false,
             console.error("Error fetching property tags: ", error);
         });
     }, [property.id]);
+
+    useEffect(() => {
+
+    })
 
     // handle saving favourite
     async function handleSaveFavourite() {
@@ -93,9 +123,37 @@ export default function PropertyCard({ property, images, page, editable = false,
                     <div className={page === "manage" ? "flex flex-col gap-0 md:w-64 shrink-0" : "flex flex-col gap-0 md:w-80 shrink-0"}>
                         <ImageCarousel images={images} property={property} page={page} isModalOpen={null} />
                         <div className="flex flex-1">
-                            <CardHeader className={page === "manage" ? "flex-1 min-h-12 p-0 gap-0 m-0 bg-highlight rounded-b-md text-white flex flex-row items-center justify-center" : "p-0 gap-0 m-0 bg-highlight rounded-b-md text-white flex flex-row items-center justify-center flex-1 min-h-12 md:min-h-20 lg:min-h-10"}>
-                                <CardTitle className="text-2xl text-center">{'£' + property.price.toLocaleString()}</CardTitle>
-                                <p className="text-center text-sm"> &nbsp; {uppercaseWords(property.price_type || '')}</p>
+                            <CardHeader className={page === "manage" ? "flex-1 min-h-12 p-0 gap-0 m-0 bg-highlight rounded-b-md text-white flex flex-row justify-between" : "justify-between p- 0 gap-0 m-0 bg-highlight rounded-b-md text-white flex flex-row flex-1 min-h-12 md:min-h-20 lg:min-h-10 flex flex-col"}>
+                                <div className="items-center flex flex-row gap-1 my-2 justify-center">
+                                    <h1 className="text-2xl text-center">{'£' + property.price.toLocaleString()}</h1>
+                                    <p className="text-sm text-center"> {uppercaseWords(property.price_type || '')}</p>
+                                </div>
+                                {/** Agency details */}
+                                {agencyDetails && page !== "manage" && (
+                                    <div className="flex flex-row items-center gap-4 pb-2 mb-2">
+                                        {agencyDetails.logo_url && (
+                                            <img
+                                                src={agencyDetails.logo_url}
+                                                alt="Agency logo"
+                                                className="w-20 object-contain"
+                                            />
+                                        )}
+                                        <div className="flex flex-row ml-auto pr-4 gap-4 items-center">
+                                            {agencyDetails.phone_number && (
+                                                <div className="flex justify-end">
+                                                    <a className='mr-0 flex items-center gap-1 font-bold underline hover:text-blue-500' href={`tel:${agencyDetails.phone_number}`}>
+                                                        Call <Phone />
+                                                    </a>
+                                                </div>
+                                            )}
+                                            {agencyDetails.email && (
+                                                <a className='flex items-center gap-1 font-bold underline hover:text-blue-500' href={`mailto:${agencyDetails.email}`}>
+                                                    Email <Mail />
+                                                </a>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
                             </CardHeader>
                         </div>
                     </div>
@@ -152,29 +210,29 @@ export default function PropertyCard({ property, images, page, editable = false,
                                             <Landmark size={16} />
                                             Council Tax: {property.council_tax_band ? property.council_tax_band.toUpperCase() : "N/A"}
                                         </div>
-                                        {property.is_new_build !== undefined &&  property.is_new_build && (
+                                        {property.is_new_build !== undefined && property.is_new_build && (
                                             <div className="inline-flex items-center gap-1 font-bold">
                                                 <HousePlus size={16} />
                                                 New Build
                                             </div>
                                         )}
-                                        {property.garden !== undefined &&  property.garden && (
-                                        <div className="inline-flex items-center gap-1 font-bold">
-                                            <TreeDeciduous size={16} />
-                                            Garden
-                                        </div>
+                                        {property.garden !== undefined && property.garden && (
+                                            <div className="inline-flex items-center gap-1 font-bold">
+                                                <TreeDeciduous size={16} />
+                                                Garden
+                                            </div>
                                         )}
-                                        {property.has_garage !== undefined &&  property.has_garage && (
-                                        <div className="inline-flex items-center gap-1 font-bold">
-                                            <Warehouse size={16} />
-                                            Garage
-                                        </div>
+                                        {property.has_garage !== undefined && property.has_garage && (
+                                            <div className="inline-flex items-center gap-1 font-bold">
+                                                <Warehouse size={16} />
+                                                Garage
+                                            </div>
                                         )}
-                                        {property.driveway !== undefined &&  property.driveway && (
-                                        <div className="inline-flex items-center gap-1 font-bold">
-                                            <Car size={16} />
-                                            Driveway
-                                        </div>
+                                        {property.driveway !== undefined && property.driveway && (
+                                            <div className="inline-flex items-center gap-1 font-bold">
+                                                <Car size={16} />
+                                                Driveway
+                                            </div>
                                         )}
 
                                     </div>
@@ -219,32 +277,15 @@ export default function PropertyCard({ property, images, page, editable = false,
                             ))}
                         </div>
 
-                        {/** Agency details */}
-                        {agencyDetails && page !== "manage" && (
-                            <div className="flex flex-row items-center gap-4 pb-2 md:py-0">
-                                {agencyDetails.logo_url && (
-                                    <img
-                                        src={agencyDetails.logo_url}
-                                        alt="Agency logo"
-                                        className="w-20 object-contain"
-                                    />
-                                )}
-                                <div className="flex flex-row ml-auto pr-4 gap-4 items-center">
-                                    {agencyDetails.phone_number && (
-                                        <div className="flex justify-end">
-                                            <a className='mr-0 flex items-center gap-1 font-bold underline hover:text-blue-500' href={`tel:${agencyDetails.phone_number}`}>
-                                                Call <Phone />
-                                            </a>
-                                        </div>
-                                    )}
-                                    {agencyDetails.email && (
-                                        <a className='flex items-center gap-1 font-bold underline hover:text-blue-500' href={`mailto:${agencyDetails.email}`}>
-                                            Email <Mail />
-                                        </a>
-                                    )}
-                                </div>
-                            </div>
-                        )}
+                        {/* Distance From Locations */}
+                        <div className="py-2 mb-2 flex flex-col gap-1">
+                            {locationsForDistance.length > 0 && locationsForDistance.map((location) => (
+                                <p key={location.id} className="text-md text-foreground flex items-center gap-1 inline-flex">
+                                    {location.travel_mode === "driving" ? <Car /> : location.travel_mode === "walking" ? <Footprints /> : location.travel_mode === "transit" ? <TrainFront /> : <Bike />}
+                                    {distances[location.id] !== undefined ? distances[location.id] : 'Loading...'} {location.travel_mode === "driving" ? "drive" : location.travel_mode === "walking" ? "walk" : location.travel_mode === "transit" ? "transit" : "cycle"} from <b>{location.nickname}</b>
+                                </p>
+                            ))}
+                        </div>
 
                         {/** Manage property options */}
                         {page === "manage" &&
