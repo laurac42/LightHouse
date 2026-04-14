@@ -9,11 +9,6 @@ import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { Card } from "./ui/card";
 import { Input } from "./ui/input";
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipTrigger,
-} from "@/components/ui/tooltip"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 
 const CATEGORY_ORDER = ["Parking", "Garden", "Property Features", "Location"] as const;
@@ -244,7 +239,7 @@ export function PropertyTags({ propertyId }: { propertyId: number }) {
                                                     {groupedAllTags[category].map((tag) => (
                                                         <div key={tag.id} className="inline-flex items-center gap-1 px-2 py-1 bg-midBlue rounded-md text-sm">
                                                             {tag.name}
-                                                            <Plus onClick={() => voteOnTag(tag.id, tag.name, false)} />
+                                                            <Plus onClick={() => voteOnTag(tag.id, tag.name ?? '', false)} />
                                                         </div>
                                                     ))}
                                                 </div>

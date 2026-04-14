@@ -58,15 +58,16 @@ export async function fetchPropertyTags(propertyId: number, userId: string | und
  * @param tags The list of tags to group, which must include a name property
  * @returns An object with the tags grouped by category
  */
-export function groupTagsByCategory<T extends { name: string }>(tags: T[]) {
+export function groupTagsByCategory(tags: Tag[]) {
     const grouped = {
-        Parking: [] as T[],
-        Garden: [] as T[],
-        "Property Features": [] as T[],
-        Location: [] as T[],
+        Parking: [] as Tag[],
+        Garden: [] as Tag[],
+        "Property Features": [] as Tag[],
+        Location: [] as Tag[],
     };
 
     for (const tag of tags) {
+        if (!tag.name) continue; 
         grouped[getTagCategory(tag.name) as Category].push(tag);
     }
 
