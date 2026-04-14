@@ -7,6 +7,6 @@ export type TagCount = {
 
 export type Tag = {
     id: number;
-    name: string;
+    name: string | null;
     is_seed: boolean;
 }

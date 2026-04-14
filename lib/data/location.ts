@@ -1,3 +1,4 @@
+'use server';
 import { GeoJSON } from "geojson";
 const myHeaders = new Headers();
 myHeaders.append("Accept", "application/json");
@@ -25,7 +26,7 @@ const nominationRequestOptions: RequestInit = {
  * @param postcode postcode to get latitude and longitude from
  * @returns An object containing the latitude and longitude of the postcode
  */
-export function getLatitudeLongitudeFromPostcode(postcode: string) {
+export async function getLatitudeLongitudeFromPostcode(postcode: string) {
     const encodedPostcode = encodeURIComponent(postcode);
     return fetch(`https://api.postcodes.io/postcodes/${encodedPostcode}`, requestOptions)
         .then((response) => response.json())
@@ -46,7 +47,7 @@ let lastRequestTime = 0;
  * @param location location to get the polygon and bounding box for
  * @returns An object containing the GeoJSON polygon and bounding box for the location
  */
-export function getPolygonBoundingBoxForLocation(location: string) {
+export async function getPolygonBoundingBoxForLocation(location: string) {
 
     // ensure that not more than one request per second is made to the Nominatim API to avoid being rate limited
     const now = Date.now();
@@ -69,7 +70,7 @@ export function getPolygonBoundingBoxForLocation(location: string) {
  * @param location location to get the polygon for
  * @returns An object containing the GeoJSON polygon and bounding box for the location
  */
-function fetchPolygonBoundingBox(location: string) {
+async function fetchPolygonBoundingBox(location: string) {
     const encodedLocation = encodeURIComponent(location);
     return fetch(`https://nominatim.openstreetmap.org/search?q=${encodedLocation}&format=json&polygon_geojson=1`, nominationRequestOptions)
         .then((response) => response.json())

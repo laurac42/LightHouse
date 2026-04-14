@@ -10,7 +10,6 @@ export default function ConfirmLocationDeletion({ confirm, setConfirm, locationI
 
     async function deleteLocation() {
         try {
-            console.log("Deleting location with id: " + locationId);
             await supabase.from("user_locations").delete().eq("id", locationId);
             
             // remove from locations for instant UI refresh

@@ -228,7 +228,7 @@ export default function EstateAgentPropertiesPage() {
                                     </div>
                                     <div className="w-full max-w-4xl">
                                         {properties.map((property) => (
-                                            <PropertyCard key={property.id} property={property} images={property.images} page="manage" editable={editableProperties.has(property.id)} />
+                                            <PropertyCard key={property.id} property={property} images={property.images} page="manage" editable={editableProperties.has(property.id)} locationsForDistance={[]} />
                                         ))}
                                     </div>
                                     {errorMessage && <p className="text-red-500">{errorMessage}</p>}

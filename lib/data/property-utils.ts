@@ -236,6 +236,7 @@ export async function loadSellerAddedInfo(propertyId: number) {
 export async function fetchPropertiesForPage(page: number = 1, page_size: number = 10, preferences?: UserPreferences | null, boundingBox?: BoundingBox | null, filters?: Filters, geoJson?: GeoJSON | null) {
     const tagIds = filters?.selectedTags?.map(tag => tag.id) ?? [];
 
+    console.log("Fetching properties for page with filters:", { page, page_size, preferences, boundingBox, filters, geoJson });
     // making a copy so that modifying multiple times does not edit the original bounding box
     let boundingBoxCopy: BoundingBox | null = boundingBox ? { ...boundingBox } : null;
 
@@ -282,6 +283,7 @@ export async function fetchPropertiesForPage(page: number = 1, page_size: number
             p_council_tax_max: filters?.max_council_tax_band ?? undefined,
             p_include_under_offer: filters?.include_under_offer ?? false,
             p_include_new_builds: filters?.include_new_builds ?? false,
+            p_locations: filters?.userLocationsAndDistances && filters.userLocationsAndDistances.length > 0 ? filters.userLocationsAndDistances.map(ld => ({ long: ld.location.longitude, lat: ld.location.latitude, distance: ld.distance ? ld.distance * 1609.34 : undefined })) : undefined,
         });
     if (error) {
         throw error;

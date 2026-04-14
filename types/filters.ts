@@ -1,4 +1,5 @@
 import type { Tag } from "@/types/tags";
+import { UserLocation } from "./address";
 
 export interface Filters {
     location: string;
@@ -23,4 +24,5 @@ export interface Filters {
     max_council_tax_band: string | null;
     include_under_offer: boolean;
     include_new_builds: boolean;
+    userLocationsAndDistances: { location: UserLocation; distance: number | null  }[]; // user locations and distance
 }

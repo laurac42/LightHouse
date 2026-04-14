@@ -9,11 +9,10 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { PersonalLocationAddress } from "@/types/address";
 import { getLatitudeLongitudeFromPostcode } from "@/lib/data/location";
-import { CarFront, Bike, TrainFront, Footprints } from "lucide-react";
 import AddLocation from "@/components/add-location";
 import { createClient } from "@/lib/supabase/client";
 import { addPersonalLocation } from "@/lib/data/location";

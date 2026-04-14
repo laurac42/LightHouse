@@ -51,6 +51,7 @@ export default function FiltersPage() {
         max_council_tax_band: null,
         include_under_offer: true,
         include_new_builds: true,
+        userLocationsAndDistances: [],
     });
     const [isMobile, setIsMobile] = useState(false);
     const router = useRouter();

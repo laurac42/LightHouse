@@ -2,7 +2,7 @@
 import Navbar from "@/components/navbar";
 import FilterBar from "@/components/filter-bar";
 import { Button } from "@/components/ui/button";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { Database } from "@/types/supabase";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -19,6 +19,10 @@ import type { Tag, TagCount } from "@/types/tags";
 import { fetchPropertyTags } from "@/lib/data/tag-utils";
 import type { Filters } from "@/types/filters";
 import { GeoJSON } from "geojson";
+import { UserLocation } from "@/types/address";
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Checkbox } from "@/components/ui/checkbox";
+import { DEFAULT_FILTERS, parseFiltersFromSearchParams } from "@/lib/filters/url-filters";
 
 type Property = Database["public"]["Tables"]["properties"]["Row"] & { images: string[], isFavourite?: boolean, tags?: TagCount[], weighted_score: number, recommended?: boolean };
 const PAGE_SIZE = 10; // number of properties to display per page
@@ -117,36 +121,18 @@ async function fetchFavouritesForProperties(propertiesList: Property[], userId: 
 
 export default function PropertiesPage() {
     const searchParams = useSearchParams();
+    const supabase = createClient();
+    const controllerRef = useRef<AbortController | null>(null);
+    const requestIdRef = useRef(0);
 
     const [properties, setProperties] = useState<Property[]>([]);
-    const [filters, setFilters] = useState<Filters>({
-        location: "",
-        selectedTags: [],
-        milesRadius: null,
-        minPrice: null,
-        maxPrice: null,
-        minBedrooms: null,
-        maxBedrooms: null,
-        minBathrooms: null,
-        maxBathrooms: null,
-        propertyTypes: [],
-        garage: null,
-        garden: null,
-        driveway: null,
-        new_build: null,
-        min_sqft: null,
-        max_sqft: null,
-        min_epc_rating: null,
-        max_epc_rating: null,
-        min_council_tax_band: null,
-        max_council_tax_band: null,
-        include_under_offer: true,
-        include_new_builds: true,
-    });
+    const [filters, setFilters] = useState<Filters>(getInitialFilters());
+    const stableFilters = useMemo(() => filters, [JSON.stringify(filters)]);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [totalProperties, setTotalProperties] = useState(0);
     const [loading, setLoading] = useState(true);
+    const [fetchComplete, setFetchComplete] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
     const [userId, setUserId] = useState<string | null>(null);
     const [userChecked, setUserChecked] = useState<Boolean>(false); // state to track whether we've checked if the user is logged in or not
@@ -154,84 +140,44 @@ export default function PropertiesPage() {
     const [geoJson, setGeoJson] = useState<GeoJSON | null>(null);
     const [preferencesExist, setPreferencesExist] = useState<boolean>(false);
     const [errorMessage, setErrorMessage] = useState<string>("");
+    const [buyerLocations, setBuyerLocations] = useState<UserLocation[]>([]);
+    const [showDistanceFromLocation, setShowDistanceFromLocation] = useState<UserLocation[]>([]);
+
+    function getInitialFilters(): Filters {
+        if (typeof window === "undefined") return DEFAULT_FILTERS;
+        const stored = localStorage.getItem("userLocationsAndDistances");
+        return {
+            ...DEFAULT_FILTERS,
+            ...(stored ? { userLocationsAndDistances: JSON.parse(stored) } : {}),
+        };
+    }
 
     const updateMedia = useCallback(() => {
         setIsMobile(window.innerWidth < 768);
     }, []);
 
-    // Read and apply filter parameters from URL
+    // Read and apply filter parameters from URL (other than locations, handled in local storage)
     useEffect(() => {
-        const location = searchParams.get("location");
-        const milesRadiusParam = searchParams.get("milesRadius");
-        const minPriceParam = searchParams.get("minPrice");
-        const maxPriceParam = searchParams.get("maxPrice");
-        const minBedroomsParam = searchParams.get("minBedrooms");
-        const maxBedroomsParam = searchParams.get("maxBedrooms");
-        const minBathroomsParam = searchParams.get("minBathrooms");
-        const maxBathroomsParam = searchParams.get("maxBathrooms");
-        const propertyTypesParam = searchParams.get("propertyTypes");
-        const garageParam = searchParams.get("garage");
-        const gardenParam = searchParams.get("garden");
-        const drivewayParam = searchParams.get("driveway");
-        const newBuildParam = searchParams.get("new_build");
-        const minSqftParam = searchParams.get("min_sqft");
-        const maxSqftParam = searchParams.get("max_sqft");
-        const minEpcRatingParam = searchParams.get("min_epc_rating");
-        const maxEpcRatingParam = searchParams.get("max_epc_rating");
-        const minCouncilTaxBandParam = searchParams.get("min_council_tax_band");
-        const maxCouncilTaxBandParam = searchParams.get("max_council_tax_band");
-        const includeUnderOfferParam = searchParams.get("include_under_offer");
-        const includeNewBuildsParam = searchParams.get("include_new_builds");
+    parseFiltersFromSearchParams(searchParams)
+        .then(parsedFilters => {
+            const { userLocationsAndDistances, ...safeParsedFilters } = parsedFilters;
 
-        console.log("new filters from URL: ", {
-            location,
-            milesRadius: milesRadiusParam,
-            minPrice: minPriceParam,
-            maxPrice: maxPriceParam,
-            minBedrooms: minBedroomsParam,
-            maxBedrooms: maxBedroomsParam,
-            minBathrooms: minBathroomsParam,
-            maxBathrooms: maxBathroomsParam,
-            propertyTypes: propertyTypesParam,
-            garage: garageParam,
-            garden: gardenParam,
-            driveway: drivewayParam,
-            new_build: newBuildParam,
-            min_sqft: minSqftParam,
-            max_sqft: maxSqftParam,
-            min_epc_rating: minEpcRatingParam,
-            max_epc_rating: maxEpcRatingParam,
-            min_council_tax_band: minCouncilTaxBandParam,
-            max_council_tax_band: maxCouncilTaxBandParam,
-            include_under_offer: includeUnderOfferParam,
-            include_new_builds: includeNewBuildsParam
-        });
-
-        setFilters({
-            location: location || "",
-            selectedTags: [],
-            milesRadius: milesRadiusParam ? parseInt(milesRadiusParam) : null,
-            minPrice: minPriceParam ? parseInt(minPriceParam) : null,
-            maxPrice: maxPriceParam ? parseInt(maxPriceParam) : null,
-            minBedrooms: minBedroomsParam ? parseInt(minBedroomsParam) : null,
-            maxBedrooms: maxBedroomsParam ? parseInt(maxBedroomsParam) : null,
-            minBathrooms: minBathroomsParam ? parseInt(minBathroomsParam) : null,
-            maxBathrooms: maxBathroomsParam ? parseInt(maxBathroomsParam) : null,
-            propertyTypes: propertyTypesParam ? propertyTypesParam.split(",") : [],
-            garage: garageParam ? garageParam === "true" : null,
-            garden: gardenParam ? gardenParam === "true" : null,
-            driveway: drivewayParam ? drivewayParam === "true" : null,
-            new_build: newBuildParam ? newBuildParam === "true" : null,
-            min_sqft: minSqftParam ? parseInt(minSqftParam) : null,
-            max_sqft: maxSqftParam ? parseInt(maxSqftParam) : null,
-            min_epc_rating: minEpcRatingParam || null,
-            max_epc_rating: maxEpcRatingParam || null,
-            min_council_tax_band: minCouncilTaxBandParam || null,
-            max_council_tax_band: maxCouncilTaxBandParam || null,
-            include_under_offer: includeUnderOfferParam ? includeUnderOfferParam === "true" : false,
-            include_new_builds: includeNewBuildsParam ? includeNewBuildsParam === "true" : false,
+            setFilters(prev => ({
+                ...prev,
+                ...safeParsedFilters,
+            }));
         })
-    }, [searchParams]);
+        .catch(error => {
+            console.error("Error parsing filters from URL: ", error);
+        });
+}, [searchParams]);
+
+    const refreshFiltersFromStorage = useCallback(() => {
+        const stored = localStorage.getItem("userLocationsAndDistances");
+        if (stored) {
+            setFilters(prev => ({ ...prev, userLocationsAndDistances: JSON.parse(stored) }));
+        }
+    }, []);
 
     useEffect(() => {
         window.addEventListener("resize", updateMedia);
@@ -254,24 +200,35 @@ export default function PropertiesPage() {
     useEffect(() => {
         setLoading(true);
         setErrorMessage("");
-        setProperties([]);
         setGeoJson(null);
         // fetch the bounding box for the location in the URL query parameters and set the location state to the location name from the bounding box, so that we can display it on the page
         const urlParams = new URLSearchParams(window.location.search);
         const locationParam = urlParams.get("location");
         if (locationParam) {
 
-            setFilters((prev) => ({ ...prev, location: locationParam }));
+            setFilters((prev) =>
+                prev.location === locationParam ? prev : { ...prev, location: locationParam }
+            );
             getPolygonBoundingBoxForLocation(locationParam)
                 .then((geoData) => {
                     if (geoData) {
                         const typedGeoData = geoData as { geojson: GeoJSON, minLat: string, maxLat: string, minLng: string, maxLng: string };
-                        setBoundingBox({
-                            minLatitude: parseFloat(typedGeoData.minLat),
-                            maxLatitude: parseFloat(typedGeoData.maxLat),
-                            minLongitude: parseFloat(typedGeoData.minLng),
-                            maxLongitude: parseFloat(typedGeoData.maxLng),
+                        setBoundingBox((prev) => {
+                            const next = {
+                                minLatitude: parseFloat(typedGeoData.minLat),
+                                maxLatitude: parseFloat(typedGeoData.maxLat),
+                                minLongitude: parseFloat(typedGeoData.minLng),
+                                maxLongitude: parseFloat(typedGeoData.maxLng),
+                            };
+                            if (prev?.minLatitude === next.minLatitude &&
+                                prev?.maxLatitude === next.maxLatitude &&
+                                prev?.minLongitude === next.minLongitude &&
+                                prev?.maxLongitude === next.maxLongitude) {
+                                return prev;
+                            }
+                            return next;
                         });
+
                         if (typedGeoData.geojson) {
                             setGeoJson(typedGeoData.geojson);
                         } else {
@@ -292,16 +249,41 @@ export default function PropertiesPage() {
         }
     }, [filters.location]);
 
+    useEffect(() => {
+        async function fetchLocations() {
+            if (!userId) return;
+            try {
+                await supabase
+                    .from("user_locations")
+                    .select("*")
+                    .eq("user_id", userId)
+                    .then((response) => {
+                        if (response.error) {
+                            setErrorMessage("Unable to fetch locations: " + response.error.message);
+                        } else {
+                            setBuyerLocations(response.data);
+                            // set the locations to be shown on cards as default
+                            setShowDistanceFromLocation(response.data);
+                        }
+                    });
+
+            } catch (error) {
+                setErrorMessage("Unable to fetch locations: " + error);
+            }
+        }
+        fetchLocations();
+    }, [userId]);
+
     /**
      * Fetch properties and property images for a given search results page
      * @param page Page number to fetch properties for - default is 1
      * @param id User ID for fetching personalised properties
      * @param selectedTags Selected tags for filtering properties
      */
-    const fetchProperties = useCallback(async (page: number = 1, id: string | null, box: BoundingBox | null | undefined, filters: Filters, geo: GeoJSON | null) => {
+    const fetchProperties = useCallback(async (page: number = 1, id: string | null, box: BoundingBox | null | undefined, filters: Filters, geo: GeoJSON | null, signal: AbortSignal, requestId: number) => {
         try {
+
             // scroll to top
-            setLoading(true);
             window.scrollTo({ top: 0 });
 
             let user_preferences: UserPreferences | null = null;
@@ -313,6 +295,10 @@ export default function PropertiesPage() {
             }
             if (box !== undefined) {
                 const { data, count } = await fetchPropertiesForPage(page, PAGE_SIZE, user_preferences, box, filters, geo);
+
+                if (signal.aborted) return;
+                if (requestId !== requestIdRef.current) return;
+                
                 setTotalProperties(count || 0);
 
                 setTotalPages(Math.ceil((count || 0) / PAGE_SIZE));
@@ -320,6 +306,7 @@ export default function PropertiesPage() {
 
                 if (!data || (Array.isArray(data) && data.length === 0)) {
                     setProperties([]);
+                    setFetchComplete(true);
                     setLoading(false);
                     return;
                 }
@@ -327,23 +314,32 @@ export default function PropertiesPage() {
                 const recommendedProperties = setPropertyRecommended(data as Property[], page, user_preferences, filters.selectedTags);
 
                 const propertiesWithImages = await fetchPropertyImages(recommendedProperties);
+                if (signal.aborted) return;
+                if (requestId !== requestIdRef.current) return;
 
                 if (!propertiesWithImages) {
                     setProperties([]);
+                    setFetchComplete(true);
                     return;
                 }
                 const propertiesWithFavourites = await fetchFavouritesForProperties(propertiesWithImages, id) as Property[];
+                if (signal.aborted) return;
+                if (requestId !== requestIdRef.current) return;
 
                 if (!propertiesWithFavourites) {
                     setProperties([]);
+                    setFetchComplete(true);
                     return;
                 }
 
                 for (const property of propertiesWithFavourites) {
                     const tags = await fetchPropertyTags(property.id, id ?? undefined);
+                    if (signal.aborted) return;
+                    if (requestId !== requestIdRef.current) return;
                     property.tags = tags;
                 }
                 setProperties(propertiesWithFavourites);
+                setFetchComplete(true);
             }
         } catch (error) {
             console.error("Error fetching properties: ", error);
@@ -355,16 +351,21 @@ export default function PropertiesPage() {
     useEffect(() => {
         if (!userChecked || boundingBox === undefined) return; // don't fetch properties until we've checked if the user is logged in or not, so that we can fetch personalised properties for logged in users
         if (filters.location && boundingBox === null) return; // location is set but bbox hasn't resolved yet
-
+        
         setLoading(true);
-        fetchProperties(currentPage, userId, boundingBox, filters, geoJson); // fetch the first page of properties when the component mounts, and whenever the user logs in or out
+        setFetchComplete(false);
 
-    }, [fetchProperties, userChecked, userId, boundingBox, filters, geoJson]);
+        controllerRef.current = new AbortController();
+        const requestId = ++requestIdRef.current;
+        
+        fetchProperties(currentPage, userId, boundingBox, stableFilters, geoJson, controllerRef.current.signal, requestId); // fetch the first page of properties when the component mounts, and whenever the user logs in or out
+        return () => controllerRef.current?.abort();
+    }, [fetchProperties, userChecked, userId, boundingBox, stableFilters, geoJson]);
 
     return (
         <div className="bg-background min-h-screen w-full">
             <Navbar />
-            <FilterBar filters={filters} setFilters={setFilters} />
+            <FilterBar locations={buyerLocations} onLocationSaved={refreshFiltersFromStorage} />
             {loading ? (
                 <div className="flex items-center justify-center h-64">
                     <p className="text-2xl text-gray-500">Loading properties...</p>
@@ -376,31 +377,54 @@ export default function PropertiesPage() {
                         <div className="mx-4 flex items-center justify-center h-64">
                             <p className="text-2xl text-gray-500">{errorMessage}</p>
                         </div>
-                    ) : properties.length === 0 ? (
+                    ) : properties.length === 0 && fetchComplete ? (
                         <div className="mx-4 flex items-center justify-center h-64">
                             <p className="text-2xl text-gray-500 max-w-lg">No properties found{filters.location ? ` in ${filters.location}` : ""} with your chosen filters. Try adjusting your search criteria and try again.</p>
                         </div>
                     ) : (
                         <div className="pt-2 px-6 text-highlight">
                             <p>Showing properties {currentPage * PAGE_SIZE - (PAGE_SIZE - 1)} - {Math.min(currentPage * PAGE_SIZE, totalProperties)} of {totalProperties} properties {filters.location ? `in ${filters.location}` : ""}</p>
+                            {buyerLocations && buyerLocations.length > 0 &&
+                                <div className="mt-2 mb-4 flex flex-row items-center gap-3">
+                                    <p className="whitespace-nowrap">Show distance from: </p>
+                                    <FieldGroup className="flex flex-row">
+                                        {buyerLocations?.map((location, index) => (
+                                            <Field orientation="horizontal" key={index}>
+                                                <Checkbox className="border-foreground text-foreground data-[state=checked]:text-white data-[state=checked]:border-foreground data-[state=checked]:bg-highlight" id={`${index}-checkbox`} name={`${index}-checkbox`} checked={showDistanceFromLocation.includes(location)} onCheckedChange={(checked) => {
+                                                    if (checked === true) {
+                                                        setShowDistanceFromLocation([...showDistanceFromLocation, location]);
+                                                    } else {
+                                                        setShowDistanceFromLocation(showDistanceFromLocation.filter((l) => l !== location));
+                                                    }
+                                                }} />
+                                                <FieldLabel htmlFor={`${index}-checkbox`} className="font-normal">
+                                                    {location.nickname}
+                                                </FieldLabel>
+                                            </Field>
+                                        ))}
+                                    </FieldGroup>
+                                </div>
+                            }
+
                         </div>
                     )
                     }
                 </>
-            )}
+            )
+            }
             <div className="flex w-full items-center justify-center pt-4 px-6 md:px-10 md:pt-8">
                 <div className="w-full max-w-4xl">
                     {(!loading && ((preferencesExist || filters.selectedTags.length > 0) && properties.length > 0 && errorMessage === "")) &&
                         <p className="pb-2 text-highlight">Properties are ordered by your {preferencesExist && filters.selectedTags.length > 0 ? (<><a href="/protected/profile" className="hover:underline"><b>preferences</b></a> and selected tags</>) : preferencesExist ? (<a href="/protected/profile" className="hover:underline"><b>preferences</b></a>) : <>selected tags</>}</p>
                     }
                     {properties.map((property) => (
-                        <PropertyCard key={property.id} property={property} images={property.images} page="properties" />
+                        <PropertyCard key={property.id} property={property} images={property.images} page="properties" locationsForDistance={showDistanceFromLocation} />
                     ))}
                 </div>
 
             </div>
             <div className="flex flex-row gap-2 justify-center py-8 mb-6">
-                {currentPage > 1 ? <Button className="mx-auto bg-background hover:bg-midBlue text-highlight border-none" size="sm" onClick={() => fetchProperties(currentPage - 1, userId, boundingBox, filters, geoJson)} hidden={currentPage === 1}>
+                {currentPage > 1 ? <Button className="mx-auto bg-background hover:bg-midBlue text-highlight border-none" size="sm" onClick={() => fetchProperties(currentPage - 1, userId, boundingBox, filters, geoJson, controllerRef.current?.signal || new AbortSignal(), ++requestIdRef.current)} hidden={currentPage === 1}>
                     <ChevronLeft size={16} />
                     Previous
                 </Button> : (
@@ -431,7 +455,7 @@ export default function PropertiesPage() {
                                 return i + 1; // if total pages is 8 or less, show all page numbers
                             }
                         }).map((page) => (
-                            <Button key={page} variant="outline" className={page === currentPage ? "bg-highlight text-white border-none hover:bg-highlight hover:text-white" : "hover:bg-midBlue"} size="sm" onClick={() => fetchProperties(page, userId, boundingBox, filters, geoJson)} disabled={page === currentPage}>
+                            <Button key={page} variant="outline" className={page === currentPage ? "bg-highlight text-white border-none hover:bg-highlight hover:text-white" : "hover:bg-midBlue"} size="sm" onClick={() => fetchProperties(page, userId, boundingBox, filters, geoJson, controllerRef.current?.signal || new AbortSignal(), ++requestIdRef.current)} disabled={page === currentPage}>
                                 {page}
                             </Button>
                         ))}
@@ -449,13 +473,13 @@ export default function PropertiesPage() {
                 </div>
 
                 {currentPage < totalPages ? (
-                    <Button className="mx-auto bg-background hover:bg-midBlue text-highlight border-none" size="sm" onClick={() => fetchProperties(currentPage + 1, userId, boundingBox, filters, geoJson)} hidden={currentPage === totalPages}>
+                    <Button className="mx-auto bg-background hover:bg-midBlue text-highlight border-none" size="sm" onClick={() => fetchProperties(currentPage + 1, userId, boundingBox, filters, geoJson, controllerRef.current?.signal || new AbortSignal(), ++requestIdRef.current)} hidden={currentPage === totalPages}>
                         Next
                         <ChevronRight size={16} />
                     </Button>) :
                     <div className="mx-auto w-[100px]" />
                 }
             </div>
-        </div>
+        </div >
     );
 }

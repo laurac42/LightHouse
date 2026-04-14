@@ -52,7 +52,6 @@ export function useProfileData() {
                         user_goals: details.user_goals,
                     } as User));
                 }
-                console.log("details", details);    
                 if (details?.user_goals?.includes("buying")) {
                     const preferences = await fetchUserPreferences(userDetails.id);
                     setUserPreferences(preferences);

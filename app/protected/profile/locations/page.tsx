@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { updateUserDetails } from "@/lib/auth/user";
-import { Label } from "@/components/ui/label";
 import EditLocations from "@/components/edit-locations";
 import ProfilePageShell from "@/components/profile-page-shell";
 import { useProfileData } from "@/hooks/use-profile-data";
@@ -13,7 +11,6 @@ export default function ProfileLocationsPage() {
     const { userDetails, setUserDetails, isAdminOrAgent } = useProfileData();
     const [editing, setEditing] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string>("");
-    const [successMessage, setSuccessMessage] = useState<string>("");
     const [buyerLocations, setBuyerLocations] = useState<UserLocation[] | null>(null);
     const supabase = createClient();
 
@@ -40,19 +37,6 @@ export default function ProfileLocationsPage() {
 
         fetchLocations();
     }, [userDetails?.id, ]);
-
-    async function saveLocations() {
-        // try {
-        //     setErrorMessage("");
-        //     setSuccessMessage("");
-        //     if (userPreferences) {
-        //         await updateUserPreferences(userPreferences);
-        //     }
-        //     setSuccessMessage("User preferences successfully updated");
-        // } catch (error) {
-        //     setErrorMessage("Unable to update preferences: " + error);
-        // }
-    }
 
     return (
         <ProfilePageShell

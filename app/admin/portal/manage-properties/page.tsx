@@ -252,7 +252,7 @@ export default function AdminPropertiesPage() {
 
                                             <div className="w-full max-w-4xl">
                                                 {properties.map((property) => (
-                                                    <PropertyCard key={property.id} property={property} images={property.images} page="manage" editable={true} />
+                                                    <PropertyCard key={property.id} property={property} images={property.images} page="manage" editable={true} locationsForDistance={[]}/>
                                                 ))}
                                             </div>
                                             {errorMessage && <p className="text-red-500">{errorMessage}</p>}
