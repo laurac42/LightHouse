@@ -2,7 +2,7 @@
 import Navbar from "@/components/navbar";
 import FilterBar from "@/components/filter-bar";
 import { Button } from "@/components/ui/button";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { Database } from "@/types/supabase";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -122,13 +122,17 @@ async function fetchFavouritesForProperties(propertiesList: Property[], userId: 
 export default function PropertiesPage() {
     const searchParams = useSearchParams();
     const supabase = createClient();
+    const controllerRef = useRef<AbortController | null>(null);
+    const requestIdRef = useRef(0);
 
     const [properties, setProperties] = useState<Property[]>([]);
-    const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
+    const [filters, setFilters] = useState<Filters>(getInitialFilters());
+    const stableFilters = useMemo(() => filters, [JSON.stringify(filters)]);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [totalProperties, setTotalProperties] = useState(0);
     const [loading, setLoading] = useState(true);
+    const [fetchComplete, setFetchComplete] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
     const [userId, setUserId] = useState<string | null>(null);
     const [userChecked, setUserChecked] = useState<Boolean>(false); // state to track whether we've checked if the user is logged in or not
@@ -139,23 +143,39 @@ export default function PropertiesPage() {
     const [buyerLocations, setBuyerLocations] = useState<UserLocation[]>([]);
     const [showDistanceFromLocation, setShowDistanceFromLocation] = useState<UserLocation[]>([]);
 
+    function getInitialFilters(): Filters {
+        if (typeof window === "undefined") return DEFAULT_FILTERS;
+        const stored = localStorage.getItem("userLocationsAndDistances");
+        return {
+            ...DEFAULT_FILTERS,
+            ...(stored ? { userLocationsAndDistances: JSON.parse(stored) } : {}),
+        };
+    }
+
     const updateMedia = useCallback(() => {
         setIsMobile(window.innerWidth < 768);
     }, []);
 
-    // Read and apply filter parameters from URL
+    // Read and apply filter parameters from URL (other than locations, handled in local storage)
     useEffect(() => {
-        setFilters(parseFiltersFromSearchParams(searchParams));
-    }, [searchParams]);
+    parseFiltersFromSearchParams(searchParams)
+        .then(parsedFilters => {
+            const { userLocationsAndDistances, ...safeParsedFilters } = parsedFilters;
 
-    // apply local storage filters 
-    useEffect(() => {
-        const storedUserLocationsAndDistances = localStorage.getItem("userLocationsAndDistances");
-        if (storedUserLocationsAndDistances) {
-            setFilters((prev) => ({
+            setFilters(prev => ({
                 ...prev,
-                userLocationsAndDistances: JSON.parse(storedUserLocationsAndDistances),
+                ...safeParsedFilters,
             }));
+        })
+        .catch(error => {
+            console.error("Error parsing filters from URL: ", error);
+        });
+}, [searchParams]);
+
+    const refreshFiltersFromStorage = useCallback(() => {
+        const stored = localStorage.getItem("userLocationsAndDistances");
+        if (stored) {
+            setFilters(prev => ({ ...prev, userLocationsAndDistances: JSON.parse(stored) }));
         }
     }, []);
 
@@ -180,24 +200,35 @@ export default function PropertiesPage() {
     useEffect(() => {
         setLoading(true);
         setErrorMessage("");
-        setProperties([]);
         setGeoJson(null);
         // fetch the bounding box for the location in the URL query parameters and set the location state to the location name from the bounding box, so that we can display it on the page
         const urlParams = new URLSearchParams(window.location.search);
         const locationParam = urlParams.get("location");
         if (locationParam) {
 
-            setFilters((prev) => ({ ...prev, location: locationParam }));
+            setFilters((prev) =>
+                prev.location === locationParam ? prev : { ...prev, location: locationParam }
+            );
             getPolygonBoundingBoxForLocation(locationParam)
                 .then((geoData) => {
                     if (geoData) {
                         const typedGeoData = geoData as { geojson: GeoJSON, minLat: string, maxLat: string, minLng: string, maxLng: string };
-                        setBoundingBox({
-                            minLatitude: parseFloat(typedGeoData.minLat),
-                            maxLatitude: parseFloat(typedGeoData.maxLat),
-                            minLongitude: parseFloat(typedGeoData.minLng),
-                            maxLongitude: parseFloat(typedGeoData.maxLng),
+                        setBoundingBox((prev) => {
+                            const next = {
+                                minLatitude: parseFloat(typedGeoData.minLat),
+                                maxLatitude: parseFloat(typedGeoData.maxLat),
+                                minLongitude: parseFloat(typedGeoData.minLng),
+                                maxLongitude: parseFloat(typedGeoData.maxLng),
+                            };
+                            if (prev?.minLatitude === next.minLatitude &&
+                                prev?.maxLatitude === next.maxLatitude &&
+                                prev?.minLongitude === next.minLongitude &&
+                                prev?.maxLongitude === next.maxLongitude) {
+                                return prev;
+                            }
+                            return next;
                         });
+
                         if (typedGeoData.geojson) {
                             setGeoJson(typedGeoData.geojson);
                         } else {
@@ -249,10 +280,10 @@ export default function PropertiesPage() {
      * @param id User ID for fetching personalised properties
      * @param selectedTags Selected tags for filtering properties
      */
-    const fetchProperties = useCallback(async (page: number = 1, id: string | null, box: BoundingBox | null | undefined, filters: Filters, geo: GeoJSON | null) => {
+    const fetchProperties = useCallback(async (page: number = 1, id: string | null, box: BoundingBox | null | undefined, filters: Filters, geo: GeoJSON | null, signal: AbortSignal, requestId: number) => {
         try {
+
             // scroll to top
-            setLoading(true);
             window.scrollTo({ top: 0 });
 
             let user_preferences: UserPreferences | null = null;
@@ -264,6 +295,10 @@ export default function PropertiesPage() {
             }
             if (box !== undefined) {
                 const { data, count } = await fetchPropertiesForPage(page, PAGE_SIZE, user_preferences, box, filters, geo);
+
+                if (signal.aborted) return;
+                if (requestId !== requestIdRef.current) return;
+                
                 setTotalProperties(count || 0);
 
                 setTotalPages(Math.ceil((count || 0) / PAGE_SIZE));
@@ -271,6 +306,7 @@ export default function PropertiesPage() {
 
                 if (!data || (Array.isArray(data) && data.length === 0)) {
                     setProperties([]);
+                    setFetchComplete(true);
                     setLoading(false);
                     return;
                 }
@@ -278,23 +314,32 @@ export default function PropertiesPage() {
                 const recommendedProperties = setPropertyRecommended(data as Property[], page, user_preferences, filters.selectedTags);
 
                 const propertiesWithImages = await fetchPropertyImages(recommendedProperties);
+                if (signal.aborted) return;
+                if (requestId !== requestIdRef.current) return;
 
                 if (!propertiesWithImages) {
                     setProperties([]);
+                    setFetchComplete(true);
                     return;
                 }
                 const propertiesWithFavourites = await fetchFavouritesForProperties(propertiesWithImages, id) as Property[];
+                if (signal.aborted) return;
+                if (requestId !== requestIdRef.current) return;
 
                 if (!propertiesWithFavourites) {
                     setProperties([]);
+                    setFetchComplete(true);
                     return;
                 }
 
                 for (const property of propertiesWithFavourites) {
                     const tags = await fetchPropertyTags(property.id, id ?? undefined);
+                    if (signal.aborted) return;
+                    if (requestId !== requestIdRef.current) return;
                     property.tags = tags;
                 }
                 setProperties(propertiesWithFavourites);
+                setFetchComplete(true);
             }
         } catch (error) {
             console.error("Error fetching properties: ", error);
@@ -306,16 +351,21 @@ export default function PropertiesPage() {
     useEffect(() => {
         if (!userChecked || boundingBox === undefined) return; // don't fetch properties until we've checked if the user is logged in or not, so that we can fetch personalised properties for logged in users
         if (filters.location && boundingBox === null) return; // location is set but bbox hasn't resolved yet
-
+        
         setLoading(true);
-        fetchProperties(currentPage, userId, boundingBox, filters, geoJson); // fetch the first page of properties when the component mounts, and whenever the user logs in or out
+        setFetchComplete(false);
 
-    }, [fetchProperties, userChecked, userId, boundingBox, filters, geoJson]);
+        controllerRef.current = new AbortController();
+        const requestId = ++requestIdRef.current;
+        
+        fetchProperties(currentPage, userId, boundingBox, stableFilters, geoJson, controllerRef.current.signal, requestId); // fetch the first page of properties when the component mounts, and whenever the user logs in or out
+        return () => controllerRef.current?.abort();
+    }, [fetchProperties, userChecked, userId, boundingBox, stableFilters, geoJson]);
 
     return (
         <div className="bg-background min-h-screen w-full">
             <Navbar />
-            <FilterBar locations={buyerLocations} />
+            <FilterBar locations={buyerLocations} onLocationSaved={refreshFiltersFromStorage} />
             {loading ? (
                 <div className="flex items-center justify-center h-64">
                     <p className="text-2xl text-gray-500">Loading properties...</p>
@@ -327,7 +377,7 @@ export default function PropertiesPage() {
                         <div className="mx-4 flex items-center justify-center h-64">
                             <p className="text-2xl text-gray-500">{errorMessage}</p>
                         </div>
-                    ) : properties.length === 0 ? (
+                    ) : properties.length === 0 && fetchComplete ? (
                         <div className="mx-4 flex items-center justify-center h-64">
                             <p className="text-2xl text-gray-500 max-w-lg">No properties found{filters.location ? ` in ${filters.location}` : ""} with your chosen filters. Try adjusting your search criteria and try again.</p>
                         </div>
@@ -374,7 +424,7 @@ export default function PropertiesPage() {
 
             </div>
             <div className="flex flex-row gap-2 justify-center py-8 mb-6">
-                {currentPage > 1 ? <Button className="mx-auto bg-background hover:bg-midBlue text-highlight border-none" size="sm" onClick={() => fetchProperties(currentPage - 1, userId, boundingBox, filters, geoJson)} hidden={currentPage === 1}>
+                {currentPage > 1 ? <Button className="mx-auto bg-background hover:bg-midBlue text-highlight border-none" size="sm" onClick={() => fetchProperties(currentPage - 1, userId, boundingBox, filters, geoJson, controllerRef.current?.signal || new AbortSignal(), ++requestIdRef.current)} hidden={currentPage === 1}>
                     <ChevronLeft size={16} />
                     Previous
                 </Button> : (
@@ -405,7 +455,7 @@ export default function PropertiesPage() {
                                 return i + 1; // if total pages is 8 or less, show all page numbers
                             }
                         }).map((page) => (
-                            <Button key={page} variant="outline" className={page === currentPage ? "bg-highlight text-white border-none hover:bg-highlight hover:text-white" : "hover:bg-midBlue"} size="sm" onClick={() => fetchProperties(page, userId, boundingBox, filters, geoJson)} disabled={page === currentPage}>
+                            <Button key={page} variant="outline" className={page === currentPage ? "bg-highlight text-white border-none hover:bg-highlight hover:text-white" : "hover:bg-midBlue"} size="sm" onClick={() => fetchProperties(page, userId, boundingBox, filters, geoJson, controllerRef.current?.signal || new AbortSignal(), ++requestIdRef.current)} disabled={page === currentPage}>
                                 {page}
                             </Button>
                         ))}
@@ -423,7 +473,7 @@ export default function PropertiesPage() {
                 </div>
 
                 {currentPage < totalPages ? (
-                    <Button className="mx-auto bg-background hover:bg-midBlue text-highlight border-none" size="sm" onClick={() => fetchProperties(currentPage + 1, userId, boundingBox, filters, geoJson)} hidden={currentPage === totalPages}>
+                    <Button className="mx-auto bg-background hover:bg-midBlue text-highlight border-none" size="sm" onClick={() => fetchProperties(currentPage + 1, userId, boundingBox, filters, geoJson, controllerRef.current?.signal || new AbortSignal(), ++requestIdRef.current)} hidden={currentPage === totalPages}>
                         Next
                         <ChevronRight size={16} />
                     </Button>) :

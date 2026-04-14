@@ -20,7 +20,6 @@ import { toast } from "sonner";
 import { fetchPropertyTags } from "@/lib/data/tag-utils";
 import { TagCount } from "@/types/tags";
 import { UserLocation } from "@/types/address";
-import { fetchDistanceBetweenPropertyAndLocation } from "@/lib/data/location";
 
 type Property = Database["public"]["Tables"]["properties"]["Row"] & { isFavourite?: boolean, recommended?: boolean };
 
@@ -58,7 +57,6 @@ export default function PropertyCard({ property, images, page, editable = false,
                         travel_mode: location.travel_mode
                     })
                 }).then(response => response.json()).then(data => {
-                    console.log("Distance from " + location.nickname + ": " + data.distance);
                     setDistances(prev => ({ ...prev, [location.id]: data.distance }));
                 }).catch(error => console.error("Error fetching distance:", error));
             });

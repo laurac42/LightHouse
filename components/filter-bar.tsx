@@ -18,19 +18,24 @@ import type { Filters } from "@/types/filters";
 import { toast } from "sonner";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { UserLocation } from "@/types/address";
-import { parseFiltersFromSearchParams } from "@/lib/filters/url-filters";
+import { DEFAULT_FILTERS, parseFiltersFromSearchParams } from "@/lib/filters/url-filters";
 
 type FilterBarProps = {
     locations: UserLocation[];
+    onLocationSaved: () => void;
 }
 
-export default function FilterBar({ locations }: FilterBarProps) {
+export default function FilterBar({ locations, onLocationSaved }: FilterBarProps) {
     const searchParams = useSearchParams();
     const router = useRouter();
 
-    const [fils, setFils] = useState<Filters>(() => parseFiltersFromSearchParams(searchParams));
+    const [fils, setFils] = useState<Filters>(DEFAULT_FILTERS);
     const [isMoreFiltersOpen, setIsMoreFiltersOpen] = useState<boolean>(false);
     const [allTags, setAllTags] = useState<Tag[]>([]);
+
+    useEffect(() => {
+        parseFiltersFromSearchParams(searchParams).then(setFils);
+    }, [searchParams]);
 
     // update filters by updating the url parameters
     const updateFilters = <K extends keyof Filters>(key: K, value: Filters[K]) => {
@@ -62,10 +67,6 @@ export default function FilterBar({ locations }: FilterBarProps) {
 
         router.replace(`?${params.toString()}`);
     }
-
-    useEffect(() => {
-        setFils(parseFiltersFromSearchParams(searchParams));
-    }, [searchParams]);
 
     const updateLocalFilter = <K extends keyof Filters>(key: K, value: Filters[K]) => {
         setFils((prev) => ({
@@ -130,7 +131,7 @@ export default function FilterBar({ locations }: FilterBarProps) {
                         </DropdownMenuGroup>
                     </DropdownMenuContent>
                 </DropdownMenu>
-                
+
                 {/* Price Range */}
                 <DropdownMenu >
                     <DropdownMenuTrigger asChild>
@@ -180,7 +181,7 @@ export default function FilterBar({ locations }: FilterBarProps) {
                         </DropdownMenuGroup>
                     </DropdownMenuContent>
                 </DropdownMenu>
-                
+
                 {/* Bedrooms */}
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -345,6 +346,7 @@ export default function FilterBar({ locations }: FilterBarProps) {
                     allTags={allTags}
                     setAllTags={setAllTags}
                     locations={locations}
+                    onLocationSaved={onLocationSaved}
                 />
             </div>
         </div >

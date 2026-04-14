@@ -17,7 +17,6 @@ export async function POST(req: Request) {
     const data = await response.json();
     const element = data.rows[0].elements[0];
     if (element.status === "OK") {
-        console.log("Distance in api route: " + element.duration.value);
         if (element.duration.value <= 3600) {
             data.distance = Math.round(element.duration.value / 60) + " minutes"; // convert seconds to minutes
         } else if (element.duration.value > 3600) {
@@ -27,6 +26,5 @@ export async function POST(req: Request) {
     } else {
         data.distance = null;
     }
-    console.log("response from google api:", element.duration.value / 60);
     return Response.json(data);
 }

@@ -163,35 +163,3 @@ export async function editPersonalLocation(location: UserLocation) {
     }
     return data;
 }
-
-/**
- * Fetch the travel time between a property and a user added location using the users chosen mode of travel
- * @param lat1 
- * @param long1 
- * @param lat2 
- * @param long2 
- * @param travel_mode 
- * @returns The travel time in minutes between the property and the user location
- */
-export async function fetchDistanceBetweenPropertyAndLocation(lat1: number, long1: number, lat2: number, long2: number, travel_mode: string) {
-    console.log("using google api to fetch")
-    const apiKey = process.env.GEMINI_API_KEY;
-    const vercelUrl = process.env.VERCEL_URL;
-    console.log("Vercel URL:", vercelUrl);
-    console.log("Public key: " + process.env.NEXT_PUBLIC_SUPABASE_URL);
-    console.log(process.env.GEMINI_API_KEY)
-    if (!apiKey) {
-        console.error("GEMINI_API_KEY environment variable is not set");
-        return;
-    }
-    const url = new URL("https://maps.googleapis.com/maps/api/distancematrix/json");
-    url.searchParams.set("origins", `${lat1},${long1}`);
-    url.searchParams.set("destinations", `${lat2},${long2}`);
-    url.searchParams.set("mode", travel_mode);
-    url.searchParams.set("key", apiKey);
-
-    const response = await fetch(url.toString());
-    const data = await response.json();
-    console.log("response from google api:", data);
-    return 5;
-}

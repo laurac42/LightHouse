@@ -555,6 +555,7 @@ export type Database = {
           p_has_garden?: boolean
           p_include_new_builds?: boolean
           p_include_under_offer?: boolean
+          p_locations?: Json
           p_max_baths?: number
           p_max_beds?: number
           p_max_lat?: number

@@ -1,4 +1,6 @@
 import type { Filters } from "@/types/filters";
+import { createClient } from "@/lib/supabase/client";
+const supabase = createClient();
 
 type SearchParamReader = {
     get: (key: string) => string | null;
@@ -30,7 +32,7 @@ export const DEFAULT_FILTERS: Filters = {
     userLocationsAndDistances: [],
 };
 
-export function parseFiltersFromSearchParams(params: SearchParamReader): Filters {
+export async function parseFiltersFromSearchParams(params: SearchParamReader): Promise<Filters> {
     const location = params.get("location");
     const milesRadiusParam = params.get("milesRadius");
     const minPriceParam = params.get("minPrice");
@@ -53,6 +55,8 @@ export function parseFiltersFromSearchParams(params: SearchParamReader): Filters
     const includeUnderOfferParam = params.get("include_under_offer");
     const includeNewBuildsParam = params.get("include_new_builds");
     const selectedTagsParam = params.get("selectedTags");
+
+    const { data: selected_tags } = await supabase.from("tags").select("id, name, is_seed").in("id", selectedTagsParam ? selectedTagsParam.split(",").map(id => parseInt(id)) : []);
 
     return {
         ...DEFAULT_FILTERS,
@@ -77,6 +81,6 @@ export function parseFiltersFromSearchParams(params: SearchParamReader): Filters
         max_council_tax_band: maxCouncilTaxBandParam || null,
         include_under_offer: includeUnderOfferParam ? includeUnderOfferParam === "false" : true,
         include_new_builds: includeNewBuildsParam ? includeNewBuildsParam === "false" : true,
-        selectedTags: selectedTagsParam ? selectedTagsParam.split(",").map(id => ({ id: parseInt(id), name: "", is_seed: false })) : [],
+        selectedTags: selected_tags || [],
     };
 }

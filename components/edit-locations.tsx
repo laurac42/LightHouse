@@ -46,7 +46,6 @@ export default function EditProfileLocations({
         try {
             setErrorMessage("");
             setSuccessMessage("");
-            console.log("locationBeingEdited in saveChanges: ", locationBeingEdited);
 
             // get new coordinates if postcode has changed
             if (postcodeChanged && locationBeingEdited?.post_code) {

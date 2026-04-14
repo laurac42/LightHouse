@@ -24,7 +24,7 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import { UserLocation } from "@/types/address";
 import { Label } from "@radix-ui/react-dropdown-menu";
-import { parseFiltersFromSearchParams } from "@/lib/filters/url-filters";
+import { DEFAULT_FILTERS, parseFiltersFromSearchParams } from "@/lib/filters/url-filters";
 
 type FilterBarOverlayProps = {
     isOpen: boolean;
@@ -32,6 +32,7 @@ type FilterBarOverlayProps = {
     allTags: Tag[];
     setAllTags: React.Dispatch<React.SetStateAction<Tag[]>>;
     locations?: UserLocation[] | null;
+    onLocationSaved?: () => void;
 }
 
 export default function FilterBarOverlay({
@@ -39,29 +40,30 @@ export default function FilterBarOverlay({
     onClose,
     allTags,
     setAllTags,
-    locations
+    locations,
+    onLocationSaved,
 }: FilterBarOverlayProps) {
 
     const searchParams = useSearchParams();
     const router = useRouter();
 
-    const [localFilters, setLocalFilters] = useState<Filters>(() => parseFiltersFromSearchParams(searchParams));
+    const [localFilters, setLocalFilters] = useState<Filters>(DEFAULT_FILTERS);
 
     // load search parameter filters
     useEffect(() => {
-        setLocalFilters(parseFiltersFromSearchParams(searchParams));
+        parseFiltersFromSearchParams(searchParams).then(setLocalFilters);
     }, [searchParams]);
 
     // load local storage filters every time the component is opened
-    useEffect(() => {   
+    useEffect(() => {
         const storedUserLocationsAndDistances = localStorage.getItem("userLocationsAndDistances");
         if (storedUserLocationsAndDistances) {
             setLocalFilters((prev) => ({
                 ...prev,
                 userLocationsAndDistances: JSON.parse(storedUserLocationsAndDistances),
             }));
-        } 
-    },[isOpen]);
+        }
+    }, [isOpen]);
 
 
     const updateLocalFilter = <K extends keyof Filters>(key: K, value: Filters[K]) => {
@@ -294,17 +296,17 @@ export default function FilterBarOverlay({
                                                 <DropdownMenuLabel className="text-md font-bold">{location.nickname}</DropdownMenuLabel>
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>
-                                                                <Button type="button" className="w-50 bg-white hover:bg-lightPink" variant="outline">{localFilters.userLocationsAndDistances?.find(ld => ld.location.id === location.id)?.distance ===  null || localFilters.userLocationsAndDistances?.find(ld => ld.location.id === location.id)?.distance === undefined ? "Any Distance " : localFilters.userLocationsAndDistances?.find(ld => ld.location.id === location.id)?.distance === 1 ? "Within 1 mile" : `Within ${localFilters.userLocationsAndDistances?.find(ld => ld.location.id === location.id)?.distance} miles`}<ChevronDown /></Button>
-                                                            </DropdownMenuTrigger>
+                                                        <Button type="button" className="w-50 bg-white hover:bg-lightPink" variant="outline">{localFilters.userLocationsAndDistances?.find(ld => ld.location.id === location.id)?.distance === null || localFilters.userLocationsAndDistances?.find(ld => ld.location.id === location.id)?.distance === undefined ? "Any Distance " : localFilters.userLocationsAndDistances?.find(ld => ld.location.id === location.id)?.distance === 1 ? "Within 1 mile" : `Within ${localFilters.userLocationsAndDistances?.find(ld => ld.location.id === location.id)?.distance} miles`}<ChevronDown /></Button>
+                                                    </DropdownMenuTrigger>
                                                     <DropdownMenuContent className="z-[104]">
                                                         <DropdownMenuGroup>
-                                                            <DropdownMenuItem onClick={() => updateLocalFilter("userLocationsAndDistances", [...localFilters.userLocationsAndDistances.filter(ld => ld.location.id !== location.id), { location, distance: null }])}>This area only</DropdownMenuItem>
+                                                            <DropdownMenuItem onClick={() => updateLocalFilter("userLocationsAndDistances", [...localFilters.userLocationsAndDistances.filter(ld => ld.location.id !== location.id), { location, distance: null }])}>Any Distance</DropdownMenuItem>
                                                             <DropdownMenuItem onClick={() => updateLocalFilter("userLocationsAndDistances", [...localFilters.userLocationsAndDistances.filter(ld => ld.location.id !== location.id), { location, distance: 1 }])}>Within 1 mile</DropdownMenuItem>
                                                             <DropdownMenuItem onClick={() => updateLocalFilter("userLocationsAndDistances", [...localFilters.userLocationsAndDistances.filter(ld => ld.location.id !== location.id), { location, distance: 2 }])}>Within 2 miles</DropdownMenuItem>
                                                             <DropdownMenuItem onClick={() => updateLocalFilter("userLocationsAndDistances", [...localFilters.userLocationsAndDistances.filter(ld => ld.location.id !== location.id), { location, distance: 5 }])}>Within 5 miles</DropdownMenuItem>
                                                             <DropdownMenuItem onClick={() => updateLocalFilter("userLocationsAndDistances", [...localFilters.userLocationsAndDistances.filter(ld => ld.location.id !== location.id), { location, distance: 10 }])}>Within 10 miles</DropdownMenuItem>
                                                             <DropdownMenuItem onClick={() => updateLocalFilter("userLocationsAndDistances", [...localFilters.userLocationsAndDistances.filter(ld => ld.location.id !== location.id), { location, distance: 20 }])}>Within 20 miles</DropdownMenuItem>
-                                                            <DropdownMenuItem onClick={() => updateLocalFilter("userLocationsAndDistances", [...localFilters.userLocationsAndDistances.filter(ld => ld.location.id !== location.id) , { location, distance: 30 }])}>Within 30 miles</DropdownMenuItem>
+                                                            <DropdownMenuItem onClick={() => updateLocalFilter("userLocationsAndDistances", [...localFilters.userLocationsAndDistances.filter(ld => ld.location.id !== location.id), { location, distance: 30 }])}>Within 30 miles</DropdownMenuItem>
                                                         </DropdownMenuGroup>
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
@@ -693,7 +695,9 @@ export default function FilterBarOverlay({
                             }
 
                             // store user locations in local storage, as they are user-specific, not for url
-                            localStorage.setItem("userLocationsAndDistances", JSON.stringify(updated.userLocationsAndDistances));
+                            const updatedUserLocations = updated.userLocationsAndDistances.filter(ld => ld.distance !== null);
+                            localStorage.setItem("userLocationsAndDistances", JSON.stringify(updatedUserLocations));
+                            onLocationSaved?.();
 
                             setOrDelete("location", updated.location);
                             setOrDelete("milesRadius", updated.milesRadius);
