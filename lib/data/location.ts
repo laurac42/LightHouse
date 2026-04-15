@@ -1,4 +1,3 @@
-'use server';
 import { GeoJSON } from "geojson";
 const myHeaders = new Headers();
 myHeaders.append("Accept", "application/json");
@@ -108,6 +107,7 @@ async function fetchPolygonBoundingBox(location: string) {
  */
 export async function addPersonalLocation(userId: string, location: PersonalLocationAddress, latitude: number, longitude: number) {
     const supabase = createClient();
+    console.log("user id: ", userId)
     if (!userId) {
         throw new Error("User ID is required to add a personal location");
     }
