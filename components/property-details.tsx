@@ -32,7 +32,7 @@ function timestamptzToLocalDate(timestamptz: string): string {
 // page options are:
 // - view: view the property details as a buyer would see them
 // - edit: view the property details with the option to edit the seller added info (only for the seller who added the property)
-export default function PropertyDetails({ params, page = "view", locs }: { params: { id: number, property: Property }, page: string, locs: UserLocation[] }) {
+export default function PropertyDetails({ params, page = "view", locs }: { params: { id: number, property: Property }, page: string, locs: UserLocation[] | [] }) {
     const { property } = params;
     const [sellerDetails, setSellerDetails] = useState<string | null>(null);
     const [reason, setReason] = useState<string | null>(null);
