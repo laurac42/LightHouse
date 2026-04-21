@@ -1,6 +1,6 @@
 export async function POST(req: Request) {
     const params = await req.json();
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env.DISTANCE_MATRIX_API_KEY;
     if (!apiKey) {
         return Response.json({ error: "API key not found" }, { status: 500 });
     }
@@ -9,7 +9,7 @@ export async function POST(req: Request) {
     url.searchParams.set("destinations", `${params.lat2},${params.long2}`);
     url.searchParams.set("mode", params.travel_mode);
     url.searchParams.set("key", apiKey);
-    // do your Gemini call here
+   
     const response = await fetch(url.toString(), {
         headers: { 'Authorization': `Bearer ${apiKey}` }
     });

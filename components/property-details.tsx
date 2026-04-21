@@ -10,6 +10,8 @@ import SellerDetails from "./seller-details";
 import { Button } from "./ui/button";
 import { PropertyTags } from "./property-tags";
 import { Card } from "./ui/card";
+import { MapComponent } from "./map";
+import type { UserLocation } from "@/types/address";
 
 type Property = Database["public"]["Tables"]["properties"]["Row"] & { isFavourite?: boolean };
 
@@ -30,7 +32,7 @@ function timestamptzToLocalDate(timestamptz: string): string {
 // page options are:
 // - view: view the property details as a buyer would see them
 // - edit: view the property details with the option to edit the seller added info (only for the seller who added the property)
-export default function PropertyDetails({ params, page = "view" }: { params: { id: number, property: Property }, page: string }) {
+export default function PropertyDetails({ params, page = "view", locs }: { params: { id: number, property: Property }, page: string, locs: UserLocation[] }) {
     const { property } = params;
     const [sellerDetails, setSellerDetails] = useState<string | null>(null);
     const [reason, setReason] = useState<string | null>(null);
@@ -160,6 +162,10 @@ export default function PropertyDetails({ params, page = "view" }: { params: { i
                         <PropertyTags propertyId={property.id} />
 
                     </div>
+
+                    {property.latitude !== null && property.longitude !== null ? (
+                        MapComponent(property.latitude, property.longitude, locs)
+                    ) : null}
 
                     {((sellerDetails) || (page === "edit")) && (
                         <SellerDetails property={property} reason={reason} description={sellerDetails} page={page} />
