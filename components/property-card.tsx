@@ -117,37 +117,11 @@ export default function PropertyCard({ property, images, page, editable = false,
                     <div className={page === "manage" ? "flex flex-col gap-0 md:w-64 shrink-0" : "flex flex-col gap-0 md:w-80 shrink-0"}>
                         <ImageCarousel images={images} property={property} page={page} isModalOpen={null} />
                         <div className="flex flex-1">
-                            <CardHeader className={page === "manage" ? "flex-1 min-h-12 p-0 gap-0 m-0 bg-highlight rounded-b-md text-white flex flex-row justify-between" : "justify-between p- 0 gap-0 m-0 bg-highlight rounded-b-md text-white flex flex-row flex-1 min-h-12 md:min-h-20 lg:min-h-10 flex flex-col"}>
-                                <div className="items-center flex flex-row gap-1 my-2 justify-center">
+                            <CardHeader className={page === "manage" ? "flex-1 min-h-12 p-0 gap-0 m-0 bg-highlight rounded-b-md text-white flex flex-row justify-between" : "justify-between p-0 gap-0 m-0 bg-highlight rounded-b-md text-white flex flex-row flex-1 min-h-10 md:min-h-20 lg:min-h-10 flex flex-col"}>
+                                <div className="items-center flex flex-row gap-1 my-2 justify-center my-auto">
                                     <h1 className="text-2xl text-center">{'£' + property.price.toLocaleString()}</h1>
                                     <p className="text-sm text-center"> {uppercaseWords(property.price_type || '')}</p>
                                 </div>
-                                {/** Agency details */}
-                                {agencyDetails && page !== "manage" && (
-                                    <div className="flex flex-row items-center gap-4 pb-2 mb-2">
-                                        {agencyDetails.logo_url && (
-                                            <img
-                                                src={agencyDetails.logo_url}
-                                                alt="Agency logo"
-                                                className="w-20 object-contain"
-                                            />
-                                        )}
-                                        <div className="flex flex-row ml-auto pr-4 gap-4 items-center">
-                                            {agencyDetails.phone_number && (
-                                                <div className="flex justify-end">
-                                                    <a className='mr-0 flex items-center gap-1 font-bold underline hover:text-blue-500' href={`tel:${agencyDetails.phone_number}`}>
-                                                        Call <Phone />
-                                                    </a>
-                                                </div>
-                                            )}
-                                            {agencyDetails.email && (
-                                                <a className='flex items-center gap-1 font-bold underline hover:text-blue-500' href={`mailto:${agencyDetails.email}`}>
-                                                    Email <Mail />
-                                                </a>
-                                            )}
-                                        </div>
-                                    </div>
-                                )}
                             </CardHeader>
                         </div>
                     </div>
@@ -178,7 +152,7 @@ export default function PropertyCard({ property, images, page, editable = false,
                         <div>
                             {(page === "properties" || page === "favourites") ? (
                                 <Link href={page === "properties" ? `properties/${property.id}` : `favourites/${property.id}`}>
-                                    <div className="grid grid-cols-2 lg:grid-cols-3 md:px-8 px-1 py-1 lg:py-2 text-md gap-2 lg:gap-4">
+                                    <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-4 md:px-6 px-1 py-1 lg:py-2  text-xs sm:text-sm gap-2 lg:gap-4">
                                         <div className="inline-flex items-center gap-1 font-bold">
                                             <Home size={16} />
                                             {property.property_type ? property.property_type.charAt(0).toUpperCase() + property.property_type.slice(1) : ""}
@@ -231,7 +205,7 @@ export default function PropertyCard({ property, images, page, editable = false,
 
                                     </div>
                                 </Link>) : (
-                                <div className="grid grid-cols-2 lg:grid-cols-3 md:px-8 px-1 py-1 lg:py-2 text-md gap-1 lg:gap-2">
+                                <div className="grid grid-cols-2 lg:grid-cols-3 md:px-8 px-1 py-1 lg:py-2 gap-1 lg:gap-2">
                                     <div className="inline-flex items-center gap-1">
                                         <b>Type:</b> {property.property_type ? property.property_type.charAt(0).toUpperCase() + property.property_type.slice(1) : ""}
                                     </div>
@@ -257,13 +231,12 @@ export default function PropertyCard({ property, images, page, editable = false,
                             )}
                         </div>
 
-                        {/** Description */}
-                        <div className={page === "properties" || page === "favourites" ? "text-sm text-muted-foreground max-h-[100px] mx-1 mt-2 mb-4 overflow-hidden text-ellipsis line-clamp-3 lg:line-clamp-4" : "text-sm text-muted-foreground max-h-[100px] mx-1 my-1 overflow-hidden text-ellipsis line-clamp-2 lg:line-clamp-3"}>
+                        <div className={page === "properties" || page === "favourites" ? "text-sm text-muted-foreground max-h-[100px] mx-1 mt-2 mb-4 overflow-hidden text-ellipsis line-clamp-2 lg:line-clamp-3" : "text-sm text-muted-foreground max-h-[100px] mx-1 my-1 overflow-hidden text-ellipsis line-clamp-2 lg:line-clamp-3"}>
                             {property.description}
                         </div>
 
                         {/** Tag display */}
-                        <div className="max-h-8 mb-2">
+                        <div className="max-h-8 mb-2 overflow-hidden text-ellipsis">
                             {propertyTags.length > 0 && propertyTags.map((tag) => (
                                 <span key={tag.tag_id} className="inline-block bg-buttonColor text-foreground text-xs px-2 py-1 rounded-full mr-2 mb-2">
                                     {tag.name} ({tag.count})
@@ -272,14 +245,43 @@ export default function PropertyCard({ property, images, page, editable = false,
                         </div>
 
                         {/* Distance From Locations */}
-                        <div className="py-2 mb-2 flex flex-col gap-1">
+                        <div className="pb-2 mb-2 flex flex-wrap gap-1">
                             {locationsForDistance.length > 0 && locationsForDistance.map((location) => (
-                                <p key={location.id} className="text-md text-foreground flex items-center gap-1 inline-flex">
+                                <p key={location.id} className="text-xs sm:text-sm text-foreground flex items-center gap-2 inline-flex">
+                                    <b>{location.nickname}</b>
+                                    {distances[location.id] !== undefined ? distances[location.id] : 'Loading...'}
                                     {location.travel_mode === "driving" ? <Car /> : location.travel_mode === "walking" ? <Footprints /> : location.travel_mode === "transit" ? <TrainFront /> : <Bike />}
-                                    {distances[location.id] !== undefined ? distances[location.id] : 'Loading...'} {location.travel_mode === "driving" ? "drive" : location.travel_mode === "walking" ? "walk" : location.travel_mode === "transit" ? "transit" : "cycle"} from <b>{location.nickname}</b>
+                                    <span className="px-2">|</span>
                                 </p>
                             ))}
                         </div>
+
+                        {/** Agency details */}
+                        {agencyDetails && page !== "manage" && (
+                            <div className="flex flex-row items-center gap-4 pb-2 mb-2">
+                                {agencyDetails.logo_url && (
+                                    <img
+                                        src={agencyDetails.logo_url}
+                                        alt="Agency logo"
+                                        className="w-20 object-contain"
+                                    />
+                                )}
+                                <div className="flex flex-row ml-auto pr-4 gap-4 items-center">
+                                    {agencyDetails.phone_number && (
+                                        <div className="flex justify-end">
+                                            <a className='mr-0 flex text-sm items-center gap-1 font-bold underline hover:text-blue-500' href={`tel:${agencyDetails.phone_number}`}>
+                                                Call <Phone className="size-4"/>
+                                            </a>
+                                        </div>
+                                    )}
+                                    {agencyDetails.email && (
+                                        <a className='flex text-sm items-center gap-1 font-bold underline hover:text-blue-500' href={`mailto:${agencyDetails.email}`}>
+                                            Email <Mail className="size-4"/>
+                                        </a>
+                                    )}
+                                </div>
+                            </div>
+                        )}
 
                         {/** Manage property options */}
                         {page === "manage" &&
