@@ -25,19 +25,20 @@ const MapComponent = (lat: number, lng: number, locs: UserLocation[]) => {
     console.log("Rendering map with center: ", mapCenter);
 
     return (
-        <div className="w-full py-6 mb-12">
-            <h2 className="text-2xl pb-2 font-bold">What's in the Local Area?</h2>
+        <div className="w-full py-6 mb-2">
+            <h2 className="text-2xl pb-2 font-bold mx-4">What's in the Local Area?</h2>
             {/* Home icon by Icons 8 */}
             <GoogleMap
                 mapContainerStyle={defaultMapContainerStyle}
                 center={mapCenter}
                 zoom={defaultMapZoom}
                 options={defaultMapOptions}>
-                <Marker position={mapCenter} label="This Property" icon={{ url: "/images/icons8-home.svg", scaledSize: new window.google.maps.Size(32, 32), }}/>
+                <Marker position={mapCenter} label="This Property" icon={{ url: "/images/icons8-home.svg", scaledSize: new window.google.maps.Size(32, 32), }} />
                 {locs.map((loc, index) => (
                     <Marker key={index} position={{ lat: loc.latitude, lng: loc.longitude }} label={loc.nickname} />
                 ))}
             </GoogleMap>
+
         </div>
     )
 };

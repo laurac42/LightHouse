@@ -1,6 +1,6 @@
 import { Database } from "@/types/supabase";
 import styles from '../app/properties/page.module.css';
-import { Home, Bed, Bath, Grid2X2, Landmark, Lightbulb, Heart, Car, HousePlus, TreeDeciduous, Warehouse } from "lucide-react";
+import { Home, Bed, Bath, Grid2X2, Landmark, Lightbulb, Heart, Car, HousePlus, TreeDeciduous, Warehouse, Footprints, Bike, TrainFront } from "lucide-react";
 import { useEffect, useState } from "react";
 import { loadSellerAddedInfo } from "@/lib/data/property-utils";
 import { toast } from "sonner";
@@ -21,12 +21,12 @@ type Property = Database["public"]["Tables"]["properties"]["Row"] & { isFavourit
  * @returns A local date string in the format "day month year"
  */
 function timestamptzToLocalDate(timestamptz: string): string {
-  return new Date(timestamptz).toLocaleDateString("en-GB", {
-    timeZone: "Europe/London",  
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+    return new Date(timestamptz).toLocaleDateString("en-GB", {
+        timeZone: "Europe/London",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+    });
 }
 
 // page options are:
@@ -37,6 +37,7 @@ export default function PropertyDetails({ params, page = "view", locs }: { param
     const [sellerDetails, setSellerDetails] = useState<string | null>(null);
     const [reason, setReason] = useState<string | null>(null);
     const [isFavourite, setIsFavourite] = useState(false);
+    const [distances, setDistances] = useState<{ [key: string]: number }>({});
 
     // load seller added info
     useEffect(() => {
@@ -51,6 +52,28 @@ export default function PropertyDetails({ params, page = "view", locs }: { param
         };
         loadInfo();
     }, [property]);
+
+    useEffect(() => {
+        if (locs.length > 0) {
+            locs.forEach((location) => {
+                fetch('/api/distance-matrix', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        lat1: property.latitude ?? 0,
+                        long1: property.longitude ?? 0,
+                        lat2: location.latitude,
+                        long2: location.longitude,
+                        travel_mode: location.travel_mode
+                    })
+                }).then(response => response.json()).then(data => {
+                    setDistances(prev => ({ ...prev, [location.id]: data.distance }));
+                }).catch(error => console.error("Error fetching distance:", error));
+            });
+        }
+    }, [property.id, locs]);
 
     // handle saving favourite
     async function handleSaveFavourite() {
@@ -95,7 +118,7 @@ export default function PropertyDetails({ params, page = "view", locs }: { param
                             <p className="text-muted-foreground">Added on {timestamptzToLocalDate(property.added_at)}</p>
                         </div>
                         <div className="text-2xl text-primary">
-                             <b> £{property.price.toLocaleString()}</b> <span className="text-lg">{property.price_type}</span>
+                            <b> £{property.price.toLocaleString()}</b> <span className="text-lg">{property.price_type}</span>
                         </div>
                     </div>
                     <hr />
@@ -158,14 +181,28 @@ export default function PropertyDetails({ params, page = "view", locs }: { param
                         </Card>
                     </div>
 
-                    <div className={sellerDetails ? "mb-8" : "mb-12"}>
+                    <div className="mb-8">
                         <PropertyTags propertyId={property.id} />
 
                     </div>
 
-                    {property.latitude !== null && property.longitude !== null ? (
-                        MapComponent(property.latitude, property.longitude, locs)
-                    ) : null}
+                    {/* Map */}
+                    <Card className="border-none">
+                        {property.latitude !== null && property.longitude !== null ? (
+                            MapComponent(property.latitude, property.longitude, locs)
+                        ) : null}
+
+                        {/* Distance From Locations */}
+                        <div className="pb-4 mb-2 mx-4 flex flex-col gap-2 mb-16">
+                            <p className="text-highlight text-sm">Add new locations from <a href='/protected/profile/locations' className="underline hover:underline">your profile page</a></p>
+                            {locs.length > 0 && locs.map((location) => (
+                                <p key={location.id} className="text-md text-foreground flex items-center gap-1 inline-flex">
+                                    {location.travel_mode === "driving" ? <Car /> : location.travel_mode === "walking" ? <Footprints /> : location.travel_mode === "transit" ? <TrainFront /> : <Bike />}
+                                    {distances[location.id] !== undefined ? distances[location.id] : 'Loading...'} {location.travel_mode === "driving" ? "drive" : location.travel_mode === "walking" ? "walk" : location.travel_mode === "transit" ? "transit" : "cycle"} from <b>{location.nickname}</b>
+                                </p>
+                            ))}
+                        </div>
+                    </Card>
 
                     {((sellerDetails) || (page === "edit")) && (
                         <SellerDetails property={property} reason={reason} description={sellerDetails} page={page} />
