@@ -23,9 +23,11 @@ import { DEFAULT_FILTERS, parseFiltersFromSearchParams } from "@/lib/filters/url
 type FilterBarProps = {
     locations: UserLocation[];
     onLocationSaved: () => void;
+    showDistanceFromLocation?: UserLocation[];
+    setShowDistanceFromLocation?: (locations: UserLocation[]) => void;
 }
 
-export default function FilterBar({ locations, onLocationSaved }: FilterBarProps) {
+export default function FilterBar({ locations, onLocationSaved, showDistanceFromLocation, setShowDistanceFromLocation }: FilterBarProps) {
     const searchParams = useSearchParams();
     const router = useRouter();
 
@@ -347,6 +349,8 @@ export default function FilterBar({ locations, onLocationSaved }: FilterBarProps
                     setAllTags={setAllTags}
                     locations={locations}
                     onLocationSaved={onLocationSaved}
+                    showDistanceFromLocation={showDistanceFromLocation}
+                    setShowDistanceFromLocation={setShowDistanceFromLocation}
                 />
             </div>
         </div >

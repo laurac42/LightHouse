@@ -33,6 +33,8 @@ type FilterBarOverlayProps = {
     setAllTags: React.Dispatch<React.SetStateAction<Tag[]>>;
     locations?: UserLocation[] | null;
     onLocationSaved?: () => void;
+    showDistanceFromLocation?: UserLocation[];
+    setShowDistanceFromLocation?: (locations: UserLocation[]) => void;
 }
 
 export default function FilterBarOverlay({
@@ -42,6 +44,8 @@ export default function FilterBarOverlay({
     setAllTags,
     locations,
     onLocationSaved,
+    showDistanceFromLocation,
+    setShowDistanceFromLocation
 }: FilterBarOverlayProps) {
 
     const searchParams = useSearchParams();
@@ -92,6 +96,28 @@ export default function FilterBarOverlay({
                     <div className="flex-1 overflow-y-auto pr-1">
 
                         <div className="flex flex-col gap-4 pb-4 mx-0 sm:mx-4 md:mx-8 lg:mx-12">
+
+                            {locations && locations.length > 0 &&
+                                <div className="mt-2 mb-4 flex flex-wrap gap-3">
+                                    <p className="whitespace-nowrap">Show distance from: </p>
+                                    <FieldGroup className="flex flex-row flex-wrap">
+                                        {locations?.map((location, index) => (
+                                            <Field orientation="horizontal" key={index} className="w-auto">
+                                                <Checkbox className="border-foreground text-foreground data-[state=checked]:text-white data-[state=checked]:border-foreground data-[state=checked]:bg-highlight" id={`${index}-checkbox`} name={`${index}-checkbox`} checked={showDistanceFromLocation?.includes(location) ?? false} onCheckedChange={(checked) => {
+                                                    if (checked === true && setShowDistanceFromLocation) {
+                                                        setShowDistanceFromLocation([...(showDistanceFromLocation ?? []), location]);
+                                                    } else if (checked === false && setShowDistanceFromLocation) {
+                                                        setShowDistanceFromLocation((showDistanceFromLocation ?? []).filter((l) => l !== location));
+                                                    }
+                                                }} />
+                                                <FieldLabel htmlFor={`${index}-checkbox`} className="font-normal">
+                                                    {location.nickname}
+                                                </FieldLabel>
+                                            </Field>
+                                        ))}
+                                    </FieldGroup>
+                                </div>
+                            }
 
                             {/** Search Radius */}
                             <div>

@@ -365,7 +365,7 @@ export default function PropertiesPage() {
     return (
         <div className="bg-background min-h-screen w-full">
             <Navbar />
-            <FilterBar locations={buyerLocations} onLocationSaved={refreshFiltersFromStorage} />
+            <FilterBar locations={buyerLocations} onLocationSaved={refreshFiltersFromStorage} showDistanceFromLocation={showDistanceFromLocation} setShowDistanceFromLocation={setShowDistanceFromLocation} />
             {loading ? (
                 <div className="flex items-center justify-center h-64">
                     <p className="text-2xl text-gray-500">Loading properties...</p>
@@ -385,11 +385,11 @@ export default function PropertiesPage() {
                         <div className="pt-2 px-6 text-highlight">
                             <p>Showing properties {currentPage * PAGE_SIZE - (PAGE_SIZE - 1)} - {Math.min(currentPage * PAGE_SIZE, totalProperties)} of {totalProperties} properties {filters.location ? `in ${filters.location}` : ""}</p>
                             {buyerLocations && buyerLocations.length > 0 &&
-                                <div className="mt-2 mb-4 flex flex-row items-center gap-3">
+                                <div className="mt-2 mb-4 md:flex flex-wrap gap-3 hidden">
                                     <p className="whitespace-nowrap">Show distance from: </p>
-                                    <FieldGroup className="flex flex-row">
+                                    <FieldGroup className="flex flex-row flex-wrap">
                                         {buyerLocations?.map((location, index) => (
-                                            <Field orientation="horizontal" key={index}>
+                                            <Field orientation="horizontal" key={index} className="w-auto">
                                                 <Checkbox className="border-foreground text-foreground data-[state=checked]:text-white data-[state=checked]:border-foreground data-[state=checked]:bg-highlight" id={`${index}-checkbox`} name={`${index}-checkbox`} checked={showDistanceFromLocation.includes(location)} onCheckedChange={(checked) => {
                                                     if (checked === true) {
                                                         setShowDistanceFromLocation([...showDistanceFromLocation, location]);
@@ -405,7 +405,6 @@ export default function PropertiesPage() {
                                     </FieldGroup>
                                 </div>
                             }
-
                         </div>
                     )
                     }
