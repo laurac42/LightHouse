@@ -105,7 +105,7 @@ function PropertyDetailsPage({ params }: { params: Promise<{ id: number }> }) {
                         </div>
                     ) : null}
                 </div>
-                {property && <PropertyDetails params={{ id, property }} page="view" />}
+                {property && <PropertyDetails params={{ id, property }} page="view" locs={[]} />}
             </div>
         </div>
     );

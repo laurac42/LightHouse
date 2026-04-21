@@ -98,7 +98,7 @@ export default function FilterBarOverlay({
                         <div className="flex flex-col gap-4 pb-4 mx-0 sm:mx-4 md:mx-8 lg:mx-12">
 
                             {locations && locations.length > 0 &&
-                                <div className="mt-2 mb-4 flex flex-wrap gap-3">
+                                <div className="mt-2 mb-4 flex flex-wrap gap-3git">
                                     <p className="whitespace-nowrap">Show distance from: </p>
                                     <FieldGroup className="flex flex-row flex-wrap">
                                         {locations?.map((location, index) => (

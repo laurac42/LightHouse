@@ -2,7 +2,6 @@
 import { Suspense, useEffect, useState, CSSProperties } from "react";
 import { use, useRef } from "react";
 import { fetchPropertyDetails, getAgencyDetails } from "@/lib/data/property-utils";
-import { fetchPropertyTags } from "@/lib/data/tag-utils";
 import { Database } from "@/types/supabase";
 import { getImagesFromStorage } from "@/lib/data/images";
 import ImageCarousel from "@/components/image-carousel";
@@ -15,8 +14,11 @@ import PropertyDetails from "@/components/property-details";
 import { fetchFavourites } from "@/lib/data/favourites";
 import { validateUser } from "@/lib/auth/user";
 import { Button } from "@/components/ui/button";
+import { MapProvider } from "@/providers/map";
+import type { UserLocation } from "@/types/address";
+import { createClient } from "@/lib/supabase/client";
 
-type Property = Database["public"]["Tables"]["properties"]["Row"] & { isFavourite?: boolean};
+type Property = Database["public"]["Tables"]["properties"]["Row"] & { isFavourite?: boolean };
 
 // Component to fetch and display property details, images and agency details for a given property ID
 export function PropertyDetailsPage({ params }: { params: Promise<{ id: number }> }) {
@@ -28,6 +30,10 @@ export function PropertyDetailsPage({ params }: { params: Promise<{ id: number }
     const barRef = useRef(null);
     const [isFixed, setIsFixed] = useState(false);
     const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+    const [userId, setUserId] = useState<string | null>(null);
+    const [buyerLocations, setBuyerLocations] = useState<UserLocation[]>([]);
+    const [errorMessage, setErrorMessage] = useState<string>("");
+    const supabase = createClient();
 
     // Set the height of the bar for spacing when it becomes fixed and add scroll listener to toggle fixed position
     useEffect(() => {
@@ -36,6 +42,17 @@ export function PropertyDetailsPage({ params }: { params: Promise<{ id: number }
         };
         window.addEventListener("scroll", onScroll, { passive: true });
         return () => window.removeEventListener("scroll", onScroll);
+    }, []);
+
+    // determine whether the user is logged in or not 
+    // this is needed because we need to know whether they are logged in to know whether to fetch personalised locations for them or not
+    useEffect(() => {
+        const supabase = createClient();
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+            setUserId(session?.user?.id ?? null);
+        });
+
+        return () => subscription.unsubscribe();
     }, []);
 
     useEffect(() => {
@@ -67,6 +84,27 @@ export function PropertyDetailsPage({ params }: { params: Promise<{ id: number }
     }, [id]);
 
     useEffect(() => {
+        async function fetchLocations() {
+            if (!userId) return;
+            try {
+                await supabase
+                    .from("user_locations")
+                    .select("*")
+                    .eq("user_id", userId)
+                    .then((response) => {
+                        if (!response.error) {
+                            setBuyerLocations(response.data);
+                        }
+                    });
+
+            } catch (error) {
+                console.error("Unable to fetch locations: " + error);
+            }
+        }
+        fetchLocations();
+    }, [userId]);
+
+    useEffect(() => {
         if (property?.agency_location_id) {
             getAgencyDetails(property.agency_location_id).then((details) => {
                 setAgencyDetails(details);
@@ -76,30 +114,32 @@ export function PropertyDetailsPage({ params }: { params: Promise<{ id: number }
     }, [property?.agency_location_id]);
 
     return (
-        <div>
-            {/** Agency card scrolls until the navbar disappears, then is fixed */}
-            <div ref={barRef} className={`col-span-1 border-none lg:top-0 lg:right-4 w-1/3 pl-8 lg:py-2 ${isFixed ? 'lg:fixed lg:top-[80px]' : 'lg:absolute lg:pt-28'}`} style={{ zIndex: 50, height: barHeight } as CSSProperties}>
-                {!isImageModalOpen && agencyDetails && (
-                    <AgencyCard agencyDetails={agencyDetails} />
-                )}
-            </div>
-            {isFixed && <div style={{ height: barHeight }} />}
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-8 px-4 md:px-12 py-2 border-none">
-                <div className="col-span-2">
-                    {property && images.length > 0 ? (
-                        <div>
-                            <ImageCarousel
-                                images={images}
-                                property={property}
-                                page="property-details"
-                                isModalOpen={setIsImageModalOpen}
-                            />
-                        </div>
-                    ) : null}
+        <MapProvider>
+            <div>
+                {/** Agency card scrolls until the navbar disappears, then is fixed */}
+                <div ref={barRef} className={`col-span-1 border-none lg:top-0 lg:right-4 w-1/3 pl-8 lg:py-2 ${isFixed ? 'lg:fixed lg:top-[80px]' : 'lg:absolute lg:pt-28'}`} style={{ zIndex: 50, height: barHeight } as CSSProperties}>
+                    {!isImageModalOpen && agencyDetails && (
+                        <AgencyCard agencyDetails={agencyDetails} />
+                    )}
                 </div>
-                {property && <PropertyDetails params={{ id, property }} page="view" />}
+                {isFixed && <div style={{ height: barHeight }} />}
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-8 px-4 md:px-12 py-2 border-none">
+                    <div className="col-span-2">
+                        {property && images.length > 0 ? (
+                            <div>
+                                <ImageCarousel
+                                    images={images}
+                                    property={property}
+                                    page="property-details"
+                                    isModalOpen={setIsImageModalOpen}
+                                />
+                            </div>
+                        ) : null}
+                    </div>
+                    {property && <PropertyDetails params={{ id, property }} page="view" locs={buyerLocations} />}
+                </div>
             </div>
-        </div>
+        </MapProvider>
     );
 
 }
