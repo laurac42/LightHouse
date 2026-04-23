@@ -1,6 +1,6 @@
 
 import { InputGroup, InputGroupButton, InputGroupInput } from "@/components/ui/input-group";
-import { X, ChevronDown } from "lucide-react";
+import { X, ChevronDown, SlidersHorizontal } from "lucide-react";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -334,11 +334,11 @@ export default function FilterBar({ locations, onLocationSaved, showDistanceFrom
 
                 <div className="text-foreground cursor-pointer ml-auto" >
                     <Button
-                        className="max-w-40 bg-white hover:bg-lightPink"
+                        className="sm:min-w-40 bg-white hover:bg-lightPink"
                         onClick={() => setIsMoreFiltersOpen(!isMoreFiltersOpen)}
                         variant={"outline"}
                     >
-                        More Filters <ChevronDown />
+                        More Filters <SlidersHorizontal />
                     </Button>
                 </div>
 
