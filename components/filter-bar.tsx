@@ -315,7 +315,8 @@ export default function FilterBar({ locations, onLocationSaved, showDistanceFrom
                         <DropdownMenuGroup>
                             <DropdownMenuItem onClick={() => { updateLocalFilter("propertyTypes", []); updateFilters("propertyTypes", []); }}>Show all</DropdownMenuItem>
                             {["Detached", "Semi-Detached", "Terraced", "Flat", "Bungalow", "Land", "Commercial"].map((type) => (
-                                <DropdownMenuItem key={type} onClick={() => {
+                                <DropdownMenuItem key={type} onClick={(e) => {
+                                    e.preventDefault();
                                     if (fils.propertyTypes.includes(type)) {
                                         updateLocalFilter("propertyTypes", fils.propertyTypes.filter((t) => t !== type));
                                         updateFilters("propertyTypes", fils.propertyTypes.filter((t) => t !== type));
