@@ -29,8 +29,8 @@ export default function BuyerProfile() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [familySize, setFamilySize] = useState<number>(1);
-    const [budget, setBudget] = useState<number>(0);
-    const [bedrooms, setBedrooms] = useState<number>(1);
+    const [budget, setBudget] = useState<string>("");
+    const [bedrooms, setBedrooms] = useState<string>("");
     const [detachedChecked, setDetachedChecked] = useState(false);
     const [semiDetachedChecked, setSemiDetachedChecked] = useState(false);
     const [terracedChecked, setTerracedChecked] = useState(false);
@@ -47,11 +47,11 @@ export default function BuyerProfile() {
         async function verifyOnboarding() {
             const status = await CheckOnboarding();
 
-            if (status === "error") {
-                router.push("/");
-            } else if (status === "onboarded") {
-                router.push("/");
-            }
+            // if (status === "error") {
+            //     router.push("/");
+            // } else if (status === "onboarded") {
+            //     router.push("/");
+            // }
         }
 
         verifyOnboarding();
@@ -77,22 +77,22 @@ export default function BuyerProfile() {
 
             // Update buyer profile with details from form
             const { error: updateError } = await supabase.rpc
-            ("update_buyer_profile", {
-                p_id: user.user.id,  
-                p_budget: budget,
-                p_family_size: familySize,
-                p_preferred_num_bedrooms: bedrooms,
-                p_preferred_property_types: [
-                    detachedChecked ? "detached" : null,
-                    semiDetachedChecked ? "semi-detached" : null,
-                    terracedChecked ? "terraced" : null,
-                    flatChecked ? "flat" : null,
-                    bungalowChecked ? "bungalow" : null,
-                    landChecked ? "land" : null,
-                    commercialChecked ? "commercial" : null,
-                ].filter(Boolean) as string[],
-                p_preferred_locations: locations,
-            });
+                ("update_buyer_profile", {
+                    p_id: user.user.id,
+                    p_budget: budget !== "" ? Number(budget) : 0,
+                    p_family_size: familySize,
+                    p_preferred_num_bedrooms: bedrooms !== "" ? Number(bedrooms) : 0,
+                    p_preferred_property_types: [
+                        detachedChecked ? "detached" : null,
+                        semiDetachedChecked ? "semi-detached" : null,
+                        terracedChecked ? "terraced" : null,
+                        flatChecked ? "flat" : null,
+                        bungalowChecked ? "bungalow" : null,
+                        landChecked ? "land" : null,
+                        commercialChecked ? "commercial" : null,
+                    ].filter(Boolean) as string[],
+                    p_preferred_locations: locations,
+                });
 
             if (updateError) {
                 throw new Error(updateError.message);
@@ -101,7 +101,7 @@ export default function BuyerProfile() {
         } catch (error) {
             setError(error instanceof Error ? error.message : "An unexpected error occurred. Please try again.");
             console.error("Error in handleDetailsSubmit:", error);
-        } finally {            
+        } finally {
             setIsLoading(false);
         }
     };
@@ -131,13 +131,17 @@ export default function BuyerProfile() {
                                                         <InputGroupText>£</InputGroupText>
                                                     </InputGroupAddon>
                                                     <InputGroupInput
-                                                        placeholder="0"
-                                                        value={budget.toLocaleString()}
+                                                        placeholder="250,000"
+                                                        value={budget}
                                                         type="text"
+                                                        inputMode="numeric"
+                                                        pattern="[0-9]*"
                                                         min={0}
                                                         onChange={(e) => {
-                                                            const numericBudget = e.target.value.replace(/[^0-9]/g, "");
-                                                            setBudget(parseInt(numericBudget) || 0);
+                                                            const val = e.target.value;
+                                                            if (val === "" || /^[0-9]+$/.test(val)) {
+                                                                setBudget(val);
+                                                            }
                                                         }}
                                                     />
                                                     <InputGroupAddon align="inline-end">
@@ -169,11 +173,15 @@ export default function BuyerProfile() {
                                             <Label htmlFor="bedrooms">How many bedrooms would you like?</Label>
                                             <InputGroup>
                                                 <InputGroupInput
-                                                    placeholder="0"
+                                                    placeholder="2"
                                                     value={bedrooms}
                                                     type="number"
-                                                    min={0}
-                                                    onChange={(e) => setBedrooms(parseInt(e.target.value) || 0)}
+                                                    onChange={(e) => {
+                                                        const val = e.target.value;
+                                                        if (val === "" || /^[0-9]+$/.test(val)) {
+                                                            setBedrooms(val);
+                                                        }
+                                                    }}
                                                 />
                                                 <InputGroupAddon align="inline-end">
                                                     <InputGroupText>Bedrooms</InputGroupText>
@@ -210,19 +218,19 @@ export default function BuyerProfile() {
                                                     </InputGroup>
                                                 </Field>
                                             </FieldGroup>
-                                            {locations.length > 0 && 
-                                            (<div className="flex flex-wrap gap-2">
-                                                {locations.map((location, index) => (
-                                                    <Badge key={index} variant="outline" className="bg-midBlue text-foreground border-foreground">
-                                                        {location}
-                                                        <Button variant="ghost" size="sm" className="ml-2 h-4 w-4 p-0" onClick={() => {
-                                                            setLocations(locations.filter((_, i) => i !== index));
-                                                        }}>
-                                                            X
-                                                        </Button>
-                                                    </Badge>
-                                                ))}
-                                            </div>)}
+                                            {locations.length > 0 &&
+                                                (<div className="flex flex-wrap gap-2">
+                                                    {locations.map((location, index) => (
+                                                        <Badge key={index} variant="outline" className="bg-midBlue text-foreground border-foreground">
+                                                            {location}
+                                                            <Button variant="ghost" size="sm" className="ml-2 h-4 w-4 p-0" onClick={() => {
+                                                                setLocations(locations.filter((_, i) => i !== index));
+                                                            }}>
+                                                                X
+                                                            </Button>
+                                                        </Badge>
+                                                    ))}
+                                                </div>)}
 
                                         </div>
 
