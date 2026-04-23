@@ -87,19 +87,19 @@ export type Database = {
           created_at: string
           id: string
           logo_url: string | null
-          name: string | null
+          name: string
         }
         Insert: {
           created_at?: string
           id?: string
           logo_url?: string | null
-          name?: string | null
+          name: string
         }
         Update: {
           created_at?: string
           id?: string
           logo_url?: string | null
-          name?: string | null
+          name?: string
         }
         Relationships: []
       }
@@ -109,7 +109,7 @@ export type Database = {
           address_line_2: string | null
           city: string | null
           email_address: string | null
-          estate_agency_id: string | null
+          estate_agency_id: string
           location_id: string
           phone_number: string | null
           post_code: string | null
@@ -119,7 +119,7 @@ export type Database = {
           address_line_2?: string | null
           city?: string | null
           email_address?: string | null
-          estate_agency_id?: string | null
+          estate_agency_id: string
           location_id?: string
           phone_number?: string | null
           post_code?: string | null
@@ -129,7 +129,7 @@ export type Database = {
           address_line_2?: string | null
           city?: string | null
           email_address?: string | null
-          estate_agency_id?: string | null
+          estate_agency_id?: string
           location_id?: string
           phone_number?: string | null
           post_code?: string | null
@@ -147,17 +147,17 @@ export type Database = {
       estate_agent_profiles: {
         Row: {
           created_at: string
-          estate_agency_location_id: string | null
+          estate_agency_location_id: string
           id: string
         }
         Insert: {
           created_at?: string
-          estate_agency_location_id?: string | null
+          estate_agency_location_id: string
           id: string
         }
         Update: {
           created_at?: string
-          estate_agency_location_id?: string | null
+          estate_agency_location_id?: string
           id?: string
         }
         Relationships: [
@@ -182,28 +182,28 @@ export type Database = {
           added_at: string
           address_line_1: string
           address_line_2: string | null
-          agency_location_id: string | null
+          agency_location_id: string
           agent_id: string | null
           city: string
           council_tax_band: string | null
           description: string
-          driveway: boolean | null
+          driveway: boolean
           epc_rating: string | null
           features: string[] | null
-          garden: boolean | null
-          has_garage: boolean | null
+          garden: boolean
+          has_garage: boolean
           id: number
           image_url: string | null
           is_new_build: boolean
           last_updated_at: string | null
-          latitude: number | null
-          longitude: number | null
+          latitude: number
+          longitude: number
           num_bathrooms: number | null
-          num_bedrooms: number | null
+          num_bedrooms: number
           post_code: string
           price: number
           price_type: string | null
-          property_type: string | null
+          property_type: string
           seller_id: string | null
           square_feet: number | null
           status: string
@@ -213,28 +213,28 @@ export type Database = {
           added_at?: string
           address_line_1: string
           address_line_2?: string | null
-          agency_location_id?: string | null
+          agency_location_id: string
           agent_id?: string | null
           city: string
           council_tax_band?: string | null
           description: string
-          driveway?: boolean | null
+          driveway?: boolean
           epc_rating?: string | null
           features?: string[] | null
-          garden?: boolean | null
-          has_garage?: boolean | null
+          garden?: boolean
+          has_garage?: boolean
           id?: number
           image_url?: string | null
           is_new_build?: boolean
           last_updated_at?: string | null
-          latitude?: number | null
-          longitude?: number | null
+          latitude: number
+          longitude: number
           num_bathrooms?: number | null
-          num_bedrooms?: number | null
+          num_bedrooms: number
           post_code: string
           price: number
           price_type?: string | null
-          property_type?: string | null
+          property_type: string
           seller_id?: string | null
           square_feet?: number | null
           status?: string
@@ -244,28 +244,28 @@ export type Database = {
           added_at?: string
           address_line_1?: string
           address_line_2?: string | null
-          agency_location_id?: string | null
+          agency_location_id?: string
           agent_id?: string | null
           city?: string
           council_tax_band?: string | null
           description?: string
-          driveway?: boolean | null
+          driveway?: boolean
           epc_rating?: string | null
           features?: string[] | null
-          garden?: boolean | null
-          has_garage?: boolean | null
+          garden?: boolean
+          has_garage?: boolean
           id?: number
           image_url?: string | null
           is_new_build?: boolean
           last_updated_at?: string | null
-          latitude?: number | null
-          longitude?: number | null
+          latitude?: number
+          longitude?: number
           num_bathrooms?: number | null
-          num_bedrooms?: number | null
+          num_bedrooms?: number
           post_code?: string
           price?: number
           price_type?: string | null
-          property_type?: string | null
+          property_type?: string
           seller_id?: string | null
           square_feet?: number | null
           status?: string
@@ -349,23 +349,31 @@ export type Database = {
           tag_id?: number
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "property_tag_flags_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "tags"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       property_tags: {
         Row: {
-          created_at: string | null
+          created_at: string
           property_id: number
           tag_id: number
           user_id: string
         }
         Insert: {
-          created_at?: string | null
+          created_at?: string
           property_id?: number
           tag_id: number
           user_id: string
         }
         Update: {
-          created_at?: string | null
+          created_at?: string
           property_id?: number
           tag_id?: number
           user_id?: string
@@ -399,19 +407,19 @@ export type Database = {
           created_at: string
           id: number
           is_seed: boolean
-          name: string | null
+          name: string
         }
         Insert: {
           created_at?: string
           id?: number
           is_seed?: boolean
-          name?: string | null
+          name: string
         }
         Update: {
           created_at?: string
           id?: number
           is_seed?: boolean
-          name?: string | null
+          name?: string
         }
         Relationships: []
       }
@@ -427,7 +435,7 @@ export type Database = {
           nickname: string
           post_code: string
           travel_mode: string
-          user_id: string | null
+          user_id: string
         }
         Insert: {
           address_line_1?: string | null
@@ -440,7 +448,7 @@ export type Database = {
           nickname: string
           post_code: string
           travel_mode: string
-          user_id?: string | null
+          user_id?: string
         }
         Update: {
           address_line_1?: string | null
@@ -453,7 +461,7 @@ export type Database = {
           nickname?: string
           post_code?: string
           travel_mode?: string
-          user_id?: string | null
+          user_id?: string
         }
         Relationships: [
           {
@@ -469,19 +477,19 @@ export type Database = {
         Row: {
           granted_at: string
           granted_by: string
-          role: string | null
+          role: string
           user_id: string
         }
         Insert: {
           granted_at?: string
           granted_by: string
-          role?: string | null
+          role?: string
           user_id: string
         }
         Update: {
           granted_at?: string
           granted_by?: string
-          role?: string | null
+          role?: string
           user_id?: string
         }
         Relationships: [
@@ -501,7 +509,7 @@ export type Database = {
           first_name: string | null
           id: string
           last_name: string | null
-          onboarded: boolean | null
+          onboarded: boolean
           user_goals: string[] | null
         }
         Insert: {
@@ -510,7 +518,7 @@ export type Database = {
           first_name?: string | null
           id: string
           last_name?: string | null
-          onboarded?: boolean | null
+          onboarded?: boolean
           user_goals?: string[] | null
         }
         Update: {
@@ -519,7 +527,7 @@ export type Database = {
           first_name?: string | null
           id?: string
           last_name?: string | null
-          onboarded?: boolean | null
+          onboarded?: boolean
           user_goals?: string[] | null
         }
         Relationships: []
@@ -617,28 +625,28 @@ export type Database = {
           added_at: string
           address_line_1: string
           address_line_2: string | null
-          agency_location_id: string | null
+          agency_location_id: string
           agent_id: string | null
           city: string
           council_tax_band: string | null
           description: string
-          driveway: boolean | null
+          driveway: boolean
           epc_rating: string | null
           features: string[] | null
-          garden: boolean | null
-          has_garage: boolean | null
+          garden: boolean
+          has_garage: boolean
           id: number
           image_url: string | null
           is_new_build: boolean
           last_updated_at: string | null
-          latitude: number | null
-          longitude: number | null
+          latitude: number
+          longitude: number
           num_bathrooms: number | null
-          num_bedrooms: number | null
+          num_bedrooms: number
           post_code: string
           price: number
           price_type: string | null
-          property_type: string | null
+          property_type: string
           seller_id: string | null
           square_feet: number | null
           status: string
@@ -671,28 +679,28 @@ export type Database = {
           added_at: string
           address_line_1: string
           address_line_2: string | null
-          agency_location_id: string | null
+          agency_location_id: string
           agent_id: string | null
           city: string
           council_tax_band: string | null
           description: string
-          driveway: boolean | null
+          driveway: boolean
           epc_rating: string | null
           features: string[] | null
-          garden: boolean | null
-          has_garage: boolean | null
+          garden: boolean
+          has_garage: boolean
           id: number
           image_url: string | null
           is_new_build: boolean
           last_updated_at: string | null
-          latitude: number | null
-          longitude: number | null
+          latitude: number
+          longitude: number
           num_bathrooms: number | null
-          num_bedrooms: number | null
+          num_bedrooms: number
           post_code: string
           price: number
           price_type: string | null
-          property_type: string | null
+          property_type: string
           seller_id: string | null
           square_feet: number | null
           status: string
@@ -749,7 +757,6 @@ export type Database = {
       update_buyer_profile: {
         Args: {
           p_budget: number
-          p_family_size: number
           p_id: string
           p_preferred_locations: string[]
           p_preferred_num_bedrooms: number
