@@ -67,7 +67,6 @@ export default function Navbar() {
                             </div>
                             <a href="/" className="text-foreground text-lg">Home</a>
                             <a href="/properties" className="text-foreground text-lg">Buy</a>
-                            <a href="#" className="text-foreground text-lg">Estate Agents</a>
                             {isLoggedIn && userIsAdmin && (
                                 <a href="/admin/portal" className="text-foreground text-lg">Admin Portal</a>
                             )}
@@ -88,8 +87,6 @@ export default function Navbar() {
                     </Link>
                     <div className="flex flex-row gap-6">
                         <a href="/properties" className="hidden md:flex text-foreground hover:text-foregroundHover hover:underline">Buy</a>
-                        <a href="/" className="hidden md:flex text-foreground hover:text-foregroundHover hover:underline">Sell</a>
-                        <a href="/" className="hidden md:flex text-foreground hover:text-foregroundHover hover:underline">Estate Agents</a>
                     </div>
                     {/* Desktop action buttons */}
                     <div className="hidden md:flex items-center gap-2 ">
