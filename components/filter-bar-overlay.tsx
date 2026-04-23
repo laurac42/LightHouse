@@ -661,7 +661,7 @@ export default function FilterBarOverlay({
                         </div>
                     </div>
 
-                    <div className="z-[103] h-10 mt-2 bg-navBar flex justify-between items-center w-full px-4">
+                    <div className="z-[103] h-10 mb-6 sm:mb-2 mt-2 bg-navBar flex justify-between items-center w-full px-4">
                         <Button variant={"link"} className="mx-4" onClick={() => {
 
                             setAllTags([...allTags, ...localFilters.selectedTags]);
