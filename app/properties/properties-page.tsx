@@ -158,19 +158,20 @@ export default function PropertiesPage() {
 
     // Read and apply filter parameters from URL (other than locations, handled in local storage)
     useEffect(() => {
-    parseFiltersFromSearchParams(searchParams)
-        .then(parsedFilters => {
-            const { userLocationsAndDistances, ...safeParsedFilters } = parsedFilters;
+        setCurrentPage(1); // reset to first page whenever the location filter changes, so that we don't end up on a page number that doesn't exist for the new location
+        parseFiltersFromSearchParams(searchParams)
+            .then(parsedFilters => {
+                const { userLocationsAndDistances, ...safeParsedFilters } = parsedFilters;
 
-            setFilters(prev => ({
-                ...prev,
-                ...safeParsedFilters,
-            }));
-        })
-        .catch(error => {
-            console.error("Error parsing filters from URL: ", error);
-        });
-}, [searchParams]);
+                setFilters(prev => ({
+                    ...prev,
+                    ...safeParsedFilters,
+                }));
+            })
+            .catch(error => {
+                console.error("Error parsing filters from URL: ", error);
+            });
+    }, [searchParams]);
 
     const refreshFiltersFromStorage = useCallback(() => {
         const stored = localStorage.getItem("userLocationsAndDistances");
@@ -201,6 +202,7 @@ export default function PropertiesPage() {
         setLoading(true);
         setErrorMessage("");
         setGeoJson(null);
+        setCurrentPage(1); // reset to first page whenever the location filter changes, so that we don't end up on a page number that doesn't exist for the new location
         // fetch the bounding box for the location in the URL query parameters and set the location state to the location name from the bounding box, so that we can display it on the page
         const urlParams = new URLSearchParams(window.location.search);
         const locationParam = urlParams.get("location");
@@ -298,7 +300,7 @@ export default function PropertiesPage() {
 
                 if (signal.aborted) return;
                 if (requestId !== requestIdRef.current) return;
-                
+
                 setTotalProperties(count || 0);
 
                 setTotalPages(Math.ceil((count || 0) / PAGE_SIZE));
@@ -351,13 +353,13 @@ export default function PropertiesPage() {
     useEffect(() => {
         if (!userChecked || boundingBox === undefined) return; // don't fetch properties until we've checked if the user is logged in or not, so that we can fetch personalised properties for logged in users
         if (filters.location && boundingBox === null) return; // location is set but bbox hasn't resolved yet
-        
+
         setLoading(true);
         setFetchComplete(false);
 
         controllerRef.current = new AbortController();
         const requestId = ++requestIdRef.current;
-        
+
         fetchProperties(currentPage, userId, boundingBox, stableFilters, geoJson, controllerRef.current.signal, requestId); // fetch the first page of properties when the component mounts, and whenever the user logs in or out
         return () => controllerRef.current?.abort();
     }, [fetchProperties, userChecked, userId, boundingBox, stableFilters, geoJson]);
