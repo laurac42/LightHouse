@@ -5,9 +5,10 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Database } from "@/types/supabase";
 import { getImagesFromStorage } from "@/lib/data/images";
-import { validateUser } from "@/lib/auth/user";
 import { useRouter } from "next/navigation";
 import PropertyCard from "@/components/property-card";
+import {Button } from "@/components/ui/button";
+import {MoveLeft} from "lucide-react";
 
 type Property = Database["public"]["Tables"]["properties"]["Row"] & { images: string[], isFavourite?: boolean };
 
@@ -55,6 +56,7 @@ export default function FavouritesPage() {
     return (
         <div className="bg-background w-full min-h-svh">
             <Navbar />
+            <Button className="text-highlight text-md mt-4 ml-4" variant={"link"} onClick={() => router.back()}><MoveLeft /> &nbsp; Back</Button>
             <div className="w-full p-6 md:p-10">
                 <div className="mx-auto w-full max-w-5xl space-y-6">
                     <Card className="border-0 shadow-md">
