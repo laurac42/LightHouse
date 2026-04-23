@@ -214,13 +214,12 @@ export default function ImageCarousel({ images, property, page, isModalOpen }: {
             {
                 selectedImageIndex !== null && createPortal(
                     <div
-                        className="fixed inset-0 bg-black/70 flex items-center justify-center cursor-pointer"
+                        className="fixed inset-0 bg-black/70 flex items-center justify-center cursor-pointer z-[101]"
                         onClick={() => {
                             setSelectedImageIndex(null);
                             handleClose();
                         }
                         }
-                        style={{ zIndex: 50 }}
                     >
                         <XCircleIcon size={32} className="absolute top-6 right-6 text-white"
                             onClick={(e) => {
