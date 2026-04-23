@@ -480,7 +480,8 @@ export default function FiltersPage() {
                                     <DropdownMenuGroup>
                                         <DropdownMenuItem onClick={() => { updateLocalFilter("propertyTypes", []); }}>Show all</DropdownMenuItem>
                                         {["Detached", "Semi-Detached", "Terraced", "Flat", "Bungalow", "Land", "Commercial"].map((type) => (
-                                            <DropdownMenuItem key={type} onClick={() => {
+                                            <DropdownMenuItem key={type} onClick={(e) => {
+                                                e.preventDefault();
                                                 if (filters.propertyTypes.includes(type)) {
                                                     updateLocalFilter("propertyTypes", filters.propertyTypes.filter((t) => t !== type));
                                                 } else {
