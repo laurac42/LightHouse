@@ -9,12 +9,14 @@ const libraries = ['places', 'drawing', 'geometry'];
 export function MapProvider({ children }: { children: ReactNode }) {
 
   // Load the Google Maps JavaScript API asynchronously
-  const { loadError } = useJsApiLoader({
+  const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY as string,
     libraries: libraries as Libraries,
   });
 
   if(loadError) return <p>Encountered error while loading google maps</p>
+
+  if (!isLoaded) return null;
 
   return children;
 }
