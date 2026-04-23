@@ -38,6 +38,7 @@ export default function PropertyDetails({ params, page = "view", locs }: { param
     const [reason, setReason] = useState<string | null>(null);
     const [isFavourite, setIsFavourite] = useState(false);
     const [distances, setDistances] = useState<{ [key: string]: number }>({});
+    const [viewFullDescription, setViewFullDescription] = useState<boolean>(false);
 
     // load seller added info
     useEffect(() => {
@@ -178,6 +179,11 @@ export default function PropertyDetails({ params, page = "view", locs }: { param
                         <Card className="p-4 border-none mt-12 mb-12">
                             <h1>Description</h1>
                             <p>{property.description}</p>
+                            {viewFullDescription ? (
+                                <Button variant={"link"} className="p-0 mt-2 text-highlight" onClick={() => setViewFullDescription(false)}>View less</Button>
+                            ) : (
+                                <Button variant={"link"} className="p-0 mt-2 text-highlight" onClick={() => setViewFullDescription(true)}>View more</Button>
+                            )}
                         </Card>
                     </div>
 
