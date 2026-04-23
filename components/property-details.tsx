@@ -177,8 +177,8 @@ export default function PropertyDetails({ params, page = "view", locs }: { param
                             )}
                         </ul>
                         <Card className="p-4 border-none mt-12 mb-12">
-                            <h1>Description</h1>
-                            <p>{property.description}</p>
+                            <h1 >Description</h1>
+                            <p className={viewFullDescription ? "" : "overflow-hidden text-ellipsis line-clamp-4"}>{property.description}</p>
                             {viewFullDescription ? (
                                 <Button variant={"link"} className="p-0 mt-2 text-highlight" onClick={() => setViewFullDescription(false)}>View less</Button>
                             ) : (
@@ -193,7 +193,7 @@ export default function PropertyDetails({ params, page = "view", locs }: { param
                     </div>
 
                     {/* Map */}
-                    <Card className="border-none">
+                    <Card className="border-none mb-12">
                         {property.latitude !== null && property.longitude !== null ? (
                             MapComponent(property.latitude, property.longitude, locs)
                         ) : null}
