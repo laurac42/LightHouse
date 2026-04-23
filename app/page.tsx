@@ -36,11 +36,8 @@ export default function Page() {
             <Card className="bg-white/90 border-none">
               <CardHeader>
                 <CardTitle className="text-2xl flex gap-4 pt-2">
-                  <Button variant="link" size="lg" className="p-0 text-xl text-foreground active:underline focus:underline underline-offset-8">
+                  <Button variant="link" size="lg" className="p-0 text-xl text-foreground underline underline-offset-8">
                     Buy
-                  </Button>
-                  <Button variant="link" size="lg" className="p-0 text-xl text-foreground active:underline focus:underline underline-offset-8">
-                    House Prices
                   </Button>
                 </CardTitle>
               </CardHeader>
