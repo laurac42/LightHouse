@@ -1,12 +1,17 @@
 'use client';
 
-import { UserRound, Menu, X } from "lucide-react";
+import { UserRound, Menu, X, Search } from "lucide-react";
 import { Button } from "@/components/ui/button"
 import { useEffect, useState } from "react";
 import Link from 'next/link';
 import { validateUser } from '@/lib/auth/user';
 import { isAdmin, isEstateAgent, isSeller } from '@/lib/auth/role';
 import NavbarDropdown from "./navbar-dropdown";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "./ui/dropdown-menu";
+import { Label } from "./ui/label";
+import { InputGroup, InputGroupInput, InputGroupAddon, InputGroupButton } from "./ui/input-group";
+import {toast} from "sonner";
+import { useRouter } from "next/navigation";
 
 export default function Navbar() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -14,6 +19,8 @@ export default function Navbar() {
     const [userIsAdmin, setUserIsAdmin] = useState(false);
     const [userIsEstateAgent, setUserIsEstateAgent] = useState(false);
     const [userIsSeller, setUserIsSeller] = useState(false);
+    const [location, setLocation] = useState<string>("");
+    const router = useRouter();
 
     useEffect(() => {
 
@@ -43,6 +50,14 @@ export default function Navbar() {
         }
         checkAuthStatus();
     }, []);
+
+    function handleSearch() {
+        if (!location.trim()) {
+            toast.error("Please enter a location to search.", { position: "top-right" });
+            return;
+        }
+        router.push(`/filters?location=${encodeURIComponent(location.trim())}`);
+    }
 
     return (
         <>
@@ -85,8 +100,31 @@ export default function Navbar() {
                             <p className="text-lg font-bold">ightHouse</p>
                         </div>
                     </Link>
-                    <div className="flex flex-row gap-6">
-                        <a href="/properties" className="hidden md:flex text-foreground hover:text-foregroundHover hover:underline">Buy</a>
+                    <div className="flex flex-row gap-6 hidden md:flex">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="link" className="text-foreground hover:text-foregroundHover hover:underline">Buy</Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent className="z-[200]">
+                                <div className="flex flex-col gap-2 p-4">
+                                    <Label htmlFor="location" className="text-md">Search for properties</Label>
+                                    <InputGroup className="border border-foreground flex h-full">
+
+                                        <InputGroupInput
+                                            placeholder="e.g. Dundee, Monifieth ..."
+                                            value={location}
+                                            onChange={(e) => setLocation(e.target.value)}
+                                            className="flex-1 border-none w-60"
+                                        />
+                                        <InputGroupAddon>
+                                            <Search />
+                                        </InputGroupAddon>
+                                        <InputGroupButton onClick={handleSearch} size="sm" className="hidden md:flex bg-buttonColor hover:bg-buttonHover text-md text-foreground font-bold md:w-32 h-full">Search</InputGroupButton>
+                                    </InputGroup>
+                                    <Button onClick={handleSearch} size="sm" className="flex md:hidden bg-buttonColor hover:bg-buttonHover text-foreground text-md font-bold w-full h-10">Search</Button>
+                                </div>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </div>
                     {/* Desktop action buttons */}
                     <div className="hidden md:flex items-center gap-2 ">
