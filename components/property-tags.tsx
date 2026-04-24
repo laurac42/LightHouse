@@ -173,6 +173,9 @@ export function PropertyTags({ propertyId }: { propertyId: number }) {
                 {propertyTags && propertyTags.length > 0 ? (
                     <>
                         <p className="pb-2">Upvote a tag to have your say</p>
+                        <p className="text-sm text-muted-foreground">
+                            Tags will only be used to influence search results once upvoted by 5 users.
+                        </p>
                         <div className="flex flex-wrap gap-2 py-4">
                             {propertyTags.map((tag) => (
                                 <div key={tag.tag_id} className="inline-flex items-center gap-1 md:gap-3 px-2 py-1 bg-buttonColor rounded-md text-sm md:text-md">
@@ -218,7 +221,7 @@ export function PropertyTags({ propertyId }: { propertyId: number }) {
 
                 </div>
                 {openAddTag ? (
-                    <p className="text-sm text-muted-foreground">Add a tag to help other buyers</p>
+                    <p className="text-sm text-muted-foreground">Add a tag to help other buyers. Tags will only be used to influence search results once upvoted by 5 users.</p>
                 ) : (
                     <p className="text-sm text-muted-foreground">Click the menu to view available tags </p>
                 )}
