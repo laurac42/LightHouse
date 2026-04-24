@@ -181,6 +181,10 @@ async function uploadPropertyToSupabase(property: Property, agencyLocations: { l
     try {
         const randomAgencyLocationId = returnRandomAgenctLocationId(agencyLocations);
 
+        if (!property.latitude || !property.longitude) {
+            throw new Error("Property is missing latitude or longitude");
+        }
+
         const { data, error } = await supabase.from("properties").insert({
             title: property.title,
             price: property.price,

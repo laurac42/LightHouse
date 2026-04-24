@@ -28,7 +28,6 @@ import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText, InputGrou
 export default function BuyerProfile() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [familySize, setFamilySize] = useState<number>(1);
     const [budget, setBudget] = useState<string>("");
     const [bedrooms, setBedrooms] = useState<string>("");
     const [detachedChecked, setDetachedChecked] = useState(false);
@@ -47,11 +46,11 @@ export default function BuyerProfile() {
         async function verifyOnboarding() {
             const status = await CheckOnboarding();
 
-            // if (status === "error") {
-            //     router.push("/");
-            // } else if (status === "onboarded") {
-            //     router.push("/");
-            // }
+            if (status === "error") {
+                router.push("/");
+            } else if (status === "onboarded") {
+                router.push("/");
+            }
         }
 
         verifyOnboarding();
@@ -80,7 +79,6 @@ export default function BuyerProfile() {
                 ("update_buyer_profile", {
                     p_id: user.user.id,
                     p_budget: budget !== "" ? Number(budget) : 0,
-                    p_family_size: familySize,
                     p_preferred_num_bedrooms: bedrooms !== "" ? Number(bedrooms) : 0,
                     p_preferred_property_types: [
                         detachedChecked ? "detached" : null,
@@ -149,23 +147,6 @@ export default function BuyerProfile() {
                                                     </InputGroupAddon>
                                                 </InputGroup>
                                             </div>
-                                        </div>
-
-                                        {/* Number of People Buying For */}
-                                        <div className="flex flex-col gap-2">
-                                            <Label htmlFor="family-size">How many people will be living in the home?</Label>
-                                            <InputGroup>
-                                                <InputGroupInput
-                                                    placeholder="0"
-                                                    value={familySize}
-                                                    type="number"
-                                                    min={0}
-                                                    onChange={(e) => setFamilySize(parseInt(e.target.value) || 0)}
-                                                />
-                                                <InputGroupAddon align="inline-end">
-                                                    <InputGroupText>Family Members</InputGroupText>
-                                                </InputGroupAddon>
-                                            </InputGroup>
                                         </div>
 
                                         {/* Number of Bedrooms */}

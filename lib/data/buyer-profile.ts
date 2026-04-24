@@ -30,7 +30,7 @@ export async function updateUserPreferences(preferences: UserPreferences) {
     const supabase = createClient();
     const { error } = await supabase
         .from("buyer_profiles")
-        .update({ budget: preferences.budget, family_size: preferences.family_size, preferred_num_bedrooms: preferences.preferred_num_bedrooms, preferred_locations: preferences.preferred_locations, preferred_property_types: preferences.preferred_property_types, })
+        .update({ budget: preferences.budget, preferred_num_bedrooms: preferences.preferred_num_bedrooms, preferred_locations: preferences.preferred_locations, preferred_property_types: preferences.preferred_property_types, })
         .eq('id', preferences.id);
     
     if (error) {
