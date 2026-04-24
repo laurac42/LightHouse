@@ -347,7 +347,10 @@ export default function FilterBarOverlay({
 
                             {/* Tag prioritisation - allow users to select tags to prioritise in search results */}
                             <div>
-                                <h3 className="text-lg font-bold mb-2">Prioritise by Tag</h3>
+                                <h3 className="text-lg font-bold">Prioritise by Tag</h3>
+                                <p className="text-sm text-muted-foreground mb-2">
+                                    Tags are user added and may not be fully accurate
+                                </p>
 
                                 {localFilters.selectedTags.length > 0 &&
                                     <h3 className="text-md font-semibold mb-2">Selected Tags</h3>
@@ -373,7 +376,7 @@ export default function FilterBarOverlay({
 
                                 {allTags.length > 0 && (
                                     <>
-                                        <h3 className="text-md font-semibold">All Tags</h3>
+                                        <h3 className="text-md font-semibold mb-1">All Tags</h3>
                                         <div className="flex flex-wrap gap-1 max-h-48 overflow-y-auto">
                                             {allTags.map((tag) => (
                                                 <Button
