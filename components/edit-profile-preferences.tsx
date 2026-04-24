@@ -54,21 +54,6 @@ export default function EditProfilePreferences({
                     )}
                     {editing ? (
                         <Field className="pr-4">
-                            <FieldLabel className="text-sm text-foreground/80">Family Size</FieldLabel>
-                            <Input
-                                value={userPreferences?.family_size ?? ""}
-                                onChange={(e: ChangeEvent<HTMLInputElement>) => setUserPreferences({ ...userPreferences, family_size: e.target.value ? Number(e.target.value) : null } as UserPreferences)}
-                                className="ml-2"
-                            />
-                        </Field>
-                    ) : (
-                        <div>
-                            <Label className="text-sm text-foreground/80">Family Size</Label>
-                            <Label className="text-md w-full p-2 py-1 rounded-md m-2">{userPreferences?.family_size || 'No family size set'}</Label>
-                        </div>
-                    )}
-                    {editing ? (
-                        <Field className="pr-4">
                             <FieldLabel className="text-sm text-foreground/80">Preferred Number of Bedrooms</FieldLabel>
                             <Input
                                 value={userPreferences?.preferred_num_bedrooms ?? ""}
