@@ -18,6 +18,9 @@ export default function NavbarDropdown() {
 
     // log the user out and redirect if necessary (if they were on a protected page)
     const logout = async () => {
+        // clear local storage to remove locations
+        localStorage.clear();
+
         const supabase = createClient();
         await supabase.auth.signOut();
 
