@@ -115,14 +115,14 @@ export default function BuyerProfile() {
                                 <CardTitle className="text-2xl">
                                     Let's set up your buyer profile
                                 </CardTitle>
-                                <CardDescription>Let us know a bit more about what you're looking for, and help us guide you to your perfect home.</CardDescription>
+                                <CardDescription>Let us know a bit more about what you're looking for, and help us guide you to your perfect home. Your preferences will be used to provide you with recommended properties.</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <form onSubmit={handleDetailsSubmit}>
                                     <div className="flex flex-col gap-6">
                                         {/* Budget */}
                                         <div className="flex flex-col gap-2">
-                                            <Label htmlFor="budget">Give us an idea of your budget?</Label>
+                                            <Label htmlFor="budget">What is your ideal price?</Label>
                                             <div className="relative">
                                                 <InputGroup>
                                                     <InputGroupAddon>
