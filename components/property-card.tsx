@@ -106,7 +106,7 @@ export default function PropertyCard({ property, images, page, editable = false,
     }
 
     return (
-        <Card key={property.id} className={"bg-white/90 border-none mb-6 flex flex-col" + (page === "manage" ? " lg:h-60" : "")}>
+        <Card key={property.id} className={"bg-white/90 border-none mb-6 flex flex-col"}>
             <CardContent className="p-0 flex flex-col flex-1">
                 {property.recommended && (
                     <span className="w-full inline-flex px-2 py-1 items-center gap-1 rounded-t-md bg-highlight text-sm font-medium text-white">
@@ -117,7 +117,7 @@ export default function PropertyCard({ property, images, page, editable = false,
                     <div className={page === "manage" ? "flex flex-col gap-0 md:w-64 shrink-0" : "flex flex-col gap-0 md:w-80 shrink-0"}>
                         <ImageCarousel images={images} property={property} page={page} isModalOpen={null} />
                         <div className="flex flex-1">
-                            <CardHeader className={page === "manage" ? "flex-1 min-h-12 p-0 gap-0 m-0 bg-highlight rounded-b-md text-white flex flex-row justify-between" : "justify-between p-0 gap-0 m-0 bg-highlight rounded-b-md text-white flex flex-row flex-1 min-h-10 md:min-h-20 lg:min-h-10 flex flex-col"}>
+                            <CardHeader className={"justify-between p-0 gap-0 m-0 bg-highlight rounded-b-md flex flex-col flex-1 text-white " + (page === "manage" ? " min-h-10" : " min-h-10 md:min-h-20 lg:min-h-10")}>
                                 <div className="items-center flex flex-row gap-1 my-2 justify-center my-auto">
                                     <h1 className="text-2xl text-center">{'£' + property.price.toLocaleString()}</h1>
                                     <p className="text-sm text-center"> {uppercaseWords(property.price_type || '')}</p>
@@ -245,16 +245,18 @@ export default function PropertyCard({ property, images, page, editable = false,
                         </div>
 
                         {/* Distance From Locations */}
-                        <div className="pb-2 mb-2 flex flex-wrap gap-1">
-                            {locationsForDistance.length > 0 && locationsForDistance.map((location) => (
-                                <p key={location.id} className="text-xs sm:text-sm text-foreground flex items-center gap-2 inline-flex">
-                                    <b>{location.nickname}</b>
-                                    {distances[location.id] !== undefined ? distances[location.id] : 'Loading...'}
-                                    {location.travel_mode === "driving" ? <Car /> : location.travel_mode === "walking" ? <Footprints /> : location.travel_mode === "transit" ? <TrainFront /> : <Bike />}
-                                    <span className="px-2">|</span>
-                                </p>
-                            ))}
-                        </div>
+                        {page !== "manage" && (
+                            <div className="pb-2 mb-2 flex flex-wrap gap-1">
+                                {locationsForDistance.length > 0 && locationsForDistance.map((location) => (
+                                    <p key={location.id} className="text-xs sm:text-sm text-foreground flex items-center gap-2 inline-flex">
+                                        <b>{location.nickname}</b>
+                                        {distances[location.id] !== undefined ? distances[location.id] : 'Loading...'}
+                                        {location.travel_mode === "driving" ? <Car /> : location.travel_mode === "walking" ? <Footprints /> : location.travel_mode === "transit" ? <TrainFront /> : <Bike />}
+                                        <span className="px-2">|</span>
+                                    </p>
+                                ))}
+                            </div>
+                        )}
 
                         {/** Agency details */}
                         {agencyDetails && page !== "manage" && (
