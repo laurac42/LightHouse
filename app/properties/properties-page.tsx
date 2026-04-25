@@ -386,27 +386,6 @@ export default function PropertiesPage() {
                     ) : (
                         <div className="pt-2 px-6 text-highlight">
                             <p>Showing properties {currentPage * PAGE_SIZE - (PAGE_SIZE - 1)} - {Math.min(currentPage * PAGE_SIZE, totalProperties)} of {totalProperties} properties {filters.location ? `in ${filters.location}` : ""}</p>
-                            {buyerLocations && buyerLocations.length > 0 &&
-                                <div className="mt-2 mb-4 md:flex flex-wrap gap-3 hidden">
-                                    <p className="whitespace-nowrap">Show distance from: </p>
-                                    <FieldGroup className="flex flex-row flex-wrap">
-                                        {buyerLocations?.map((location, index) => (
-                                            <Field orientation="horizontal" key={index} className="w-auto">
-                                                <Checkbox className="border-foreground text-foreground data-[state=checked]:text-white data-[state=checked]:border-foreground data-[state=checked]:bg-highlight" id={`${index}-checkbox`} name={`${index}-checkbox`} checked={showDistanceFromLocation.includes(location)} onCheckedChange={(checked) => {
-                                                    if (checked === true) {
-                                                        setShowDistanceFromLocation([...showDistanceFromLocation, location]);
-                                                    } else {
-                                                        setShowDistanceFromLocation(showDistanceFromLocation.filter((l) => l !== location));
-                                                    }
-                                                }} />
-                                                <FieldLabel htmlFor={`${index}-checkbox`} className="font-normal">
-                                                    {location.nickname}
-                                                </FieldLabel>
-                                            </Field>
-                                        ))}
-                                    </FieldGroup>
-                                </div>
-                            }
                         </div>
                     )
                     }
