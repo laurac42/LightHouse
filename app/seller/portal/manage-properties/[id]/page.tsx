@@ -14,6 +14,7 @@ import PropertyDetails from "@/components/property-details";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { isSeller } from "@/lib/auth/role";
+import { MapProvider } from "@/providers/map";
 
 type Property = Database["public"]["Tables"]["properties"]["Row"];
 
@@ -81,30 +82,32 @@ function PropertyDetailsPage({ params }: { params: Promise<{ id: number }> }) {
     }, [property?.agency_location_id]);
 
     return (
-        <div>
-            {/** Agency card scrolls until the navbar disappears, then is fixed */}
-            <div ref={barRef} className={`col-span-1 border-none lg:top-0 lg:right-4 w-1/3 pl-8 lg:py-2 ${isFixed ? 'lg:fixed lg:pt-8' : 'lg:absolute lg:pt-28'}`} style={{ zIndex: 50, height: barHeight } as CSSProperties}>
-                {!isImageModalOpen && agencyDetails && (
-                    <AgencyCard agencyDetails={agencyDetails} />
-                )}
-            </div>
-            {isFixed && <div style={{ height: barHeight }} />}
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-8 px-4 md:px-12 py-2 border-none">
-                <div className="col-span-2">
-                    {property && images.length > 0 ? (
-                        <div>
-                            <ImageCarousel
-                                images={images}
-                                property={property}
-                                page="property-details"
-                                isModalOpen={setIsImageModalOpen}
-                            />
-                        </div>
-                    ) : null}
+        <MapProvider>
+            <div>
+                {/** Agency card scrolls until the navbar disappears, then is fixed */}
+                <div ref={barRef} className={`col-span-1 border-none lg:top-0 lg:right-4 w-1/3 pl-8 lg:py-2 ${isFixed ? 'lg:fixed lg:pt-8' : 'lg:absolute lg:pt-28'}`} style={{ zIndex: 50, height: barHeight } as CSSProperties}>
+                    {!isImageModalOpen && agencyDetails && (
+                        <AgencyCard agencyDetails={agencyDetails} />
+                    )}
                 </div>
-                {property && <PropertyDetails params={{ id, property }} page="edit" locs={[]}/>}
+                {isFixed && <div style={{ height: barHeight }} />}
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-8 px-4 md:px-12 py-2 border-none">
+                    <div className="col-span-2">
+                        {property && images.length > 0 ? (
+                            <div>
+                                <ImageCarousel
+                                    images={images}
+                                    property={property}
+                                    page="property-details"
+                                    isModalOpen={setIsImageModalOpen}
+                                />
+                            </div>
+                        ) : null}
+                    </div>
+                    {property && <PropertyDetails params={{ id, property }} page="edit" locs={[]} />}
+                </div>
             </div>
-        </div>
+        </MapProvider>
     );
 
 }
@@ -116,7 +119,7 @@ export default function Page({ params }: { params: Promise<{ id: number }> }) {
 
             <div className="bg-background min-h-screen w-full">
                 <Navbar />
-                <Link className="flex inline-flex text-highlight m-6 mb-0 mt-4" href="/estate-agent/portal/manage-properties"><MoveLeft /> &nbsp; Back to Agent Portal</Link>
+                <Link className="flex inline-flex text-highlight m-6 mb-0 mt-4" href="/seller/portal/manage-properties"><MoveLeft /> &nbsp; Back to Seller Portal</Link>
                 <PropertyDetailsPage params={params} />
             </div>
         </Suspense>

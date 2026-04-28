@@ -18,12 +18,12 @@ export default function SellerPortalPage() {
 
 
     useEffect(() => {
-        async function checkEstateAgent() {
+        async function checkSeller() {
             try {
                 const supabase = createClient();
                 const { data } = await supabase.auth.getClaims();
                 const user = data?.claims;
-                const seller = await isSeller(user?.metadata?.sub);
+                const seller = await isSeller(user?.user_metadata?.sub);
                 
                 if (!seller) {
                     router.push("/");
@@ -34,7 +34,7 @@ export default function SellerPortalPage() {
             }
         }
 
-        checkEstateAgent();
+        checkSeller();
     }, [router]);
 
     return (
