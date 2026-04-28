@@ -54,7 +54,7 @@ export default function SellerPropertiesPage() {
                 const { data } = await supabase.auth.getClaims();
                 const user = data?.claims;
                 setUser(user);
-                const seller = await isSeller(user?.metadata?.sub);
+                const seller = await isSeller(user?.user_metadata?.sub);
                 if (!seller) {
                     router.push("/");
                 }
@@ -81,7 +81,7 @@ export default function SellerPropertiesPage() {
             // scroll to top
             window.scrollTo({ top: 0 });
 
-            const result = await fetchPropertiesBySellerID(user?.metadata?.sub, page, PAGE_SIZE, selectedStatus || undefined);
+            const result = await fetchPropertiesBySellerID(user?.user_metadata?.sub, page, PAGE_SIZE, selectedStatus || undefined);
 
             if (!result) {
                 setErrorMessage("Unable to fetch properties");
